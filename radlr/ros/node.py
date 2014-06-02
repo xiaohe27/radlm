@@ -16,7 +16,7 @@ _template_node_cpp ="""
 #include "{node_h_name}"
 {cxx_includes}
 
-namespace {namespace} {{
+using {namespace};
 
 int main(int argc, const char* argv[]) {{
   int n = 0; //ros requires a reference...
@@ -50,7 +50,7 @@ int main(int argc, const char* argv[]) {{
   }}
   return 0;
 }}
-}}
+
 """
 
 _template_node_h = """
