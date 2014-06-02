@@ -52,6 +52,8 @@ int main() {{
 """
 
 _template_node_h = """
+#pragma once
+
 {in_msg_includes}
 {out_msg_includes}
 
