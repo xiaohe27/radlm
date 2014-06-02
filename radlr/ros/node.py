@@ -59,11 +59,11 @@ namespace {namespace} {{
 
 struct out_struct {{
 {out_struct_def}
-}}
+}};
 
 struct in_struct {{
 {in_struct_def}
-}}
+}};
 }}
 """
 
