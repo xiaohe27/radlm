@@ -12,6 +12,7 @@ from astutils.tools import write_file
 
 _template_node_cpp ="""
 #include "radl_lib.h"
+#include "ros/ros.h"
 #include "{node_h_name}"
 {cxx_includes}
 
