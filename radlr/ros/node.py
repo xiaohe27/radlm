@@ -31,11 +31,11 @@ int main() {{
   {node[CXX][CLASS]._val} _node;
   while (ros::ok()) {{
     //create outgoing structure
-    out_struct _out;
+    {out_struct} _out;
     {out_fill}
 
     //combine incoming messages
-    in_struct _in;
+    {in_struct} _in;
     ros::spinOnce();
     {in_fill}
 
@@ -57,11 +57,11 @@ _template_node_h = """
 
 namespace {namespace} {{
 
-struct out_struct {{
+struct {out_struct} {{
 {out_struct_def}
 }};
 
-struct in_struct {{
+struct {in_struct} {{
 {in_struct_def}
 }};
 }}
@@ -117,8 +117,8 @@ def gennode(visitor, node, acc):
     node_h_name = name + '_node.h'
     node_h_path = src_directory / node_h_name
     cxx_includes = getincludes(node)
-    in_struct = '_' + name + '_instruct'
-    out_struct = '_' + name + '_outstruct'
+    in_struct = '_in_' + name
+    out_struct = '_out_' + name
     #Over the publications
     pub_call = ''
     out_fill = ''
