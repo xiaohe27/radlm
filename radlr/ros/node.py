@@ -90,7 +90,7 @@ _template_in_struct_def="""{subtopic}::ConstPtr {subname};"""
 
 _template_in_fill="""_in.{subname} = {subscribername}.value();"""
 
-_template_init_msg_fill="""{initmsg}.{fieldname} = {fieldval}"""
+_template_init_msg_fill="""{initmsg}.{fieldname} = {fieldval};"""
 
 _template_set_sub="""{subtopic} {initmsg};
   {init_msg_fill}
