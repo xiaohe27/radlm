@@ -81,7 +81,7 @@ _template_out_struct_def ="""{pubtopic}* {pubname};"""
 _template_out_fill="""{pubtopic} {pubname};
     _out.{pubname} = &{pubname};"""
 
-_template_pub_call="""{publishername}(_out.{pubname});"""
+_template_pub_call="""{publishername}(*_out.{pubname});"""
 
 _template_set_pub="""ros::Publisher {publishername}_ros = _h.advertise<{pubtopic}>("{pubname}", 10);
   {publisherclass}<{pubtopic}> {publishername}({publishername}_ros);"""
