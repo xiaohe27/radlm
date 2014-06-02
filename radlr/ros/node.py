@@ -19,7 +19,8 @@ _template_node_cpp ="""
 namespace {namespace} {{
 
 int main() {{
-  ros::init(0, NULL, "{name}"); //TODO : SIGINT management ?
+  int n = 0; //ros requires a reference...
+  ros::init(n, NULL, "{name}"); //TODO : SIGINT management ?
   ros::NodeHandle _h;
   ros::Rate _loop_rate({node[RATE]._val});
 
@@ -82,8 +83,8 @@ _template_out_fill="""{pubtopic} {pubname};
 
 _template_pub_call="""{publishername}(_out->{pubname});"""
 
-_template_set_pub="""ros::Publisher {publishername} = _h.advertise<{pubtopic}>("{pubname}", 10);
-  {publisherclass}<{pubtopic}> {publishername}({publishername});"""
+_template_set_pub="""ros::Publisher {publishername}_ros = _h.advertise<{pubtopic}>("{pubname}", 10);
+  {publisherclass}<{pubtopic}> {publishername}({publishername}_ros);"""
 
 _template_in_struct_def="""{subtopic}::ConstPtr {subname};"""
 
