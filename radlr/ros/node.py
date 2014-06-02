@@ -52,9 +52,10 @@ int main() {{
 """
 
 _template_node_h = """
-namespace {namespace} {{
 {in_msg_includes}
 {out_msg_includes}
+
+namespace {namespace} {{
 
 struct out_struct {{
 {out_struct_def}
@@ -66,8 +67,10 @@ struct in_struct {{
 }}
 """
 
-_template_in_msg_include = '''#include "{namespace}/{subname}.h"'''
-_template_out_msg_include = '''#include "{namespace}/{pubname}.h"'''
+_template_in_msg_include = '''#include "{namespace}/{subname}.h"
+'''
+_template_out_msg_include = '''#include "{namespace}/{pubname}.h"
+'''
 
 _template_out_struct_def ="""{pubtopic}* {pubname};"""
 
