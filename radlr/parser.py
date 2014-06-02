@@ -328,14 +328,14 @@ class Semantics:
         self.tree_to_ast = gen_tree_to_ast(language_tree, self.env)
 #         self.ast_checker = gen_ast_checker(language_tree, self.env)
 
-    def __call__(self, program):
+    def __call__(self, program, program_name):
         """ The parser
         """
         program_tree = self.grammar.parse(program)
         program_tree = clean_node(program_tree, to_prune=['_', '_end'],
                                   keep_regex=True)
         pprint_node(program_tree)
-        ast = self.tree_to_ast(program_tree, 'dummy_name') #TODO 5 :prog kind
+        ast = self.tree_to_ast(program_tree, program_name)
         pp_ast(ast)
         #TODO: 5 enable ast checks
 #         self.ast_checker(ast)

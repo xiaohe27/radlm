@@ -22,11 +22,11 @@ from astutils.tools import ensure_dir
 # pprint_node(test1_grammar)
 # 
 radlr_grammar = meta_parser(radlr_language)
-pprint_node(radlr_grammar)
- 
+# pprint_node(radlr_grammar) 
 radlr_semantics = Semantics(radlr_language)
-t = radlr_semantics(onetopic.code)
 
+
+# t = radlr_semantics(onetopic.code)
 # basic_1to1 = radlr_semantics(basic_1to1.code)
 # thermostat = radlr_semantics(thermostat.code)
 
@@ -40,13 +40,14 @@ parser.add_argument('--dest', default = 'src',
 args = parser.parse_args()
 
 source = Path(args.file)
+name = source.stem
+
+root_dir = Path.cwd() / args.dest / name
+ensure_dir(root_dir)
 
 # radl_source = Path('/Users/lgerard/tmp/house_thermo.radl')
 
-ast = radlr_semantics(source.open().read())
-
-root_dir = Path.cwd() / args.dest / ast._name
-ensure_dir(root_dir)
+ast = radlr_semantics(source.open().read(), name)
 
 msg_dir = root_dir / 'msg'
 ensure_dir(msg_dir)
