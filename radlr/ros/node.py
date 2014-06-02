@@ -9,14 +9,7 @@ Generate one ROS _node.cpp file per node declaration.
 from radlr.rast import AstVisitor
 from astutils.tools import write_file
 
-""" The arguments to the templates are:
-ast         : the toplevel ast node
-node        : the node
-includes    : the includes necessary for node, computed with includes(node)
-in_struct   : the input structure typename
-in_fill     : the code combining incoming messages
-out_struct  : the output structure typename
-"""
+
 _template_node_cpp ="""
 #include "radl_lib.h"
 #include "{node_h_name}"
@@ -38,11 +31,11 @@ int main() {{
   {node[CXX][CLASS]._val} _node;
   while (ros::ok()) {{
     //create outgoing structure
-    {out_struct} _out;
+    out_struct _out;
     {out_fill}
 
     //combine incoming messages
-    {in_struct} _in;
+    in_struct _in;
     ros::spinOnce();
     {in_fill}
 
@@ -63,11 +56,11 @@ namespace {namespace} {{
 {in_msg_includes}
 {out_msg_includes}
 
-struct {out_struct} {{
+struct out_struct {{
 {out_struct_def}
 }}
 
-struct {in_struct} {{
+struct in_struct {{
 {in_struct_def}
 }}
 }}
