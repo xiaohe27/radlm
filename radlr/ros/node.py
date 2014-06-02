@@ -18,7 +18,7 @@ _template_node_cpp ="""
 
 namespace {namespace} {{
 
-int main() {{
+int main(int argc, const char* argv[]) {{
   int n = 0; //ros requires a reference...
   ros::init(n, NULL, "{name}"); //TODO : SIGINT management ?
   ros::NodeHandle _h;
