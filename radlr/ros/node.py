@@ -18,7 +18,7 @@ _template_node_cpp ="""
 namespace {namespace} {{
 
 int main() {{
-  ros::init(0, null, "{name}"); //TODO : SIGINT management ?
+  ros::init(0, NULL, "{name}"); //TODO : SIGINT management ?
   ros::NodeHandle _h;
   ros::Rate _loop_rate({node[RATE]._val});
 
@@ -81,7 +81,7 @@ _template_out_fill="""{pubtopic} {pubname};
 
 _template_pub_call="""{publishername}(_out->{pubname});"""
 
-_template_set_pub="""ros::Publisher {publishername} = n.advertise<{pubtopic}>("{pubname}", 10);
+_template_set_pub="""ros::Publisher {publishername} = _h.advertise<{pubtopic}>("{pubname}", 10);
   {publisherclass}<{pubtopic}> {publishername}({publishername});"""
 
 _template_in_struct_def="""{subtopic}::ConstPtr {subname};"""
@@ -96,7 +96,7 @@ _template_set_sub="""{subtopic} {initmsg};
   {subscriberclass}<{subtopic}> {subscribername}(_wrap{initmsg});
   boost::function<void (const {subtopic}::ConstPtr&)> {subscribername}_func;   // boost still needed by ROS ?
   {subscribername}_func = boost::ref({subscribername});
-  ros::Subscriber {subscribername}_ros = n.subscribe<{subtopic}>("{subname}", 10, {subscribername}_func);"""
+  ros::Subscriber {subscribername}_ros = _h.subscribe<{subtopic}>("{subname}", 10, {subscribername}_func);"""
 
 def _include_cxx_class(visitor, node, acc):
         _, acc = visitor.node_mapred(node, acc)
