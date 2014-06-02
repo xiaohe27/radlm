@@ -16,7 +16,7 @@ _template_node_cpp ="""
 #include "{node_h_name}"
 {cxx_includes}
 
-using {namespace};
+using namespace {namespace};
 
 int main(int argc, const char* argv[]) {{
   int n = 0; //ros requires a reference...
