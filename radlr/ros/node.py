@@ -67,9 +67,9 @@ struct in_struct {{
 }}
 """
 
-_template_in_msg_include = '''#include "{namespace}/{subname}.h"
+_template_in_msg_include = '''#include "{namespace}/{subtopic}.h"
 '''
-_template_out_msg_include = '''#include "{namespace}/{pubname}.h"
+_template_out_msg_include = '''#include "{namespace}/{pubtopic}.h"
 '''
 
 _template_out_struct_def ="""{pubtopic}* {pubname};"""
