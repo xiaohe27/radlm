@@ -39,7 +39,7 @@ parser.add_argument('--dest', default = 'src',
 args = parser.parse_args()
 
 source = Path(args.file)
-source_dir = source.parent()
+source_dir = source.parent
 name = source.stem
 root_dir = Path(args.dest) / name
 ensure_dir(root_dir)
