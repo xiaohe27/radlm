@@ -38,7 +38,7 @@ parser.add_argument('--dest', default = 'src',
                     help='the destination directory for generated files')
 args = parser.parse_args()
 
-source = Path(args.file)
+source = Path(args.file).absolute()
 source_dir = source.parent
 name = source.stem
 root_dir = Path(args.dest) / name
