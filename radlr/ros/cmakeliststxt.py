@@ -6,7 +6,6 @@ Created on May, 2014
 from pathlib import Path
 from radlr.rast import AstVisitor
 from astutils.tools import write_file
-from radlr.ros.node import gen_source_node
 
 _template_cmakeliststxt = """
 cmake_minimum_required(VERSION 2.8.3)
