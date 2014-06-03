@@ -9,7 +9,7 @@ from radlr.language import radlr_language
 from parsimonious.nodeutils import pprint_node
 from radlr.examples import basic_1to1, thermostat, onetopic
 from pathlib import Path
-from radlr.ros import msg, node
+from radlr.ros import msg, node, packagexml, cmakeliststxt
 from astutils.tools import ensure_dir
 
 # test1 = r"""
@@ -28,7 +28,7 @@ radlr_semantics = Semantics(radlr_language)
 
 # t = radlr_semantics(onetopic.code)
 # basic_1to1 = radlr_semantics(basic_1to1.code)
-# thermostat = radlr_semantics(thermostat.code)
+# tast = radlr_semantics(thermostat.code, 'toto')
 
 import argparse
 
@@ -36,12 +36,10 @@ parser = argparse.ArgumentParser()
 parser.add_argument('file', help='the RADL description file')
 parser.add_argument('--dest', default = 'src',
                     help='the destination directory for generated files')
-
 args = parser.parse_args()
 
 source = Path(args.file)
 name = source.stem
-
 root_dir = Path.cwd() / args.dest / name
 ensure_dir(root_dir)
 
@@ -51,8 +49,10 @@ ast = radlr_semantics(source.open().read(), name)
 
 msg_dir = root_dir / 'msg'
 ensure_dir(msg_dir)
-msg.gen(msg_dir, ast)
-
 src_dir = root_dir / 'src'
 ensure_dir(src_dir)
+
+msg_file_list = msg.gen(msg_dir, ast)
 node.gen(src_dir, ast)
+packagexml.gen(source, root_dir, ast)
+cmakeliststxt.gen(msg_file_list, root_dir, ast)

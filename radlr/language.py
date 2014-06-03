@@ -38,6 +38,7 @@ type string
 
 class cxx_class
     PATH string
+    FILENAME string
     CLASS string
 
 #TODO: 6 support '?' modifier in the meta grammar

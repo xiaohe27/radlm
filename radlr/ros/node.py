@@ -8,6 +8,7 @@ Generate one ROS _node.cpp file per node declaration.
 '''
 from radlr.rast import AstVisitor
 from astutils.tools import write_file
+from pathlib import Path
 
 
 _template_node_cpp ="""
@@ -102,7 +103,9 @@ _template_set_sub="""{subtopic} {initmsg};
 
 def _include_cxx_class(visitor, node, acc):
         _, acc = visitor.node_mapred(node, acc)
-        acc.append('#include "' + node['PATH']._val + '"')
+        f = Path(node['PATH'])
+        f = f / (node['FILENAME'] + '.h')
+        acc.append('#include "' + str(f) + '"')
         return _, acc
 _include_visitor = AstVisitor({'cxx_class' : _include_cxx_class})
 
@@ -110,16 +113,18 @@ def getincludes(node):
     _, paths = _include_visitor.visit(node, [])
     return '\n'.join(paths)
 
+def gen_source_node(node):
+    return node._name + '_node'
 
 def gennode(visitor, node, acc):
     """ Nodes are not recursive for now """
-    ast, src_directory = acc
+    ast, dest_directory = acc
     namespace = ast._name
     name = node._name
-    node_cpp_name = name + '_node.cpp'
-    node_cpp_path = src_directory / node_cpp_name
-    node_h_name = name + '_node.h'
-    node_h_path = src_directory / node_h_name
+    node_cpp_name = gen_source_node(name) + '.cpp'
+    node_cpp_path = dest_directory / node_cpp_name
+    node_h_name = gen_source_node(name) + '.h'
+    node_h_path = dest_directory / node_h_name
     cxx_includes = getincludes(node)
     in_struct = '_in_' + name
     out_struct = '_out_' + name
@@ -173,5 +178,5 @@ def gennode(visitor, node, acc):
 
 visitor = AstVisitor({'node' : gennode})
 
-def gen(src_directory, ast):
-    visitor.visit(ast, (ast, src_directory))
+def gen(dest_directory, ast):
+    visitor.visit(ast, (ast, dest_directory))
