@@ -51,7 +51,7 @@ _sources_visitor = AstVisitor({'cxx_class' : _sources_cxx_class})
 
 def get_sources(node, gened_cpp_files):
     _, sources = _sources_visitor.visit(node, [])
-    sources.append(gened_cpp_files[node._name])
+    sources.append(str(gened_cpp_files[node._name]))
     return ' '.join(sources)
 
 
