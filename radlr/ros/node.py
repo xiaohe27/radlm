@@ -121,9 +121,9 @@ def gennode(visitor, node, acc):
     ast, dest_directory = acc
     namespace = ast._name
     name = node._name
-    node_cpp_name = gen_source_node(name) + '.cpp'
+    node_cpp_name = gen_source_node(node) + '.cpp'
     node_cpp_path = dest_directory / node_cpp_name
-    node_h_name = gen_source_node(name) + '.h'
+    node_h_name = gen_source_node(node) + '.h'
     node_h_path = dest_directory / node_h_name
     cxx_includes = getincludes(node)
     in_struct = '_in_' + name
