@@ -9,7 +9,7 @@ from astutils.tools import write_file
 _template_package_xml = """<?xml version="1.0"?>
 <package>
   <name>{namespace}</name>
-  <version>1</version>
+  <version>0.0.1</version>
   <description>Generated from {source}</description>
   <maintainer email="leonard.gerard@sri.com">Léonard Gérard</maintainer>
   <license>BSD</license>
