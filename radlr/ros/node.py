@@ -103,8 +103,8 @@ _template_set_sub="""{subtopic} {initmsg};
 
 def _include_cxx_class(visitor, node, acc):
         _, acc = visitor.node_mapred(node, acc)
-        f = Path(node['PATH'])
-        f = f / (node['FILENAME'] + '.h')
+        f = Path(node['PATH']._val)
+        f = f / (node['FILENAME']._val + '.h')
         acc.append('#include "' + str(f) + '"')
         return _, acc
 _include_visitor = AstVisitor({'cxx_class' : _include_cxx_class})
