@@ -68,7 +68,7 @@ def _from_node(visitor, node, acc):
 _visitor = AstVisitor({'node' : _from_node})
 
 def get_from_nodes(ast, gened_cpp_files, namespace):
-    _, (execs, deps, lls, _) = _visitor.visit(ast, ([], [], [], gened_cpp_files, namespace))
+    _, (execs, deps, lls, _, _) = _visitor.visit(ast, ([], [], [], gened_cpp_files, namespace))
     return ('\n'.join(execs), '\n'.join(deps), '\n'.join(lls))
 
 
