@@ -50,32 +50,33 @@ def _sources_cxx_class(visitor, node, acc):
         return _, acc
 _sources_visitor = AstVisitor({'cxx_class' : _sources_cxx_class})
 
-def get_sources(node):
+def get_sources(node, gened_cpp_files):
     _, sources = _sources_visitor.visit(node, [])
-    sources.append(gen_source_node(node) + '.cpp')
+    sources.append(gened_cpp_files[node._name])
     return ' '.join(sources)
 
 
 def _from_node(visitor, node, acc):
     """ Nodes are not recursives """
-    execs, deps, lls, namespace = acc
+    execs, deps, lls, gened_cpp_files, namespace = acc
     n = node._name 
-    execs.append(_template_addexec.format(name=n, sources=get_sources(node)))
+    execs.append(_template_addexec.format(
+        name=n, sources=get_sources(node, gened_cpp_files)))
     deps.append(_template_adddep.format(name=n, namespace=namespace))
     lls.append(_template_targetll.format(name=n))
-    return (), (execs, deps, lls, namespace)
+    return (), (execs, deps, lls, gened_cpp_files, namespace)
 
 _visitor = AstVisitor({'node' : _from_node})
 
-def get_from_nodes(ast, namespace):
-    _, (execs, deps, lls, _) = _visitor.visit(ast, ([], [], [], namespace))
+def get_from_nodes(ast, gened_cpp_files, namespace):
+    _, (execs, deps, lls, _) = _visitor.visit(ast, ([], [], [], gened_cpp_files, namespace))
     return ('\n'.join(execs), '\n'.join(deps), '\n'.join(lls))
 
 
-def gen(msg_file_list, dest_dir, ast):
+def gen(msg_file_list, gened_cpp_files, dest_dir, ast):
     namespace = ast._name
     msg_files = '  ' + '\n  '.join(msg_file_list)
-    executables, dependencies, link_libraries = get_from_nodes(ast, namespace)
+    executables, dependencies, link_libraries = get_from_nodes(ast, gened_cpp_files, namespace)
     cmakeliststxt = _template_cmakeliststxt.format(**locals())
     cmakeliststxt_path = dest_dir / "CMakeLists.txt"
     write_file(cmakeliststxt_path, cmakeliststxt)

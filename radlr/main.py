@@ -53,6 +53,6 @@ src_dir = root_dir / 'src'
 ensure_dir(src_dir)
 
 msg_file_list = msg.gen(msg_dir, ast)
-node.gen(src_dir, ast)
+gened_cpp_files = node.gen(src_dir, ast)
 packagexml.gen(source, root_dir, ast)
-cmakeliststxt.gen(msg_file_list, root_dir, ast)
+cmakeliststxt.gen(msg_file_list, gened_cpp_files, root_dir, ast)

@@ -113,17 +113,14 @@ def getincludes(node):
     _, paths = _include_visitor.visit(node, [])
     return '\n'.join(paths)
 
-def gen_source_node(node):
-    return node._name + '_node'
-
 def gennode(visitor, node, acc):
     """ Nodes are not recursive for now """
-    ast, dest_directory = acc
-    namespace = ast._name
+    cpps, namespace, dest_directory = acc
     name = node._name
-    node_cpp_name = gen_source_node(node) + '.cpp'
+    node_cpp_name = name + '_node.cpp'
     node_cpp_path = dest_directory / node_cpp_name
-    node_h_name = gen_source_node(node) + '.h'
+    cpps.append(node_cpp_path)
+    node_h_name = name + '_node.h'
     node_h_path = dest_directory / node_h_name
     cxx_includes = getincludes(node)
     in_struct = '_in_' + name
@@ -173,10 +170,13 @@ def gennode(visitor, node, acc):
     write_file(node_cpp_path, node_cpp)
     node_h = _template_node_h.format(**locals())
     write_file(node_h_path, node_h)
-    return (), acc
+    return (), (cpps, namespace, dest_directory)
 
 
 visitor = AstVisitor({'node' : gennode})
 
 def gen(dest_directory, ast):
-    visitor.visit(ast, (ast, dest_directory))
+    namespace = ast._name
+    _, (cpps, _, _) = visitor.visit(ast, ([], namespace, dest_directory))
+    return cpps
+
