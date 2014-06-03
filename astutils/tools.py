@@ -13,7 +13,7 @@ class Bunch(object):
 
 def str(o):
     """ Fix PEP 3140 -- str(container) should call str(item), not repr(item)
-    PS: tuples are not affected.
+    PS: tuples are not affected by this 'bug'.
     """
     if isinstance(o, dict):
         l = ["{k} : {v}".format(k=str(k), v=str(v)) for (k, v) in o.items()]
@@ -25,7 +25,7 @@ def str(o):
         return s
     else:
         return builtins.str(o)
-
+#TODO: 8 BucketDict allow (indices: [0], ...) access.
 class BucketDict(OrderedDict):
     """ A bucket dictionary is simply a dict allowing to add mappings
         by storing them in lists:
@@ -37,7 +37,7 @@ class BucketDict(OrderedDict):
     # keywords are executed before the initialization list
     d = BucketDict([('a', 1), ('b', 1)], a = 2)
     assert(d == {'a': [2, 1], 'b': 1})
-"""
+    """
     def __init__(self, *args, **kargs):
         """ Keyword arguments will be added first """
         OrderedDict.__init__(self)
@@ -54,7 +54,6 @@ class BucketDict(OrderedDict):
                         raise TypeError("expected (key, value) tuples,"
                                         "got %s" % str(p))
                     self.add(*p)
-
     def add(self, key, value):
         """ value may be a list of new mappings or simply a value."""
         try:
@@ -67,8 +66,8 @@ class BucketDict(OrderedDict):
         else:
             v = [v] + value if isinstance(value, list) else [v, value]
             self[key] = value
-
-    #def append (like in init) and def union (wait for a bucketdict : list are bucket
+    #def append (like in __init__)
+    #def union (wait for a bucketdict : list are bucket
 
 def write_file(filepath, filecontent):
     if __debug__:

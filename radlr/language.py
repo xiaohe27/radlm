@@ -24,7 +24,6 @@ type float32
     REGEX ~r"(?P<value>[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?)"
     CXX "std::float32_t"
 
-
 type int
     REGEX ~r"(?P<value>\d+)"
     CXX "std::int32_t"
@@ -40,6 +39,12 @@ type string
 class cxx_class
     PATH string
     CLASS string
+
+#TODO: 6 support '?' modifier in the meta grammar
+#TODO: 8 support string calling code (not the order has to be respected
+#    PATH string ? 'src'
+#    FILENAME string ? @ {this}._name @
+#    CLASS string ? @ str.capitalize({this}['FILENAME']) @
 
 class topic
     FIELDS int/bool/string/float32 *
@@ -63,5 +68,7 @@ class node
     SUBSCRIBED subscription *
     CXX cxx_class
     RATE int
+
+
 
 """

@@ -118,7 +118,7 @@ class InlineValue():
         return text, SyntaxError("expecting a quoted external value"
                                  " like '42 or '<key>f(x) { ... }<key>")
 
-#TODO: bug, compose is a method not a class method..
+#bug, compose is a method not a class method..
     def compose(self, parser, attr_of):
         return str(self)
 
@@ -128,7 +128,7 @@ class String(str):
 
 ##############################################################################
 # Generics
-Package = mk_entry() #TODO: to specify
+Package = mk_entry()
 Packages = mk_entry_list()
 
 ExternalValue = mk_entry(
@@ -160,7 +160,7 @@ Node = mk_entry(Cdesc = K("NODE"),
 ##############################################################################
 # Topic
 
-TopicFields = mk_entry_list() #TODO: precise
+TopicFields = mk_entry_list()
 
 Topic = mk_entry(Cdesc = K("TOPIC"),
     Cparams = {"PACKAGES"    : Packages,

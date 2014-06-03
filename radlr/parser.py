@@ -320,7 +320,7 @@ def gen_ast_checker(language_tree):
 class Semantics:
     def __init__(self, language):
         """
-        #TODO: 9 allow to extend a semantics by providing it to another one
+        #TODO: 7 allow to extend a semantics by providing it to another one
         """
         language_tree = meta_parser(language)
         self.env = Env()

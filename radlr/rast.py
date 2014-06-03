@@ -47,15 +47,14 @@ class AstNode:
         """Attributes are namespace lookup.
         TODO 8: should it be only local lookup?
         """
-        #ensure we have a _namespace attribute
-        #in case __getattr__ is called before init
-        #(for example when using copy)
+        #ensure we have a _namespace attribute in case __getattr__ is called
+        #before init (for example when using copy). 
         object.__getattribute__(self, '_namespace')
         return self._namespace.get_ident(attr)
 
     def __str__(self):
-        s = "{n} : {k} {c}".format(n=self._ident._name, k=self._kind, c=str(self._children))
-        return s
+        return "${n} : {k} {c}".format(n=self._ident._name, k=self._kind,
+                                       c=str(self._children))
     def __repr__(self):
         return self.__str__()
 
@@ -89,19 +88,3 @@ class Ast(AstNode):
         return self.defs[ident]
     def __str__(self):
         return "defs:\n{defs}".format(defs=str(self._namespace))
-
-    #Container convention
-#     def __len__(self):
-#         """ return 0 if empty : false
-#         """
-#     def __getitem__(self):
-#         """ the accepted keys should be integers and slice objects.
-#         Negative indexes
-#         wrong key type : TypeError
-#         out of bounds key : IndexError (used by for loops)
-#         """
-#         #http://www.stackoverflow.com/questions/2936863/python-implementing-slicing-in-getitem
-#     def __iter__(self):
-#         """ returns an iterator object. probably a coroutine.
-#         """
-
