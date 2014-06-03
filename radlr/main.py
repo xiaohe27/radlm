@@ -39,8 +39,9 @@ parser.add_argument('--dest', default = 'src',
 args = parser.parse_args()
 
 source = Path(args.file)
+source_dir = source.parent()
 name = source.stem
-root_dir = Path.cwd() / args.dest / name
+root_dir = Path(args.dest) / name
 ensure_dir(root_dir)
 
 # radl_source = Path('/Users/lgerard/tmp/house_thermo.radl')
@@ -51,8 +52,11 @@ msg_dir = root_dir / 'msg'
 ensure_dir(msg_dir)
 src_dir = root_dir / 'src'
 ensure_dir(src_dir)
+user_src_dir = src_dir / 'user_code'
+user_src_dir.symlink_to(source_dir, True)
+
 
 msg_file_list = msg.gen(msg_dir, ast)
 gened_cpp_files = node.gen(src_dir, ast)
 packagexml.gen(source, root_dir, ast)
-cmakeliststxt.gen(msg_file_list, gened_cpp_files, root_dir, ast)
+cmakeliststxt.gen(msg_file_list, gened_cpp_files, root_dir, user_src_dir, ast)
