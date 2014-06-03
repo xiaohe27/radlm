@@ -6,8 +6,7 @@ Created on May, 2014
 from astutils.tools import write_file
 
 
-_template_package_xml = """
-<?xml version="1.0"?>
+_template_package_xml = """<?xml version="1.0"?>
 <package>
   <name>{namespace}</name>
   <version>1</version>
