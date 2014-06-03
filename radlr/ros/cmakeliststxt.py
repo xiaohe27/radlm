@@ -50,7 +50,7 @@ def _sources_cxx_class(visitor, node, acc):
 _sources_visitor = AstVisitor({'cxx_class' : _sources_cxx_class})
 
 def get_sources(node, gened_cpp_files, user_src_dir):
-    _, sources = _sources_visitor.visit(node, ([], user_src_dir))
+    _, (sources, _) = _sources_visitor.visit(node, ([], user_src_dir))
     sources.append(str(gened_cpp_files[node._name]))
     return ' '.join(sources)
 
