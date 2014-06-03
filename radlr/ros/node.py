@@ -119,7 +119,7 @@ def gennode(visitor, node, acc):
     name = node._name
     node_cpp_name = name + '_node.cpp'
     node_cpp_path = dest_directory / node_cpp_name
-    cpps.append(node_cpp_path)
+    cpps[name] = node_cpp_path
     node_h_name = name + '_node.h'
     node_h_path = dest_directory / node_h_name
     cxx_includes = getincludes(node)
@@ -177,6 +177,6 @@ visitor = AstVisitor({'node' : gennode})
 
 def gen(dest_directory, ast):
     namespace = ast._name
-    _, (cpps, _, _) = visitor.visit(ast, ([], namespace, dest_directory))
+    _, (cpps, _, _) = visitor.visit(ast, ({}, namespace, dest_directory))
     return cpps
 
