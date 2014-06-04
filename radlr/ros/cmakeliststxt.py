@@ -43,7 +43,7 @@ _template_targetll = "target_link_libraries({name} ${{catkin_LIBRARIES}})"
 
 def _sources_cxx_class(visitor, node, acc):
         _, sources = visitor.node_mapred(node, acc)
-        f = ('user_code/' + node['PATH']._val
+        f = ('src/user_code/' + node['PATH']._val
                     + '/' + node['FILENAME']._val + '.cpp')
         sources.append(str(f))
         return _, sources
