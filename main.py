@@ -5,7 +5,7 @@ Created on May, 2014
 '''
 
 from radlr.parser import meta_parser, Semantics
-from radlr.language import radlr_language
+import radlr.language
 from parsimonious.nodeutils import pprint_node
 from radlr.examples import basic_1to1, thermostat, onetopic
 from pathlib import Path
@@ -21,10 +21,11 @@ from astutils.tools import ensure_dir
 # test1_grammar = meta_parser(test1)
 # pprint_node(test1_grammar)
 # 
-radlr_grammar = meta_parser(radlr_language)
+# radlr_grammar = meta_parser(radlr_language)
 # pprint_node(radlr_grammar) 
-radlr_semantics = Semantics(radlr_language)
 
+#Bootstrap the semantics from the language definition
+radlr_semantics = Semantics(radlr.language)
 
 # t = radlr_semantics(onetopic.code)
 # basic_1to1 = radlr_semantics(basic_1to1.code)
@@ -34,21 +35,23 @@ import argparse
 
 parser = argparse.ArgumentParser()
 parser.add_argument('file', help='the RADL description file')
-parser.add_argument('--dest', default='',
+parser.add_argument('--dest', default='src',
                     help='the destination directory for generated files')
 args = parser.parse_args()
 
-source = Path(args.file).absolute()
+source = Path(args.file)
 if not source.is_file():
     print("The source file {} doesn't exists.".format(source))
     exit(-1)
+source.resolve() #TODO 4: is it needed ? how to ensure ~ is correctly expanded
 source_dir = source.parent
 name = source.stem
 
-dest_dir = Path(args.dest).absolute()
+dest_dir = Path(args.dest)
 if not dest_dir.is_dir():
     print("The destination directory {} doesn't exists.".format(dest_dir))
     exit(-2)
+dest_dir.resolve() #TODO 4: is it needed ? how to ensure ~ is correctly expanded
 root_dir = Path(args.dest) / name
 ensure_dir(root_dir)
 
