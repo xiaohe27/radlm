@@ -34,7 +34,7 @@ import argparse
 
 parser = argparse.ArgumentParser()
 parser.add_argument('file', help='the RADL description file')
-parser.add_argument('--dest', default='src',
+parser.add_argument('--dest', default='',
                     help='the destination directory for generated files')
 args = parser.parse_args()
 
