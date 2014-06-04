@@ -10,11 +10,23 @@ Created on May, 2014
 
 #TODO: 3 In CXX, std::int8_t, etc require <cstdint>
 
+extra_keywords = {
+#C++ keywords
+'alignas', 'alignof', 'and', 'and_eq', 'asm', 'auto', 'bitand', 'bitor',
+'bool', 'break', 'case', 'catch', 'char', 'char16_t', 'char32_t', 'class',
+'compl', 'const', 'constexpr', 'const_cast', 'continue', 'decltype', 'default',
+'delete', 'do', 'double', 'dynamic_cast', 'else', 'enum', 'explicit', 'export',
+'extern', 'false', 'float', 'for', 'friend', 'goto', 'if', 'inline', 'int',
+'long', 'mutable', 'namespace', 'new', 'noexcept', 'not', 'not_eq', 'nullptr',
+'operator', 'or', 'or_eq', 'private', 'protected', 'public', 'register',
+'reinterpret_cast', 'return', 'short', 'signed', 'sizeof', 'static',
+'static_assert', 'static_cast', 'struct', 'switch', 'template', 'this',
+'thread_local', 'throw', 'true', 'try', 'typedef', 'typeid', 'typename',
+'union', 'unsigned', 'using', 'virtual', 'void', 'volatile', 'wchar_t',
+'while', 'xor', 'xor_eq'
+}
 
-#TODO: 3 Add CXX keywords... (issues when generating code)
-
-
-radlr_language = r"""
+defs = r"""
 
 # type int8
 #     REGEX ~r"(?P<value>\d+)"
@@ -42,7 +54,7 @@ class cxx_class
     CLASS string
 
 #TODO: 6 support '?' modifier in the meta grammar
-#TODO: 8 support string calling code (not the order has to be respected
+#TODO: 8 support string calling code (note the order has to be respected)
 #    PATH string ? 'src'
 #    FILENAME string ? @ {this}._name @
 #    CLASS string ? @ str.capitalize({this}['FILENAME']) @
@@ -69,7 +81,5 @@ class node
     SUBSCRIBED subscription *
     CXX cxx_class
     RATE int
-
-
 
 """

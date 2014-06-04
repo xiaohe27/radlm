@@ -25,9 +25,9 @@ class Env:
     env.kinds maps kind_name -> 'clas' | 'typ' | 'enum' | 'struct'
     env.keywords is a set of keywords
     """
-    def __init__(self):
+    def __init__(self, keywords):
         self.kinds = dict()
-        self.keywords = set()
+        self.keywords = set(keywords)
 
 
 def gen_grammar(language_tree, env):
@@ -322,8 +322,8 @@ class Semantics:
         """
         #TODO: 7 allow to extend a semantics by providing it to another one
         """
-        language_tree = meta_parser(language)
-        self.env = Env()
+        language_tree = meta_parser(language.defs)
+        self.env = Env(language.extra_keywords)
         self.grammar, self.env = gen_grammar(language_tree, self.env)
         self.tree_to_ast = gen_tree_to_ast(language_tree, self.env)
 #         self.ast_checker = gen_ast_checker(language_tree, self.env)
