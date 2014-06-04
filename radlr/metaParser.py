@@ -40,7 +40,7 @@ meta_rules = (rule_syntax +
     # basic_word begins with a letter and may contain numbers and '_'
     # but they should not be a meta_keyword
     r"""
-    _basic_word = ~r"(?!{keywords})[a-zA-Z][a-zA-Z0-9_]*"
+    _basic_word = ~r"(?!({keywords})\b)[a-zA-Z][a-zA-Z0-9_]*"
     """.format(keywords=meta_keywords))
 #    meta = _ (class / type / enum / struct)*
 #    enum = 'enum' _ defKind '{' _ symbol* '}' _

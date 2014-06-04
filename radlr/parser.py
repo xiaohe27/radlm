@@ -128,12 +128,12 @@ def gen_grammar(language_tree, env):
         A meta node has only one real child (clas/type)*
         """
         (node, env) = visitor.mapred(node, env) #depth first
-        keywords = '|'.join(env.keywords) #keywords are the fields
+        keywords = '|'.join(env.keywords)
         rules = '\n'.join(node.children[0])
-        g = """{rules}
-            _ident = ~r"(?!{keywords})[a-zA-Z][a-zA-Z0-9_]*"
+        g = r"""{rules}
+            _ident = ~r"(?!({keywords})\b)[a-zA-Z][a-zA-Z0-9_]*"
             _solo_ident = _ident _ !(':' / '{{')
-            _ = ~r"\\s*(?:#[^\\r\\n]*)?\\s*"
+            _ = ~r"\s*(?:#[^\r\n]*)?\s*"
             _end = ~r"$"
             """.format(rules=rules, keywords=keywords)
         return g, env
