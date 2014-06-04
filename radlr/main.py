@@ -58,7 +58,7 @@ if not user_src_dir.exists():
 radl_lib_file = src_dir / 'radl_lib.h'
 if not radl_lib_file.exists():
     script_dir = Path(__file__).absolute().parent
-    lib_dir = script_dir / 'lib'
+    lib_dir = script_dir.parent / 'lib'
     radl_lib_file.symlink_to(lib_dir / 'radl_lib.h')
 
 
