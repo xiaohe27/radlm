@@ -34,17 +34,23 @@ import argparse
 
 parser = argparse.ArgumentParser()
 parser.add_argument('file', help='the RADL description file')
-parser.add_argument('--dest', default = 'src',
+parser.add_argument('--dest', default='src',
                     help='the destination directory for generated files')
 args = parser.parse_args()
 
 source = Path(args.file).absolute()
+if not source.is_file():
+    print("The source file {} doesn't exists.".format(source))
+    exit(-1)
 source_dir = source.parent
 name = source.stem
+
+dest_dir = Path(args.dest).absolute()
+if not dest_dir.is_dir():
+    print("The destination directory {} doesn't exists.".format(dest_dir))
+    exit(-2)
 root_dir = Path(args.dest) / name
 ensure_dir(root_dir)
-
-# radl_source = Path('/Users/lgerard/tmp/house_thermo.radl')
 
 ast = radlr_semantics(source.open().read(), name)
 
@@ -58,7 +64,7 @@ if not user_src_dir.exists():
 radl_lib_file = src_dir / 'radl_lib.h'
 if not radl_lib_file.exists():
     script_dir = Path(__file__).absolute().parent
-    lib_dir = script_dir.parent / 'lib'
+    lib_dir = script_dir / 'lib'
     radl_lib_file.symlink_to(lib_dir / 'radl_lib.h')
 
 
