@@ -63,7 +63,7 @@ def _from_node(visitor, node, acc):
         name=n, sources=get_sources(node, gened_cpp_files, user_src_dir)))
     deps.append(_template_adddep.format(name=n, namespace=namespace))
     lls.append(_template_targetll.format(name=n))
-    return (), (execs, deps, lls, gened_cpp_files, namespace)
+    return (), (execs, deps, lls, gened_cpp_files, user_src_dir, namespace)
 
 _visitor = AstVisitor({'node' : _from_node})
 
