@@ -28,9 +28,10 @@ extra_keywords = {
 
 defs = r"""
 
-# type int8
-#     REGEX ~r"(?P<value>\d+)"
-#     CXX "std::int8_t"
+#TODO: 6 size checks
+type int8
+    REGEX ~r"(?P<value>\d+)"
+    CXX "std::int8_t"
 
 type float32
     REGEX ~r"(?P<value>[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?)"
@@ -48,12 +49,15 @@ type string
     REGEX ~r'"(?P<value>[^"]*)"'
     CXX "std::string"
 
+type msec
+    REGEX ~r"(?P<value>\d+)"
+    CXX "std::int32_t"
+
 class cxx_class
     PATH string
     FILENAME string
     CLASS string
 
-#TODO: 6 support '?' modifier in the meta grammar
 #TODO: 8 support string calling code (note the order has to be respected)
 #    PATH string ? 'src'
 #    FILENAME string ? @ {this}._name @
@@ -61,6 +65,7 @@ class cxx_class
 
 class topic
     FIELDS int/bool/string/float32 *
+#    PACKED bool
 
 class publication
     TOPIC topic
@@ -75,11 +80,13 @@ class publisher
 class subscription
     TOPIC topic
     SUBSCRIBER subscriber
+#TODO: 5 support '?' modifier in the meta grammar and default values.
+#    MAXLATENCY msec?
 
 class node
     PUBLISHES publication *
-    SUBSCRIBED subscription *
+    SUBSCRIBES subscription *
     CXX cxx_class
-    RATE int
+    PERIOD msec
 
 """

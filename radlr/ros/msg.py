@@ -16,7 +16,7 @@ def _topic(visitor, node, acc):
     filename = node._name + '.msg'
     filenames.append(filename)
     filepath = msg_directory / filename
-    filecontent = ''
+    filecontent = 'int8 _flags\n'
     for n in node['FIELDS']:
         filecontent += '{} {}\n'.format(n._kind, n._name)
     write_file(filepath, filecontent)
