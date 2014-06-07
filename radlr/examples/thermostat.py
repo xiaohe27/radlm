@@ -16,11 +16,11 @@ default_pub : publisher {
 basic_rate : int 50
 
 house : node {
-    SUBSCRIBED
+    SUBSCRIBES
         heater_rate { TOPIC heater_data SUBSCRIBER default_sub }
     PUBLISHES
         house_temp : publication { TOPIC house_data PUBLISHER default_pub }
-    RATE basic_rate
+    PERIOD basic_rate
     CXX { PATH "house.h" CLASS "House" }
 }
 
@@ -30,11 +30,11 @@ house_data : topic {
 }
 
 thermometer : node {
-    SUBSCRIBED
+    SUBSCRIBES
         house_temp { TOPIC house_data SUBSCRIBER default_sub }
     PUBLISHES
         thermometer_temp { TOPIC thermometer_data PUBLISHER default_pub }
-    RATE 10
+    PERIOD 10
     CXX { PATH "thermometer.h" CLASS "Thermometer" }
 }
 
@@ -59,16 +59,16 @@ thermostat_set : topic {
 
 
 thermostat : node {
-    SUBSCRIBED
+    SUBSCRIBES
         thermostat_switch { TOPIC thermostat_button SUBSCRIBER default_sub }
         thermometer_temp { TOPIC thermometer_data SUBSCRIBER default_sub }
     PUBLISHES
         heater_switch { TOPIC thermostat_data PUBLISHER default_pub }
-    SUBSCRIBED
+    SUBSCRIBES
         thermostat_set_temp { TOPIC thermostat_set SUBSCRIBER default_sub }
     CXX
         { PATH "thermostat.h" CLASS "Thermostat" }
-    RATE basic_rate
+    PERIOD basic_rate
 }
 
 thermostat_data : topic {
@@ -77,11 +77,11 @@ thermostat_data : topic {
 }
 
 heater : node {
-    SUBSCRIBED
+    SUBSCRIBES
         heater_switch { TOPIC thermostat_data SUBSCRIBER default_sub }
     PUBLISHES
         heater_rate { TOPIC heater_data PUBLISHER default_pub }
-    RATE
+    PERIOD
         basic_rate
     CXX { PATH "heater.h" CLASS "Heater" }
 }

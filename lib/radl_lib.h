@@ -6,23 +6,23 @@
  * Use an uint instead of a bitfield to be compatible.
  */
 
-typedef flag_t std::uint_8;
+typedef flags_t std::uint_8;
 
 // Functionnal flags are the first 4 bits
-const flag_t FUNCTIONAL_FLAG = 15;
-const flag_t STALE = 1;
+const flags_t FUNCTIONAL_FLAG = 15;
+const flags_t STALE = 1;
 
 // Failure flags are the others
-const flag_t FAILURE_FLAGS = ~FUNCTIONAL_FLAG;
-const flag_t TIMEOUT = 16;
+const flags_t FAILURE_FLAGS = ~FUNCTIONAL_FLAG;
+const flags_t TIMEOUT = 16;
 
 // Handy user shortcuts
-inline bool is_stale(flag_t f) { return f & STALE; };
-inline bool is_timeout(flag_t f) { return f & TIMEOUT; };
-inline bool is_failing(flag_t f) { return f & ERROR_FLAGS; };
+inline bool is_stale(flags_t f) { return f & STALE; };
+inline bool is_timeout(flags_t f) { return f & TIMEOUT; };
+inline bool is_failing(flags_t f) { return f & ERROR_FLAGS; };
 
-inline void turn_on(flag_t f, flag_t & x) { x |= f; };
-inline void turn_off(flag_t f, flag_t & x) { x &= ~f; };
+inline void turn_on(flags_t f, flags_t & x) { x |= f; };
+inline void turn_off(flags_t f, flags_t & x) { x &= ~f; };
 
 
 // Represent nanoseconds
@@ -40,7 +40,7 @@ private:
     static const ros::Duration timeout = convert_t(pub_period + max_latency);
 
     msg_ptr mailbox;
-    flag_t flags;
+    flags_t flags;
     ros::Time reception_date;
 
 public:
@@ -59,8 +59,8 @@ public:
     this->reception_date = ros::Time::now();
   }
 
-  flag_t flags(){
-    flag_t f = this->flags;
+  flags_t flags(){
+    flags_t f = this->flags;
     //Compute timeout
     if (timeout < (ros::Time::now() - this->reception_date)) {
         turn_on(TIMEOUT, f);

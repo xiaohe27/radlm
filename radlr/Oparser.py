@@ -152,10 +152,10 @@ Node = mk_entry(Cdesc = K("NODE"),
     Cparams = {"PACKAGES"    : Packages,
                "STATE"       : State,
                "PUBLISHES"   : Publishes,
-               "SUBSCRIBED"  : Subscribed,
+               "SUBSCRIBES"  : Subscribed,
                "INIT"        : Code,
                "STEP"        : Code,
-               "RATE"        : int})
+               "PERIOD"        : int})
 
 ##############################################################################
 # Topic
@@ -168,7 +168,7 @@ Topic = mk_entry(Cdesc = K("TOPIC"),
 #                "TYPE"        : InlineValue,
                "INIT"        : Code,
                "MAXPUB"      : int, #Max
-               "RATE"        : int})
+               "PERIOD"        : int})
 
 ##############################################################################
 # Hardware layer referencing the logical layer

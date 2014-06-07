@@ -37,15 +37,15 @@ n_a : node {
         out1 : publication { TOPIC empty PUBLISHER pub_step_sync }
     CXX
         { PATH "basic_1to1.c" CLASS "stepa" }
-    RATE 50
+    PERIOD 50
 }
 
 n_b : node {
-    SUBSCRIBED
+    SUBSCRIBES
         in1 { TOPIC empty SUBSCRIBER sub_step_sync }
     CXX
         { PATH "basic_1to1.c" CLASS "stepb" }
-    RATE 50
+    PERIOD 50
 }
 
 """

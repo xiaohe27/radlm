@@ -11,6 +11,13 @@ class Bunch(object):
     def __init__(self, **kw):
         self.__dict__.update(kw)
 
+def sbl(tab, s1, s2):
+    """ Smart Break Line, breaking line and indenting only if s1 not empty """
+    if s1:
+        return s1 + '\n' + (' '*tab) + s2
+    else:
+        return s2
+
 def str(o):
     """ Fix PEP 3140 -- str(container) should call str(item), not repr(item)
     PS: tuples are not affected by this 'bug'.

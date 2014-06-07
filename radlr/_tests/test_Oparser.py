@@ -46,13 +46,13 @@ class Test_Topic(unittest.TestCase):
                       pypeg2.parse(string, Topic))
     def test_1(self):
         t1 = """ t1 : TOPIC {
-            RATE 50
+            PERIOD 50
             }
             """
         p = self.parse(t1)()
         self.assertEqual(p.kind, "t1")
         self.assertEqual(p.desc, "TOPIC")
-        self.assertEqual(p.RATE, 50)
+        self.assertEqual(p.PERIOD, 50)
         t2 = """ t2 : TOPIC {
             PACKAGES
                 tf : ROS {}
