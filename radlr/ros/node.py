@@ -18,6 +18,7 @@ templates = {
 **/
 
 #include "ros/ros.h"
+#include "radl_roslib.h"
 #include "{node_h_name}"
 {cxx_includes}
 
@@ -51,7 +52,7 @@ int main(int argc, const char* argv[]) {{
 
     //get and set the flags
     {sub_flags_fill}
-    flags_t _gathered_flags = {gathered_flags};
+    radl::flags_t _gathered_flags = {gathered_flags};
     {pub_flags_fill}
 
     _node.step(&_in, &_flags, &_out);
@@ -73,7 +74,7 @@ int main(int argc, const char* argv[]) {{
 
 #pragma once
 
-#include "radl_lib.h"
+#include "radl_flags.h"
 
 {msg_include}
 
@@ -116,7 +117,7 @@ struct {flags_struct} {{
   ros::Subscriber {actionname}_ros = _h.subscribe<{topic}>("{name}", 10, {actionname}_func);"""
 , 'sub_flags_fill'    : "_flags.{name} = {actionname}.value();"
 , 'pub_flags_fill'    : "_flags.{name} = _gathered_flags;"
-, 'flags_struct_def'  : "flags_t {name};"
+, 'flags_struct_def'  : "radl::flags_t {name};"
 , 'gathered_flags'    : "_flags.{name}"
 }
 
