@@ -202,7 +202,7 @@ def gennode(visitor, node, acc):
     node_cpp_name = name + '_node.cpp'
     node_cpp_path = dest_directory / node_cpp_name
     node_cpp = templates['node_cpp'].format(node_h_name=node_h_name,
-                                            rate={node['PERIOD']._val},
+                                            rate=node['PERIOD']._val,
                                             node=node,
                                              **d)
     write_file(node_cpp_path, node_cpp)

@@ -10,11 +10,11 @@
 
 #pragma once
 
-#include <cstdint>
+#include <stdint.h> //TODO use cstdint when c++11 is used
 
 namespace radl {
 
-typedef std::uint8_t flags_t;
+typedef uint8_t flags_t;
 
 // Functionnal flags are the first 4 bits
 const flags_t FUNCTIONAL_FLAG = 15;
@@ -27,7 +27,7 @@ const flags_t TIMEOUT = 16;
 // Handy user shortcuts
 inline bool is_stale(flags_t f) { return f & STALE; };
 inline bool is_timeout(flags_t f) { return f & TIMEOUT; };
-inline bool is_failing(flags_t f) { return f & ERROR_FLAGS; };
+inline bool is_failing(flags_t f) { return f & FAILURE_FLAGS; };
 
 inline void turn_on(flags_t f, flags_t & x) { x |= f; };
 inline void turn_off(flags_t f, flags_t & x) { x &= ~f; };

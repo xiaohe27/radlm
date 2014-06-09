@@ -7,11 +7,12 @@
 
 #include "ros/ros.h"
 #include "radl_flags.h"
+#include <stdint.h> //TODO use cstdint when c++11 is used
 
 namespace radl {
 
 // Represent nanoseconds
-typedef std::uint_64 duration_t;
+typedef uint64_t duration_t;
 inline ros::Duration convert_t(duration_t t) {
     return ros::Duration((std::uint_32) (t>>32), (std::uint_32) (t));
 };
