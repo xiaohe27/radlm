@@ -83,7 +83,7 @@ class subscription
     TOPIC topic
     SUBSCRIBER subscriber
 #TODO: 5 support '?' modifier in the meta grammar and default values.
-#    MAXLATENCY msec?
+    MAXLATENCY msec
 
 class node
     PUBLISHES publication *

@@ -11,18 +11,18 @@
 
 namespace radl {
 
-// Represent nanoseconds
-typedef uint64_t duration_t;
-inline ros::Duration convert_t(duration_t t) {
-    return ros::Duration((uint32_t) (t>>32), (uint32_t) (t));
-};
+//// Represent nanoseconds
+//typedef uint64_t duration_t;
+//inline ros::Duration convert_t(duration_t t) {
+//    return ros::Duration((uint32_t) (t>>32), (uint32_t) (t));
+//};
 
-template <typename msg_type, uint64 pub_period, uint64 sub_period, uint64 max_latency>
+template <typename msg_type, ros::Duration max_latency>
 class Default_sub {
 
 private:
     typedef typename msg_type::ConstPtr msg_ptr;
-    static const ros::Duration timeout = convert_t(pub_period + max_latency);
+    static const ros::Duration timeout = max_latency;
 
     msg_ptr mailbox;
     flags_t flags;
