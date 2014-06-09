@@ -4,7 +4,7 @@ Created on May, 2014
 @author: Léonard Gérard leonard.gerard@sri.com
 
 The central concept here is a node tree.
-    A node in a node tree is either a node, a list, a tuple,
+    A node in a node tree is either a node, a list, a tuple, a dict
     anything else is considered a leaf.
 
 '''
@@ -161,19 +161,20 @@ def Functor(node_class, attr_children, attr_name):
         def leaf_mapred(self, leaf, acc):
             return leaf, acc
 
-        def __init__(self, definitions = {}, default=node_mapred,
+        def __init__(self, definitions=None, default=node_mapred,
                      onlist=list_mapred, ontuple=tuple_mapred,
-                     ondict=dict_mapred, onleaf=leaf_mapred):
+                     ondict=dict_mapred, onleaf=leaf_mapred, params=None):
             """ definitions is a dict specifing some functions 'fun
             which will be called on Nodes named 'fun
             if 'fun doesn't exist, we use default.
             """
-            self.definitions = definitions
+            self.definitions = definitions if definitions else {}
             self.default = default
             self.onlist = onlist
             self.ontuple = ontuple
             self.ondict = ondict
             self.onleaf = onleaf
+            self.params = params if params else {}
 
         def change(self, definitions={}, default=None, onlist=None,
                    ontuple=None, ondict=None, onleaf=None):
@@ -186,6 +187,10 @@ def Functor(node_class, attr_children, attr_name):
             if ondict: d.ondict = ondict
             if onleaf: d.onleaf = onleaf
             return d
+
+        def __getitem__(self, key):
+            if self.params: return self.params[key]
+            raise KeyError
 
         #visiting methods
 
