@@ -142,7 +142,7 @@ def join(storage):
 
 def _include_cxx_class(visitor, node, acc):
         _, acc = visitor.node_mapred(node, acc)
-        f = ('user_code/' + node['PATH']._val
+        f = ('_user_code/' + node['PATH']._val
                     + '/' + node['FILENAME']._val + '.h')
         acc.append('#include "' + str(f) + '"')
         return _, acc
