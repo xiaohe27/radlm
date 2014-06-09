@@ -17,7 +17,7 @@ namespace radl {
 //    return ros::Duration((uint32_t) (t>>32), (uint32_t) (t));
 //};
 
-template <typename msg_type, const ros::Duration* max_latency>
+template <typename msg_type, uint64_t max_latency_sec, uint64_t max_latency_nsec>
 class Default_sub {
 
 private:
@@ -26,9 +26,11 @@ private:
     msg_ptr mailbox;
     flags_t flags;
     ros::Time reception_date;
+    const ros::Duration timeout;
 
 public:
-  Default_sub(const msg_ptr& init) {
+  Default_sub(const msg_ptr& init) :
+    timeout(max_latency_sec, max_latency_nsec) {
     this->mailbox = init;
     this->flags = 0;
     //Wait for ros time to be synchronized
@@ -46,7 +48,7 @@ public:
   flags_t get_flags(){
     flags_t f = this->flags;
     //Compute timeout
-    if (*max_latency < (ros::Time::now() - this->reception_date)) {
+    if (this->timeout < (ros::Time::now() - this->reception_date)) {
         turn_on(TIMEOUT, f);
     }
     turn_on(STALE, this->flags); //for next time

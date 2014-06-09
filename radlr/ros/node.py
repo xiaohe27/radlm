@@ -44,7 +44,7 @@ int main(int argc, const char* argv[]) {{
   {in_struct} _in;
 
   //Main loop
-  extern ros::Duration _period = {period};
+  ros::Duration _period = ros::Duration({period});
   {node[CXX][CLASS]._val} _node;
   while (ros::ok()) {{
     //combine incoming messages
@@ -112,8 +112,7 @@ struct {flags_struct} {{
 """{topic} {initmsg};
   {init_msg_fill}
   {topic}::ConstPtr _wrap{initmsg}(&{initmsg});
-  ros::Duration _maxlatency_{topic} = {maxlatency};
-  {actionclass}<{topic}, &_maxlatency_{topic}> {actionname}(_wrap{initmsg});
+  {actionclass}<{topic}, {maxlatency}> {actionname}(_wrap{initmsg});
   boost::function<void (const {topic}::ConstPtr&)> {actionname}_func;   // boost still needed by ROS ?
   {actionname}_func = boost::ref({actionname});
   ros::Subscriber {actionname}_ros = _h.subscribe<{topic}>("{name}", 10, {actionname}_func);"""
@@ -156,14 +155,14 @@ def getincludes(node):
 
 
 
-def to_rostime(node):
+def to_rostime_pair(node):
     if node._kind == 'msec':
         msec = int(node._val)
         sec, r_msec = divmod(msec, 1000)
         nsec = r_msec * 1000000
     else :
         raise Exception("can't compute rostime from {n}".format(n=node._name))
-    return "ros::Duration({sec}, {nsec})".format(sec=sec, nsec=nsec)
+    return "{sec}, {nsec}".format(sec=sec, nsec=nsec)
 
 
 
@@ -177,7 +176,7 @@ def gennode(visitor, node, acc):
          'out_struct'   : '_out_' + name,
          'flags_struct' : '_flags_' + name,
          'cxx_includes' : getincludes(node),
-         'period'       : to_rostime(node['PERIOD'])}
+         'period'       : to_rostime_pair(node['PERIOD'])}
     #Over the publications
     for pub in node['PUBLISHES']:
         d.update({'namespace'   : namespace,
@@ -200,7 +199,7 @@ def gennode(visitor, node, acc):
                   'actionclass' : sub['SUBSCRIBER']['CXX']['CLASS']._val,
                   'topic'       : sub['TOPIC']._name,
                   'initmsg'     : '_init_' + sub._name,
-                  'maxlatency'  : to_rostime(sub['MAXLATENCY'])})
+                  'maxlatency'  : to_rostime_pair(sub['MAXLATENCY'])})
         d['init_msg_fill'] = ''
         for field in sub['TOPIC']['FIELDS']:
             d.update({'fieldname': field._name, 'fieldval': field._val})
