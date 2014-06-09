@@ -112,7 +112,8 @@ struct {flags_struct} {{
 """{topic} {initmsg};
   {init_msg_fill}
   {topic}::ConstPtr _wrap{initmsg}(&{initmsg});
-  {actionclass}<{topic}, &{maxlatency}> {actionname}(_wrap{initmsg});
+  _maxlatency_{topic} = {maxlatency};
+  {actionclass}<{topic}, &_maxlatency_{topic}> {actionname}(_wrap{initmsg});
   boost::function<void (const {topic}::ConstPtr&)> {actionname}_func;   // boost still needed by ROS ?
   {actionname}_func = boost::ref({actionname});
   ros::Subscriber {actionname}_ros = _h.subscribe<{topic}>("{name}", 10, {actionname}_func);"""
