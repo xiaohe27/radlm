@@ -169,7 +169,7 @@ def gen_tree_to_ast(language_tree, env):
             The ref is a user given regex from which
                 we extract the special group named 'value'."""
             childs, _ = visitor.mapacc(node.children, namespace)
-            if childs[0]:
+            if isinstance(childs[0], parsimonious.nodes.Node):
                 ident = namespace.ident_of_source(childs[0].text, node.location)
             else: #generated a kind since none is given
                 ident = namespace.gen_ident("_"+kind, node.location)
