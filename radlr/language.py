@@ -26,6 +26,8 @@ extra_keywords = {
 'while', 'xor', 'xor_eq'
 }
 
+forbidden_prefix = "radl__"
+
 defs = r"""
 
 #TODO: 6 size checks

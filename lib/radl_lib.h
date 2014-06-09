@@ -55,7 +55,7 @@ public:
 
   void operator()(const msg_ptr& msg){
     this->mailbox = msg;
-    this->flags = msg->_flags;
+    this->flags = msg->radl__flags;
     this->reception_date = ros::Time::now();
   }
 

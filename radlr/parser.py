@@ -30,7 +30,7 @@ class Env:
         self.keywords = set(keywords)
 
 
-def gen_grammar(language_tree, env):
+def gen_grammar(language_tree, params, env):
     # We can update in place kinds, since we do a depth first...
     # not pretty but python dict are easier as mutable variables
 
@@ -131,14 +131,15 @@ def gen_grammar(language_tree, env):
         keywords = '|'.join(env.keywords)
         rules = '\n'.join(node.children[0])
         g = r"""{rules}
-            _ident = ~r"(?!({keywords})\b)[a-zA-Z][a-zA-Z0-9_]*"
+            _ident = ~r"(?!({keywords})\b)(?!{forbidden_prefix})[a-zA-Z][a-zA-Z0-9_]*"
             _solo_ident = _ident _ !(':' / '{{')
             _ = ~r"\s*(?:#[^\r\n]*)?\s*"
             _end = ~r"$"
-            """.format(rules=rules, keywords=keywords)
+            """.format(rules=rules, keywords=keywords,
+                       forbidden_prefix=visitor['forbidden_prefix'])
         return g, env
 
-    gen = ParseVisitor(locals())
+    gen = ParseVisitor(locals(), params=params)
     g, env = gen.visit(language_tree, env)
     if env.kinds:
         topleveldefs = '_' + '_def / _'.join(env.kinds) + '_def'
@@ -324,7 +325,8 @@ class Semantics:
         """
         language_tree = meta_parser(language.defs)
         self.env = Env(language.extra_keywords)
-        self.grammar, self.env = gen_grammar(language_tree, self.env)
+        params = {'forbidden_prefix' : getattr(language, 'forbidden_prefix', '')}
+        self.grammar, self.env = gen_grammar(language_tree, params, self.env)
         self.tree_to_ast = gen_tree_to_ast(language_tree, self.env)
 #         self.ast_checker = gen_ast_checker(language_tree, self.env)
 
