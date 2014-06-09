@@ -6,7 +6,7 @@
  * Use an uint instead of a bitfield to be compatible.
  */
 
-typedef flags_t std::uint_8;
+typedef std::uint_8 flags_t;
 
 // Functionnal flags are the first 4 bits
 const flags_t FUNCTIONAL_FLAG = 15;
@@ -26,7 +26,7 @@ inline void turn_off(flags_t f, flags_t & x) { x &= ~f; };
 
 
 // Represent nanoseconds
-typedef duration_t std::uint_64;
+typedef std::uint_64 duration_t;
 inline ros::Duration convert_t(duration_t t) {
     return ros::Duration((std::uint_32) (t>>32), (std::uint_32) (t));
 };
