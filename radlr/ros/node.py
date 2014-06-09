@@ -18,7 +18,7 @@ templates = {
 **/
 
 #include "ros/ros.h"
-#include "radl_roslib.h"
+#include "_radl_lib/radl_roslib.h"
 #include "{node_h_name}"
 {cxx_includes}
 
@@ -74,7 +74,7 @@ int main(int argc, const char* argv[]) {{
 
 #pragma once
 
-#include "radl_flags.h"
+#include "_radl_lib/radl_flags.h"
 
 {msg_include}
 

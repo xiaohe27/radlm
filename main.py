@@ -59,14 +59,14 @@ msg_dir = root_dir / 'msg'
 ensure_dir(msg_dir)
 src_dir = root_dir / 'src'
 ensure_dir(src_dir)
-user_src_dir = src_dir / 'user_code'
+user_src_dir = src_dir / '_user_code'
 if not user_src_dir.exists():
     user_src_dir.symlink_to(source_dir, True)
-radl_lib_file = src_dir / 'radl_lib.h'
-if not radl_lib_file.exists():
+radllib_link = src_dir / '_radl_lib'
+if not radllib_link.exists():
     script_dir = Path(__file__).absolute().parent
     lib_dir = script_dir / 'lib'
-    radl_lib_file.symlink_to(lib_dir / 'radl_lib.h')
+    radllib_link.symlink_to(lib_dir, True)
 
 
 msg_file_list = msg.gen(msg_dir, ast)
