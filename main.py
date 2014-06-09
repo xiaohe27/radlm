@@ -39,11 +39,10 @@ parser.add_argument('--dest', default='src',
                     help='the destination directory for generated files')
 args = parser.parse_args()
 
-source = Path(args.file)
+source = Path(args.file).resolve() #TODO: 4 pathlib issue with '~'
 if not source.is_file():
     print("The source file {} doesn't exists.".format(source))
     exit(-1)
-source.absolute().resolve() #TODO 4: is it needed ? how to ensure ~ is correctly expanded
 source_dir = source.parent
 name = source.stem
 
@@ -51,7 +50,6 @@ dest_dir = Path(args.dest)
 if not dest_dir.is_dir():
     print("The destination directory {} doesn't exists.".format(dest_dir))
     exit(-2)
-dest_dir.absolute().resolve() #TODO 4: is it needed ? how to ensure ~ is correctly expanded
 root_dir = Path(args.dest) / name
 ensure_dir(root_dir)
 
