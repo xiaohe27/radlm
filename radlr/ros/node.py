@@ -44,7 +44,7 @@ int main(int argc, const char* argv[]) {{
   {in_struct} _in;
 
   //Main loop
-  ros::Duration _period = {period}
+  extern ros::Duration _period = {period}
   {node[CXX][CLASS]._val} _node;
   while (ros::ok()) {{
     //combine incoming messages
