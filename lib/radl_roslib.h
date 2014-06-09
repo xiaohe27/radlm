@@ -14,7 +14,7 @@ namespace radl {
 // Represent nanoseconds
 typedef uint64_t duration_t;
 inline ros::Duration convert_t(duration_t t) {
-    return ros::Duration((std::uint_32) (t>>32), (std::uint_32) (t));
+    return ros::Duration((uint32_t) (t>>32), (uint32_t) (t));
 };
 
 template <typename msg_type, uint64 pub_period, uint64 sub_period, uint64 max_latency>
