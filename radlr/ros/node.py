@@ -116,7 +116,7 @@ struct {flags_struct} {{
   boost::function<void (const {topic}::ConstPtr&)> {actionname}_func;   // boost still needed by ROS ?
   {actionname}_func = boost::ref({actionname});
   ros::Subscriber {actionname}_ros = _h.subscribe<{topic}>("{name}", 10, {actionname}_func);"""
-, 'sub_flags_fill'    : "_flags.{name} = {actionname}.value();"
+, 'sub_flags_fill'    : "_flags.{name} = {actionname}.get_flags();"
 , 'pub_flags_fill'    : "_flags.{name} = _gathered_flags;"
 , 'flags_struct_def'  : "radl::flags_t {name};"
 , 'gathered_flags'    : "_flags.{name}"

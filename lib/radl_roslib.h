@@ -22,7 +22,6 @@ class Default_sub {
 
 private:
     typedef typename msg_type::ConstPtr msg_ptr;
-    static const ros::Duration timeout = *max_latency;
 
     msg_ptr mailbox;
     flags_t flags;
@@ -44,10 +43,10 @@ public:
     this->reception_date = ros::Time::now();
   }
 
-  flags_t flags(){
+  flags_t get_flags(){
     flags_t f = this->flags;
     //Compute timeout
-    if (timeout < (ros::Time::now() - this->reception_date)) {
+    if (*max_latency < (ros::Time::now() - this->reception_date)) {
         turn_on(TIMEOUT, f);
     }
     turn_on(STALE, this->flags); //for next time
