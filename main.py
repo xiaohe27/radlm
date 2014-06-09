@@ -43,7 +43,7 @@ source = Path(args.file)
 if not source.is_file():
     print("The source file {} doesn't exists.".format(source))
     exit(-1)
-source.resolve() #TODO 4: is it needed ? how to ensure ~ is correctly expanded
+source.absolute().resolve() #TODO 4: is it needed ? how to ensure ~ is correctly expanded
 source_dir = source.parent
 name = source.stem
 
@@ -51,7 +51,7 @@ dest_dir = Path(args.dest)
 if not dest_dir.is_dir():
     print("The destination directory {} doesn't exists.".format(dest_dir))
     exit(-2)
-dest_dir.resolve() #TODO 4: is it needed ? how to ensure ~ is correctly expanded
+dest_dir.absolute().resolve() #TODO 4: is it needed ? how to ensure ~ is correctly expanded
 root_dir = Path(args.dest) / name
 ensure_dir(root_dir)
 
