@@ -9,6 +9,7 @@ Generate one ROS _node.cpp file per node declaration.
 from radlr.rast import AstVisitor
 from astutils.tools import write_file
 from pathlib import Path
+from radlr.errors import error, warning, internal_error
 
 templates = {
 'node_cpp':
@@ -28,7 +29,7 @@ int main(int argc, const char* argv[]) {{
   int n = 0; //ros requires a reference
   ros::init(n, NULL, "{name}"); //TODO : SIGINT management ?
   ros::NodeHandle _h;
-  ros::Rate _node_rate(ros::Duration({period}));
+  ros::Rate _node_rate({period});
 
   // set up publishers
   {set_pub}
@@ -101,7 +102,7 @@ struct {flags_struct} {{
   _out.{name} = &{initmsg};"""
 , 'pub_call'          : "{actionname}(*_out.{name});"
 , 'set_pub'           :
-"""ros::Publisher {actionname}_ros = _h.advertise<{topic}>("{name}", 10);
+"""ros::Publisher {actionname}_ros = _h.advertise<{topic}>("{name}", 2);
   {actionclass}<{topic}> {actionname}({actionname}_ros);"""
 , 'in_struct_def'     : "{topic}::ConstPtr {name};"
 , 'in_fill'           : "_in.{name} = {actionname}.value();"
@@ -110,7 +111,7 @@ struct {flags_struct} {{
 """{topic} {initmsg};
   {init_msg_fill}
   {topic}::ConstPtr _wrap{initmsg}(&{initmsg});
-  {actionclass}<{topic}, {maxlatency}> {actionname}(_wrap{initmsg});
+  {actionclass}<{topic}> {actionname}(_wrap{initmsg}, {maxlatency}, {pubperiod});
   boost::function<void (const {topic}::ConstPtr&)> {actionname}_func;   // boost still needed by ROS ?
   {actionname}_func = boost::ref({actionname});
   ros::Subscriber {actionname}_ros = _h.subscribe<{topic}>("{name}", 10, {actionname}_func);"""
@@ -153,14 +154,19 @@ def getincludes(node):
 
 
 
-def to_rostime_pair(node):
-    if node._kind == 'msec':
+def to_nsec(node):
+    if node == None:
+        nsec = -1
+    elif node._kind == 'msec':
         msec = int(node._val)
-        sec, r_msec = divmod(msec, 1000)
-        nsec = r_msec * 1000000
-    else :
-        raise Exception("can't compute rostime from {n}".format(n=node._name))
-    return "{sec}, {nsec}".format(sec=sec, nsec=nsec)
+        nsec = msec * 1000000
+    else:
+        internal_error("can't compute time from {n}".format(n=node._name))
+    return str(nsec)
+
+def to_ros_duration(node):
+    nsec = to_nsec(node)
+    return "ros::Duration().fromNSec({})".format(nsec)
 
 
 
@@ -174,7 +180,7 @@ def gennode(visitor, node, acc):
          'out_struct'   : '_out_' + name,
          'flags_struct' : '_flags_' + name,
          'cxx_includes' : getincludes(node),
-         'period'       : to_rostime_pair(node['PERIOD'])}
+         'period'       : to_ros_duration(node['PERIOD'])}
 
     #Over the publications
     pub_templates = ['pub_call', 'out_fill' , 'set_pub' , 'msg_include',
@@ -202,7 +208,14 @@ def gennode(visitor, node, acc):
                   'actionclass' : sub['SUBSCRIBER']['CXX']['CLASS']._val,
                   'topic'       : sub['TOPIC']._name,
                   'initmsg'     : '_init_' + sub._name,
-                  'maxlatency'  : to_rostime_pair(sub['MAXLATENCY'])})
+                  'maxlatency'  : to_ros_duration(sub['MAXLATENCY'])})
+        try:
+            pubperiod = sub['TOPIC']._publisher['PERIOD']
+        except AttributeError: #no publisher
+            warning("Subscription {} won't compute timeout by lack of declared"
+                    " publisher.".format(sub._name), sub._location)
+            pubperiod = None
+        d['pubperiod'] = to_ros_duration(pubperiod)
         d['init_msg_fill'] = ''
         for field in sub['TOPIC']['FIELDS']:
             d.update({'fieldname': field._name, 'fieldval': field._val})

@@ -73,6 +73,8 @@ if not radllib_link.exists():
     lib_dir = script_dir / 'lib'
     radllib_link.symlink_to(lib_dir, True)
 
+#TODO: 1 reenable cross refs to allow publisher period to be given to the subsrcibtion.
+# ast = crossrefs.check_and_link_topics_publisher(ast)
 
 #From here, the ast is "frozen" no copies, etc , to allow cross referencing.
 crossrefs.add(ast)
