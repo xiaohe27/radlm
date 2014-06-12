@@ -22,9 +22,6 @@ class Ident:
         self._name = name
         self._generated = generated
         self._location = location
-#     @property
-#     def _val(self):
-#         return self._node._val
 
     def _attach(self, node):
         if self._node:
@@ -49,6 +46,10 @@ class Ident:
         return iter(self._node)
     def __getattr__(self, attr):
         return getattr(self._node, attr)
+    def __copy__(self):
+        raise Exception("Trying to copy an Ident.")
+    def __deepcopy__(self, d):
+        raise Exception("Trying to deepcopy an Ident.")
 
 
 class Namespace:

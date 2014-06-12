@@ -11,18 +11,20 @@ from astutils.tools import str
 
 
 class AstNode:
-    """ Basically a kind (_name) with children (_children).
+    """ Basically a named kind with children.
     Inherit its container behavior from its children container.
     """
-    def __init__(self, kind, ident, children, namespace, location):
+    def __init__(self, kind, name, children, namespace, location):
         self._kind = kind
-        self._ident = ident
+        self._name = name
         self._children = children
         self._namespace = namespace
         self._location = location
     @property
-    def _name(self):
-        return self._ident._name
+    def _qualname(self):
+        """ Return fully qualified name """
+        #TODO: 6 namespaces and qualnames
+        pass
     @property
     def _val(self):
         """ Used for nodes holding one value as their unique child."""
@@ -44,16 +46,27 @@ class AstNode:
     def __iter__(self):
         return iter(self._children)
     def __getattr__(self, attr):
-        """Attributes are namespace lookup.
-        TODO 8: should it be only local lookup?
+        """Attributes are children lookup.
         """
+        #ensure we have a _children attribute in case __getattr__ is called
+        #before init (for example when using copy).
+        object.__getattribute__(self, '_children')
+        class Found(Exception): pass
+        def stop(visitor, n, attr):
+            if n._name == attr: raise Found(n)
+            else: return n, attr
+        try:
+            AstVisitor(default = stop).visit(self)
+        except Found as e:
+            return e.args[0]
+        raise AttributeError
         #ensure we have a _namespace attribute in case __getattr__ is called
         #before init (for example when using copy). 
-        object.__getattribute__(self, '_namespace')
-        return self._namespace.get_ident(attr)
+#         object.__getattribute__(self, '_namespace')
+#         return self._namespace.get_ident(attr)
 
     def __str__(self):
-        return "${n} : {k} {c}".format(n=self._ident._name, k=self._kind,
+        return "${n} : {k} {c}".format(n=self._name, k=self._kind,
                                        c=str(self._children))
     def __repr__(self):
         return self.__str__()
@@ -76,11 +89,7 @@ class Ast(AstNode):
             namespace = Namespace()
         if not children:
             children = dict()
-        AstNode.__init__(self, name, None, children, namespace, location)
-
-    @property
-    def _name(self):
-        return self._kind
+        AstNode.__init__(self, '_ast', name, children, namespace, location)
 
     def _kind_of(self, ident):
         return self.kinds[ident]

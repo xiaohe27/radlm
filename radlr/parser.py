@@ -206,8 +206,8 @@ def gen_tree_to_ast(language_tree, env):
             else: #generate a name since none is given
                 ident = namespace.gen_ident("_"+kind, node.location)
             fields = BucketDict(childs[2])
-            #link the node to the ident
             n = AstNode(kind, ident, fields, thisnamespace, node.location)
+            #link the node to the ident
             ident._attach(n)
             return n, namespace
 
@@ -239,8 +239,8 @@ def gen_tree_to_ast(language_tree, env):
     menv = dict()
     gen, menv = metagen.visit(language_tree, menv)
 
-    # resolve idents. We are working on an ast
-    # with some leafs being parse nodes (_ident)
+    # resolve idents.
+    # We are working on an ast with some leafs being parse nodes (_ident).
     def onleaf(visitor, leaf, namespace):
         if isinstance(leaf, parsimonious.nodes.Node):
             if leaf.expr_name != '_ident':
