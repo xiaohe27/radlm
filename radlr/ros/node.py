@@ -28,7 +28,7 @@ int main(int argc, const char* argv[]) {{
   int n = 0; //ros requires a reference
   ros::init(n, NULL, "{name}"); //TODO : SIGINT management ?
   ros::NodeHandle _h;
-  ros::Rate _loop_rate(ros::Duration({period}));
+  ros::Rate _node_rate(ros::Duration({period}));
 
   // set up publishers
   {set_pub}
@@ -42,10 +42,8 @@ int main(int argc, const char* argv[]) {{
 
   {flags_struct} _flags;
   {in_struct} _in;
-
-  //Main loop
-  ros::Duration _period = ros::Duration({period});
   {node[CXX][CLASS]._val} _node;
+
   while (ros::ok()) {{
     //combine incoming messages
     ros::spinOnce();
@@ -61,7 +59,7 @@ int main(int argc, const char* argv[]) {{
     //call publishers
     {pub_call}
 
-    _loop_rate.sleep();
+    _node_rate.sleep();
   }}
   return 0;
 }}
