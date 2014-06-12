@@ -41,13 +41,14 @@ _template_adddep = "add_dependencies({name} {namespace}_generate_messages_cpp)"
 _template_targetll = "target_link_libraries({name} ${{catkin_LIBRARIES}})"
 
 
-def _sources_cxx_class(visitor, node, acc):
+def _sources_cxx(visitor, node, acc):
         _, sources = visitor.node_mapred(node, acc)
         f = ('src/_user_code/' + node['PATH']._val
                     + '/' + node['FILENAME']._val + '.cpp')
         sources.append(str(f))
         return _, sources
-_sources_visitor = AstVisitor({'cxx_class' : _sources_cxx_class})
+_sources_visitor = AstVisitor({'cxx_class' : _sources_cxx,
+                               'cxx_file'  : _sources_cxx})
 
 def get_sources(node, gened_cpp_files):
     _, sources = _sources_visitor.visit(node, [])

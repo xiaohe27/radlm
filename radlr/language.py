@@ -60,6 +60,9 @@ class cxx_class
     FILENAME string
     CLASS string
 
+class cxx_file
+    PATH string
+    FILENAME string
 #TODO: 8 support string calling code (note the order has to be respected)
 #    PATH string ? 'src'
 #    FILENAME string ? @ {this}._name @
@@ -89,6 +92,7 @@ class node
     PUBLISHES publication *
     SUBSCRIBES subscription *
     CXX cxx_class
+    CXX_ANNEX cxx_file *
     PERIOD msec
 
 """
