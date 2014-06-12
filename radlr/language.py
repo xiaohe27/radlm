@@ -63,6 +63,11 @@ class cxx_class
 class cxx_file
     PATH string
     FILENAME string
+
+# class library
+#     INCLUDE_PATH string
+#     FILENAME string
+
 #TODO: 8 support string calling code (note the order has to be respected)
 #    PATH string ? 'src'
 #    FILENAME string ? @ {this}._name @
