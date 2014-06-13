@@ -26,7 +26,7 @@ catkin_package(
  CATKIN_DEPENDS roscpp message_runtime
 )
 include_directories(
-  include src ${{catkin_INCLUDE_DIRS}}
+  include src src/_user_code ${{catkin_INCLUDE_DIRS}}
 )
 {executables}
 {dependencies}
