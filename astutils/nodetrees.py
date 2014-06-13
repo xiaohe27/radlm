@@ -161,6 +161,9 @@ def Functor(node_class, attr_children, attr_name):
         def leaf_mapred(self, leaf, acc):
             return leaf, acc
 
+        def leaf_mapacc(self, leaf, acc):
+            return leaf, acc
+
         def __init__(self, definitions=None, default=node_mapred,
                      onlist=list_mapred, ontuple=tuple_mapred,
                      ondict=dict_mapred, onleaf=leaf_mapred, params=None):

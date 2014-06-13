@@ -32,6 +32,7 @@ def str(o):
         return s
     else:
         return builtins.str(o)
+
 #TODO: 8 BucketDict allow (indices: [0], ...) access.
 class BucketDict(OrderedDict):
     """ A bucket dictionary is simply a dict allowing to add mappings
@@ -48,9 +49,25 @@ class BucketDict(OrderedDict):
     def __init__(self, *args, **kargs):
         """ Keyword arguments will be added first """
         OrderedDict.__init__(self)
+        self.append(*args, **kargs)
+
+    def add(self, key, value):
+        """ value may be a list of new mappings or simply a value."""
+        try:
+            v = self[key]
+        except KeyError: #new mapping
+            self[key] = list(value) if isinstance(value, list) else value
+            return
+        if isinstance(v, list):
+            v.extend(value if isinstance(value, list) else [value])
+        else:
+            self[key] = [v] + value if isinstance(value, list) else [v, value]
+
+    def append(self, *args, **kargs):
         if len(args) > 1:
             raise TypeError('expected at most 1 arguments, got %d' % len(args))
-        self.update(kargs) #keywords are unique, just add them first
+        for k, v in kargs.items():
+            self.add(k, v)
         if args:
             if isinstance(args, dict):
                 for (k, v) in args.values():
@@ -61,20 +78,7 @@ class BucketDict(OrderedDict):
                         raise TypeError("expected (key, value) tuples,"
                                         "got %s" % str(p))
                     self.add(*p)
-    def add(self, key, value):
-        """ value may be a list of new mappings or simply a value."""
-        try:
-            v = self[key]
-        except KeyError: #new mapping
-            self[key] = value
-            return
-        if isinstance(v, list):
-            v += value if isinstance(value, list) else [value]
-        else:
-            v = [v] + value if isinstance(value, list) else [v, value]
-            self[key] = value
-    #def append (like in __init__)
-    #def union (wait for a bucketdict : list are bucket
+        return self
 
 def write_file(filepath, filecontent):
     if __debug__:

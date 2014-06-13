@@ -17,11 +17,14 @@ class AlreadyAttached(Exception): pass
 class Ident:
     """ For now an ident is nothing more than a string.
     """
-    def __init__(self, name, generated, location):
-        self._node = None
+    def __init__(self, name, generated, location=None, node=None):
         self._name = name
         self._generated = generated
-        self._location = location
+        if node and not location:
+            self._location = node._location
+        else:
+            self._location = location if location else dummy_loc
+        self._node = node
 
     def _attach(self, node):
         if self._node:
@@ -34,7 +37,7 @@ class Ident:
         if self._node:
             return "${self._name} -> {self._node}".format(self=self)
         else:
-            return "${}".format(self._name)
+            return "${} -/>/".format(self._name)
     def __repr__(self):
         return self.__str__()
     #container convention, behave like node
@@ -58,23 +61,50 @@ class Namespace:
         """
         self.father = father
         self.idents = dict()
-        self.gen_ident_last_num = dict()
+        self.gen_last_num = dict()
 
-    def ident_of_source(self, name, location):
+    def register(self, name, node):
         """ Before registering the name in the namespace,
         check that name is not already defined : may raise ExistingIdent(name)
         """
         try:
-            self.get_ident(name)
+            self.get_node(name)
         except NonExistingIdent:
-            i = Ident(name, False, location)
-            self.idents[name] = i
-            return i
+            self.idents[name] = node
         else:
             raise ExistingIdent(name)
 
-    def get_ident(self, name):
-        """ Get the ident from the namespace, if not defined, tries to get it
+    def refresh(self, name, node):
+        #verify it already exists
+        try: self.idents[name]
+        except KeyError: raise Exception("Refreshing an unknown ident.")
+        self.idents[name] = node
+
+#     def ident_of_source(self, name, node):
+#         """ Before registering the name in the namespace,
+#         check that name is not already defined : may raise ExistingIdent(name)
+#         """
+#         self.register(name, node)
+#         return Ident(name, False, node=node)
+
+    def gen_fresh(self, name):
+        """ Tries to register a name, if it already exists append a
+        fresh number to it.
+        """
+        #The generation happens a lots with the same name
+        try: n = self.gen_last_num[name]
+        except KeyError: n = 0
+        while True: #Loop until an undefined name is found.
+            n = n+1
+            iname = "{name}_{n}".format(name=name, n=n)
+            try:
+                self.get_node(iname)
+            except NonExistingIdent:
+                self.gen_last_num[name] = n
+                return iname
+
+    def get_node(self, name):
+        """ Get the node from the namespace, if not defined, tries to get it
         from its father, if not found, raise NonExistingIdent(name)
         """
         try:
@@ -83,27 +113,8 @@ class Namespace:
             pass
         if not self.father:
             raise NonExistingIdent(name)
-        return self.father.get_ident(name)
+        return self.father.get_node(name)
 
-    def gen_ident(self, name, location=dummy_loc):
-        """ Tries to generate an ident with name, if it already exists append a
-        fresh number to it.
-        """
-        #The generation of ident happens a lots with the same name
-        try:
-            n = self.gen_ident_last_num[name]
-        except KeyError:
-            n = 0
-        while True: #Loop until an undefined ident is found.
-            n = n+1
-            iname = "{name}_{n}".format(name=name, n=n)
-            try:
-                self.get_ident(iname)
-            except NonExistingIdent:
-                i = Ident(iname, True, location)
-                self.idents[iname] = i
-                self.gen_ident_last_num[name] = n
-                return i
 
     def push(self):
         """ Return a new namespace with self as father.

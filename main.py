@@ -11,6 +11,8 @@ from radlr.examples import basic_1to1, thermostat, onetopic
 from pathlib import Path
 from radlr.ros import msg, node, packagexml, cmakeliststxt
 from astutils.tools import ensure_dir
+from radlr import sanitize
+from astutils.idents import Namespace
 
 # test1 = r"""
 # class topic
@@ -53,7 +55,9 @@ if not dest_dir.is_dir():
 root_dir = Path(args.dest) / name
 ensure_dir(root_dir)
 
-ast = radlr_semantics(source.open().read(), name)
+
+global_namespace = Namespace()
+ast = radlr_semantics(source.open().read(), name, global_namespace)
 
 msg_dir = root_dir / 'msg'
 ensure_dir(msg_dir)

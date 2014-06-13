@@ -175,10 +175,13 @@ def gennode(visitor, node, acc):
          'flags_struct' : '_flags_' + name,
          'cxx_includes' : getincludes(node),
          'period'       : to_rostime_pair(node['PERIOD'])}
+
     #Over the publications
+    pub_templates = ['pub_call', 'out_fill' , 'set_pub' , 'msg_include',
+                     'out_struct_def' , 'flags_struct_def' , 'pub_flags_fill']
+    for pt in pub_templates: d[pt] = ''
     for pub in node['PUBLISHES']:
-        d.update({'namespace'   : namespace,
-                  'name'        : pub._name,
+        d.update({'name'        : pub._name,
                   'actionname'  : '_' + pub._name + '_pub',
                   'actionclass' : pub['PUBLISHER']['CXX']['CLASS']._val,
                   'topic'       : pub['TOPIC']._name,
@@ -187,10 +190,12 @@ def gennode(visitor, node, acc):
         for field in pub['TOPIC']['FIELDS']:
             d.update({'fieldname': field._name, 'fieldval': field._val})
             app(d, 'init_msg_fill')
-        for f in ('pub_call', 'out_fill' , 'set_pub' , 'msg_include',
-                  'out_struct_def' , 'flags_struct_def' , 'pub_flags_fill'):
-            app(d, f)
+        for f in pub_templates: app(d, f)
+
     #Over the subscribtions
+    sub_templates = ['in_fill', 'set_sub', 'msg_include', 'in_struct_def',
+                     'flags_struct_def', 'sub_flags_fill', 'gathered_flags']
+    for st in sub_templates: d[st] = ''
     for sub in node['SUBSCRIBES']:
         d.update({'name'        : sub._name,
                   'actionname'  : '_' + sub._name + '_sub',
@@ -202,10 +207,9 @@ def gennode(visitor, node, acc):
         for field in sub['TOPIC']['FIELDS']:
             d.update({'fieldname': field._name, 'fieldval': field._val})
             app(d, 'init_msg_fill')
-        for f in ('in_fill', 'set_sub', 'msg_include', 'in_struct_def',
-                  'flags_struct_def', 'sub_flags_fill', 'gathered_flags'):
-            app(d, f)
+        for f in sub_templates: app(d, f)
     #generate the header file
+    d['name'] = name
     node_h_name = name + '_node.h'
     node_h_path = dest_directory / node_h_name
     node_h = templates['node_h'].format(**d)

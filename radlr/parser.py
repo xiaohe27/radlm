@@ -16,8 +16,9 @@ from radlr.metaParser import meta_parser
 from parsimonious.nodeutils import clean_node, pprint_node, ParseVisitor
 from radlr.rast import AstNode, Ast, pp_ast, AstVisitor
 from parsimonious.grammar import Grammar
-from astutils.idents import Namespace, NonExistingIdent
+from astutils.idents import Namespace, NonExistingIdent, Ident
 import parsimonious
+from radlr import sanitize
 
 
 class Env:
@@ -169,13 +170,14 @@ def gen_tree_to_ast(language_tree, env):
             The ref is a user given regex from which
                 we extract the special group named 'value'."""
             childs, _ = visitor.mapacc(node.children, namespace)
-            if isinstance(childs[0], parsimonious.nodes.Node):
-                ident = namespace.ident_of_source(childs[0].text, node.location)
-            else: #generated a kind since none is given
-                ident = namespace.gen_ident("_"+kind, node.location)
             value = childs[1].match.group('value')
-            n = AstNode(kind, ident, [value], namespace, node.location)
-            ident._attach(n)
+            if isinstance(childs[0], parsimonious.nodes.Node):
+                name = childs[0].text
+                n = AstNode(kind, name, [value], namespace, node.location)
+            else: #generated a kind since none is given
+                name = namespace.gen_fresh("_"+kind)
+                n = AstNode(kind, name, [value], namespace, node.location)
+            namespace.register(name, n)
             return n, namespace
 
         #the kind rule is simply replaced by its child : returns the ident
@@ -186,29 +188,39 @@ def gen_tree_to_ast(language_tree, env):
         menv['_'+kind+'_annoted'] = ParseVisitor.left_mapacc
         return (), menv
 
+    def field(mvisitor, mnode, menv):
+        """ A field node has three childs symbol some_kind ('*' / '+')?
+        Return the tuple (symbol, mod)
+        """
+        (name, _, mod) = mnode.children
+        return (name, mod), env
+
     def clas(mvisitor, mnode, menv):
         """ A clas node has three childs 'class' defKind field*
         Three rules needs to be dealt with, kind, name_def, name_annoted
         with kind the defKind kind.
         """
-        #No need to do recursive traversal (no rules are generated lower),
-        #    but go fetch the kind in defKind.
+#         mnode, menv = mvisitor.node_mapacc(mnode, menv)
         kind = mnode.children[1].children[0]
-
+        default_fields = []
+        for field in mnode.children[2]:
+            if field.children[2]: #It has a modifier like * + ?
+                fname = field.children[0].text
+                default_fields.append((fname, []))
         def m_name_def(visitor, node, namespace):
             """A _name_def node has four childs
                 ident? '{' (f_name f_val)* '}'
             """
             thisnamespace = namespace.push()
             childs, _ = visitor.mapacc(node.children, thisnamespace)
-            if childs[0]:
-                ident = namespace.ident_of_source(childs[0].text, node.location)
+            fields = BucketDict(default_fields).append(childs[2])
+            if isinstance(childs[0], parsimonious.nodes.Node):
+                name = childs[0].text
+                n = AstNode(kind, name, fields, thisnamespace, node.location)
             else: #generate a name since none is given
-                ident = namespace.gen_ident("_"+kind, node.location)
-            fields = BucketDict(childs[2])
-            n = AstNode(kind, ident, fields, thisnamespace, node.location)
-            #link the node to the ident
-            ident._attach(n)
+                name = namespace.gen_fresh("_"+kind)
+                n = AstNode(kind, name, fields, thisnamespace, node.location)
+            namespace.register(name, n)
             return n, namespace
 
         #the kind rule is simply replaced by its child : returns the ident
@@ -222,11 +234,10 @@ def gen_tree_to_ast(language_tree, env):
     def meta(mvisitor, mnode, menv):
         _ = mvisitor.mapacc(mnode.children, menv)
 
-        def _lang(visitor, node, _):
-            namespace = Namespace()
+        def _lang(visitor, node, namespace):
             #depth first, get a list of definitions
             defs, _ = visitor.mapacc(node.children, namespace)
-            return (namespace, node.location, defs), namespace
+            return (node.location, defs), namespace
 
         #get the _ident from _solo_ident
         menv['_solo_ident'] = ParseVisitor.left_mapacc
@@ -246,22 +257,26 @@ def gen_tree_to_ast(language_tree, env):
             if leaf.expr_name != '_ident':
                 raise Exception("The Ast have parsing node "
                                 "{} left over".format(leaf.expr_name))
+            name = leaf.text
             try:
-                return namespace.get_ident(leaf.text), namespace
+                node = namespace.get_node(name)
             except NonExistingIdent:
                 raise Exception("{l}Undefined identifier {t}"
-                                "".format(l=str(leaf.location),
-                                          t=leaf.text))
+                    "".format(l=str(leaf.location), t=name))
+            return Ident(name, False, leaf.location, node), namespace
         else:
             return leaf, namespace
-    def onnode(visitor, node, _):
-        return visitor.node_mapacc(node, node._namespace)
+    def onnode(visitor, node, namespace):
+        node, _ = visitor.node_mapacc(node, node._namespace)
+        return node, namespace
     resolver = AstVisitor(onleaf=onleaf, default=onnode)
 
-    def tree_to_ast(program_tree, program_name):
-        (namespace, location, defs), _ = gen.visit(program_tree, ())
+    def tree_to_ast(program_tree, program_name, namespace):
+        thisnamespace = namespace.push()
+        (location, defs), _ = gen.visit(program_tree, thisnamespace)
         ast = Ast(program_name, location, env.kinds,
-                  env.keywords, namespace, defs)
+                  env.keywords, thisnamespace, defs)
+        namespace.register(program_name, ast)
         ast, _ = resolver.visit(ast, namespace)
         return ast
     return tree_to_ast
@@ -330,14 +345,16 @@ class Semantics:
         self.tree_to_ast = gen_tree_to_ast(language_tree, self.env)
 #         self.ast_checker = gen_ast_checker(language_tree, self.env)
 
-    def __call__(self, program, program_name):
+    def __call__(self, program, program_name, namespace):
         """ The parser
         """
         program_tree = self.grammar.parse(program)
         program_tree = clean_node(program_tree, to_prune=['_', '_end'],
                                   keep_regex=True)
         pprint_node(program_tree)
-        ast = self.tree_to_ast(program_tree, program_name)
+        ast = self.tree_to_ast(program_tree, program_name, namespace)
+#         pp_ast(ast)
+        ast = sanitize.update_idents(ast, namespace)
         pp_ast(ast)
         #TODO: 5 enable ast checks
 #         self.ast_checker(ast)

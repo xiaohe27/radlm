@@ -48,25 +48,25 @@ class AstNode:
     def __getattr__(self, attr):
         """Attributes are children lookup.
         """
-        #ensure we have a _children attribute in case __getattr__ is called
-        #before init (for example when using copy).
-        object.__getattribute__(self, '_children')
-        class Found(Exception): pass
-        def stop(visitor, n, attr):
-            if n._name == attr: raise Found(n)
-            else: return n, attr
-        try:
-            AstVisitor(default = stop).visit(self)
-        except Found as e:
-            return e.args[0]
-        raise AttributeError
+#         #ensure we have a _children attribute in case __getattr__ is called
+#         #before init (for example when using copy).
+#         object.__getattribute__(self, '_children')
+#         class Found(Exception): pass
+#         def stop(visitor, n, attr):
+#             if n._name == attr: raise Found(n)
+#             else: return n, attr
+#         try:
+#             AstVisitor(default = stop).visit(self)
+#         except Found as e:
+#             return e.args[0]
+#         raise AttributeError
         #ensure we have a _namespace attribute in case __getattr__ is called
         #before init (for example when using copy). 
-#         object.__getattribute__(self, '_namespace')
-#         return self._namespace.get_ident(attr)
+        object.__getattribute__(self, '_namespace')
+        return self._namespace.get_node(attr)
 
     def __str__(self):
-        return "${n} : {k} {c}".format(n=self._name, k=self._kind,
+        return "{n} : {k} {c}".format(n=self._name, k=self._kind,
                                        c=str(self._children))
     def __repr__(self):
         return self.__str__()
@@ -82,7 +82,7 @@ class Ast(AstNode):
     ast.kinds maps kind_name -> 'clas' | 'typ' | 'enum' | 'struct'
     ast.keywords is a set of keywords
     """
-    def __init__(self, name, location, kinds, keywords, namespace=None, children=None):
+    def __init__(self, name, location, kinds, keywords, namespace, children=None):
         self._kinds = kinds
         self._keywords = keywords
         if not namespace:
