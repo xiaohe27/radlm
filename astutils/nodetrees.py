@@ -116,7 +116,7 @@ def Functor(node_class, attr_children, attr_name):
             except E as e:
                 e.attach_to_first_node(n)
                 raise e
-            nn = copy(n)
+            nn = n if self.inplace else copy(n)
             set_children(nn, children)
             return nn, acc
 
@@ -130,7 +130,7 @@ def Functor(node_class, attr_children, attr_name):
             except E as e:
                 e.attach_to_first_node(n)
                 raise e
-            nn = copy(n)
+            nn = n if self.inplace else copy(n)
             set_children(nn, children)
             return nn, acc
 
@@ -166,7 +166,8 @@ def Functor(node_class, attr_children, attr_name):
 
         def __init__(self, definitions=None, default=node_mapred,
                      onlist=list_mapred, ontuple=tuple_mapred,
-                     ondict=dict_mapred, onleaf=leaf_mapred, params=None):
+                     ondict=dict_mapred, onleaf=leaf_mapred, params=None,
+                     inplace=False):
             """ definitions is a dict specifing some functions 'fun
             which will be called on Nodes named 'fun
             if 'fun doesn't exist, we use default.
@@ -178,6 +179,7 @@ def Functor(node_class, attr_children, attr_name):
             self.ondict = ondict
             self.onleaf = onleaf
             self.params = params if params else {}
+            self.inplace = inplace
 
         def change(self, definitions={}, default=None, onlist=None,
                    ontuple=None, ondict=None, onleaf=None):

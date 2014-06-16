@@ -7,16 +7,19 @@ Used to ensure uniqueness of identifiers.
 '''
 from astutils.tools import str
 from astutils.location import dummy_loc
+from radlr.errors import internal_error
 
 
 class ExistingIdent(Exception): pass
 class NonExistingIdent(AttributeError): pass
 class AlreadyAttached(Exception): pass
 
-
+#TODO: 3 Have fully qualified names or unique identifiers.. issue in crossrefs for example
+# change _name to something like (name, int_id) or (modname, name)
 class Ident:
     """ For now an ident is nothing more than a string.
     """
+    __slots__ = ['_name', '_generated', '_location', '_node']
     def __init__(self, name, generated, location=None, node=None):
         self._name = name
         self._generated = generated
@@ -77,7 +80,7 @@ class Namespace:
     def refresh(self, name, node):
         #verify it already exists
         try: self.idents[name]
-        except KeyError: raise Exception("Refreshing an unknown ident.")
+        except KeyError: internal_error("Refreshing an unknown ident.")
         self.idents[name] = node
 
 #     def ident_of_source(self, name, node):
@@ -115,7 +118,6 @@ class Namespace:
             raise NonExistingIdent(name)
         return self.father.get_node(name)
 
-
     def push(self):
         """ Return a new namespace with self as father.
         Rmq, the father isn't copied, a reference is kept, allowing any later
@@ -132,7 +134,6 @@ class Namespace:
         return str(self.idents.keys())
     def __repr__(self):
         return str(self)
-
     #container convention, behave like the idents dict
     def __len__(self):
         return len(self.idents)
@@ -140,3 +141,7 @@ class Namespace:
         return self.get_ident(name)
     def __iter__(self):
         return iter(self.idents)
+    def __copy__(self):
+        internal_error("Trying to copy an Ident.")
+    def __deepcopy__(self, d):
+        internal_error("Trying to deepcopy an Ident.")
