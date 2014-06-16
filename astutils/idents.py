@@ -29,6 +29,13 @@ class Ident:
             self._location = location if location else dummy_loc
         self._node = node
 
+    @classmethod
+    def of(cls, node_or_ident):
+        if isinstance(node_or_ident, Ident):
+            return Ident(node_or_ident._name, True, node=node_or_ident._node)
+        else:
+            return Ident(node_or_ident._name, True, node=node_or_ident)
+
     def _attach(self, node):
         if self._node:
             raise AlreadyAttached()
@@ -50,12 +57,17 @@ class Ident:
         return self._node[key]
     def __iter__(self):
         return iter(self._node)
+    def __setattr__(self, attr, value):
+        if attr in self.__slots__:
+            object.__setattr__(self, attr, value)
+        else:
+            setattr(self._node, attr, value)
     def __getattr__(self, attr):
         return getattr(self._node, attr)
     def __copy__(self):
-        raise Exception("Trying to copy an Ident.")
+        internal_error("Trying to copy an Ident.")
     def __deepcopy__(self, d):
-        raise Exception("Trying to deepcopy an Ident.")
+        internal_error("Trying to deepcopy an Ident.")
 
 
 class Namespace:
