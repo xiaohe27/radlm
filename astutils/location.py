@@ -31,11 +31,13 @@ class Location:
         if self.multiline: # Two+ liner
             bec = t.rfind('\n', 0, self.end) +1
             ebc = t.find('\n', self.start)
-            bline = t[bbc : ebc]
-            eline = t[bec : eec]
-            buline = ' '*(bc-1)+ '^'*(ebc-bc)
-            euline = '^'*(ec)
-            inter = '...\n' if (el - bl)>2 else ''
+            pref_bline = str(bl) + ':'
+            bline = pref_bline + t[bbc : ebc]
+            pref_eline = str(el) + ':'
+            eline = pref_eline + t[bec : eec]
+            buline = ' '*(bc+len(pref_bline))+ '^'*(ebc-bbc-bc)
+            euline = ' '*(len(pref_bline)) + '^'*(ec)
+            inter = '[...]\n' if (el - bl)>2 else ''
             s = ("\nFrom line {bl} column {bc} to line {el} column {ec}:"
                  "\n{bline}\n{buline}\n{inter}{eline}\n{euline}"
                  "\n".format(**locals()))
