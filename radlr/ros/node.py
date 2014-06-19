@@ -198,7 +198,7 @@ def gennode(visitor, node, acc):
             app(d, 'init_msg_fill')
         for f in pub_templates: app(d, f)
 
-    #Over the subscribtions
+    #Over the subscriptions
     sub_templates = ['in_fill', 'set_sub', 'msg_include', 'in_struct_def',
                      'flags_struct_def', 'sub_flags_fill', 'gathered_flags']
     for st in sub_templates: d[st] = ''

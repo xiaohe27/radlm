@@ -11,56 +11,62 @@ The central concept here is a node tree.
 from copy import copy
 from functools import partial
 from astutils.tools import Bunch
+from radlr.errors import internal_error
+from collections import MutableSequence, Sequence, MutableMapping
 
-def mapred(f, l, acc):
+def mapred(f, l, acc, inplace):
     """ map reduce the function f on l with starting accumulator acc
     @param f: has the behavior (old_elem, old_acc) -> (new_elem, new_acc)
-    @param l: the input iterable
+    @param l: the input MutableSequence (like list)
     @param acc : the input accumulator
-    @return: a list corresponding to the map and the accumulator
+    @param inplace: if true output inplace in l otherwise in a copy of l
     """
-    nl = []
-    for x in l:
-        y, acc = f(x, acc)
-        nl.append(y)
+    nl = l if inplace else copy(l)
+    for i in range(len(nl)):
+        nl[i], acc = f(nl[i], acc)
     return nl, acc
 
-def mapacc(f, l, acc):
+def mapacc(f, l, acc, inplace=False):
     """ map acc, same as mapred, but the same (the input one) accumulator is
     given to the mapped function f. During the mapping, the returned
     accumulators are dropped. The input accumulator is returned unchanged.
     """
-    nl = []
-    for x in l:
-        y, _ = f(x, acc)
-        nl.append(y)
+    nl = l if inplace else copy(l)
+    for i in range(len(nl)):
+        nl[i], _ = f(nl[i], acc)
     return nl, acc
 
-def tmapred(f, t, acc):
-    """ same as mapred, but generic on iterable container (like tuple).
+def imapred(f, t, acc):
+    """ same as mapred, but works for immutable sequences (like tuple).
     NB, create a new instance of t.__class__  from the mapred list result.
     """
-    nl, acc = mapred(f, iter(t), acc)
-    return t.__class__(nl), acc
+    l = list(iter(t))
+    l, acc = mapred(f, l, acc, inplace=True)
+    return t.__class__(l), acc
 
-def tmapacc(f, t, acc):
-    """ same as tmapred but with mapacc.
+def imapacc(f, t, acc):
+    """ same as imapred but with mapacc.
     """
-    nl, acc = mapacc(f, t, acc)
-    return t.__class__(nl), acc
+    l = list(iter(t))
+    l, acc = mapacc(f, l, acc, inplace=True)
+    return t.__class__(l), acc
 
-def dmapred(f, l, acc):
-    """ same as tmapred but on dictionary (calls l.items() instead of iter(l))
+def dmapred(f, d, acc, inplace=False):
+    """ same as mapred but MutableMapping (like dict)
     NB, the function f takes a (key, value) couple as old_elem and new_elem.
     """
-    nl, acc = mapred(f, l.items(), acc)
-    return l.__class__(nl), acc
+    nd = d if inplace else copy(d)
+    for k in iter(nd):
+        nd[k], acc = f(nd[k], acc)
+    return nd, acc
 
-def dmapacc(f, l, acc):
+def dmapacc(f, d, acc, inplace=False):
     """ same as dmapred but with mapacc.
     """
-    nl, acc = mapacc(f, l.items(), acc)
-    return l.__class__(nl), acc
+    nd = d if inplace else copy(d)
+    for k in iter(nd):
+        nd[k], _ = f(nd[k], acc)
+    return nd, acc
 
 
 class E(Exception):
@@ -136,27 +142,31 @@ def Functor(node_class, attr_children, attr_name):
 
         def list_mapred(self, l, acc):
             """ mapred self.visit on l"""
-            return mapred(self.visit, l, acc)
+            return mapred(self.visit, l, acc, self.inplace)
 
         def list_mapacc(self, l, acc):
             """mapacc self.visit on l"""
-            return mapacc(self.visit, l, acc)
+            return mapacc(self.visit, l, acc, self.inplace)
 
         def tuple_mapred(self, t, acc):
-            """ tmapred self.visit on t"""
-            return tmapred(self.visit, t, acc)
+            """ imapred self.visit on t"""
+            if self.inplace:
+                internal_error("Trying to modify in place a tuple.")
+            return imapred(self.visit, t, acc)
 
         def tuple_mapcc(self, t, acc):
             """ tmapacc self.visit on t"""
-            return tmapacc(self.visit, t, acc)
+            if self.inplace:
+                internal_error("Trying to modify in place a tuple.")
+            return imapacc(self.visit, t, acc)
 
         def dict_mapred(self, d, acc):
             """ dmapred self.visit on d"""
-            return dmapred(self.visit, d, acc)
+            return dmapred(self.visit, d, acc, self.inplace)
 
         def dict_mapacc(self, d, acc):
             """ dmapacc self.visit on d"""
-            return dmapacc(self.visit, d, acc)
+            return dmapacc(self.visit, d, acc, self.inplace)
 
         def leaf_mapred(self, leaf, acc):
             return leaf, acc
@@ -181,23 +191,23 @@ def Functor(node_class, attr_children, attr_name):
             self.params = params if params else {}
             self.inplace = inplace
 
-        def change(self, definitions={}, default=None, onlist=None,
-                   ontuple=None, ondict=None, onleaf=None):
-            """ return a new visitor equal to self but updated. """
-            d = copy(self)
-            d.definitions.update(definitions)
-            if default: d.default = default
-            if onlist: d.onlist = onlist
-            if ontuple: d.ontuple = ontuple
-            if ondict: d.ondict = ondict
-            if onleaf: d.onleaf = onleaf
-            return d
+#         def change(self, definitions={}, default=None, onlist=None,
+#                    ontuple=None, ondict=None, onleaf=None):
+#             """ return a new visitor equal to self but updated. """
+#             d = copy(self)
+#             d.definitions.update(definitions)
+#             if default: d.default = default
+#             if onlist: d.onlist = onlist
+#             if ontuple: d.ontuple = ontuple
+#             if ondict: d.ondict = ondict
+#             if onleaf: d.onleaf = onleaf
+#             return d
 
         def __getitem__(self, key):
             if self.params: return self.params[key]
             raise KeyError
 
-        #visiting methods
+        ##### visiting methods
 
         def visit(self, node, acc=None):
             """ Call the correct visiting function depending on the type of node.
@@ -227,11 +237,11 @@ def Functor(node_class, attr_children, attr_name):
             """
             if is_node(node):
                 return self.node_mapred(node, acc)
-            elif isinstance(node, list) :
+            elif isinstance(node, MutableSequence):
                 return self.list_mapred(node, acc)
-            elif isinstance(node, tuple) :
+            elif isinstance(node, Sequence): #Immutable sequence
                 return self.tuple_mapred(node, acc)
-            elif isinstance(node, dict) :
+            elif isinstance(node, MutableMapping):
                 return self.dict_mapred(node, acc)
             else :
                 return self.leaf_mapred(node, acc)
@@ -242,11 +252,11 @@ def Functor(node_class, attr_children, attr_name):
             """
             if is_node(node):
                 return self.node_mapacc(node, acc)
-            elif isinstance(node, list) :
+            elif isinstance(node, MutableSequence):
                 return self.list_mapacc(node, acc)
-            elif isinstance(node, tuple) :
+            elif isinstance(node, Sequence): #Immutable sequence
                 return self.tuple_mapacc(node, acc)
-            elif isinstance(node, dict) :
+            elif isinstance(node, MutableMapping):
                 return self.dict_mapacc(node, acc)
             else :
                 return self.leaf_mapacc(node, acc)

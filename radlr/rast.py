@@ -61,7 +61,7 @@ class AstNode:
 #             return e.args[0]
 #         raise AttributeError
         #ensure we have a _namespace attribute in case __getattr__ is called
-        #before init (for example when using copy). 
+        #before init (for example when using copy).
         object.__getattribute__(self, '_namespace')
         return self._namespace.get_node(attr)
 
