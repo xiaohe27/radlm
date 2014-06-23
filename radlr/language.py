@@ -59,22 +59,33 @@ class cxx_class
     PATH string
     FILENAME string
     CLASS string
-
-class cxx_file
-    PATH string
-    FILENAME string
-
-# class library
-#     INCLUDE_PATH string
-#     FILENAME string
-
 #TODO: 8 support string calling code (note the order has to be respected)
 #    PATH string ? 'src'
 #    FILENAME string ? @ {this}._name @
 #    CLASS string ? @ str.capitalize({this}['FILENAME']) @
 
+class cxx_file
+    PATH string
+    FILENAME string
+
+#TODO: 4 support base path in nodes, etc
+
+class library
+    CXX cxx_file *
+# ->
+# add_library(<name> [STATIC | SHARED | MODULE]
+#               [EXCLUDE_FROM_ALL]
+#               source1 source2 ... sourceN)
+
+#class external_library
+#     INCLUDE_PATH string
+#     FILENAME string
+
+class struct
+    S int/bool/string/float32/struct *
+
 class topic
-    FIELDS int/bool/string/float32 *
+    FIELDS int/bool/string/float32/struct *
 #    PACKED bool
 
 class publication

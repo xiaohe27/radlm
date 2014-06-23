@@ -8,6 +8,8 @@ Created on June, 2014
 warning_as_errors = False
 continue_when_errors = False
 
+#TODO 5: base class for user errors, internal errors, etc to be able to catch them
+
 def _txt_format(message, location):
     return "{}{}".format(message, location)
 

@@ -5,7 +5,6 @@ Created on May, 2014
 '''
 
 
-# TODO: 9 consider namespacing for fields, enums, structs ?
 # RMQ: explain the language don't support recursive definitions
 """ We define the language used to describe an RADL grammar.
     Any element not defined is taken from the rule_syntax of parsimonious
@@ -18,7 +17,7 @@ from parsimonious.grammar import rule_syntax
 from parsimonious.nodeutils import clean_node, ParseVisitor, pprint_node
 
 
-meta_keywords = "class|type|enum|struct"
+meta_keywords = "class|type"
 
 meta_rules = (rule_syntax +
     r"""
@@ -27,6 +26,7 @@ meta_rules = (rule_syntax +
     clas = 'class' _ defKind field*
     field = symbol some_kind ('*' / '+' )? _
     typ = 'type' _ defKind 'REGEX' _ regex 'CXX' _ quoted _
+    #TODO: 5 add 'CHECK' to types to verify values.
 
     ### Utils
 
