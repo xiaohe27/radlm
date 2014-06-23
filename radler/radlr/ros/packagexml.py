@@ -23,6 +23,6 @@ _template_package_xml = """<?xml version="1.0"?>
 
 def gen(source_file_path, dest_dir, ast):
     package_xml_path = dest_dir / "package.xml"
-    package_xml = _template_package_xml.format(namespace=ast._name,
+    package_xml = _template_package_xml.format(namespace=ast._qname,
                                                source=source_file_path)
     write_file(package_xml_path, package_xml)

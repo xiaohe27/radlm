@@ -3,9 +3,8 @@ Created on May, 2014
 
 @author: Léonard Gérard leonard.gerard@sri.com
 '''
-from radler.astutils.idents import Ident
 from radler.radlr.errors import warning
-from radler.radlr.rast import AstVisitor
+from radler.radlr.rast import AstVisitor, Ident
 
 
 def _check_and_map_topics_publisher(ast):
@@ -15,9 +14,9 @@ def _check_and_map_topics_publisher(ast):
         """ Publication are not recursives """
         node, maping = acc
         top = pub['TOPIC']
-        if top._name in maping:
+        if top._qname in maping:
             raise Exception("Topic {top} has multiple publisher.".format(top=top))
-        maping[top._name] = Ident.of(node)
+        maping[top._qname] = Ident.of(node)
         return pub, (node, maping)
     def node(visitor, node, acc):
         """ set the current node in the accumulator """
@@ -32,11 +31,11 @@ def _check_and_map_topics_publisher(ast):
 def _link(ast, maping):
     def topic(visitor, topic, maping):
         try:
-            i = maping[topic._name]
+            i = maping[topic._qname]
             topic._publisher = i
         except KeyError:
             warning("The topic {} doesn't have any publisher.".format(
-                        topic._name), topic._location)
+                        topic._qname), topic._location)
         return topic, maping
     AstVisitor({'topic' : topic}, inplace=True).visit(ast, maping)
 

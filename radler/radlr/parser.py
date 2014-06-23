@@ -11,7 +11,7 @@ The output is composed of
     - 'types': a mapping between type names and 
 '''
 
-from radler.astutils.idents import NonExistingIdent, Ident
+from radler.astutils.names import NonExistingIdent, QualifiedName
 from radler.astutils.nodeutils import clean_node, ParseVisitor, spprint_node
 from radler.astutils.tools import BucketDict, str
 import parsimonious
@@ -21,7 +21,7 @@ from radler.radlr import sanitize
 from radler.radlr.errors import log1, log_err, log3, log2, error,\
     internal_error
 from radler.radlr.metaParser import meta_parser
-from radler.radlr.rast import AstNode, Ast, AstVisitor
+from radler.radlr.rast import AstNode, Ast, AstVisitor, Ident
 from radler.astutils.location import Location
 from collections import OrderedDict
 from functools import partial
@@ -82,6 +82,7 @@ def gen_grammar(language_tree, params, env):
         (node, env) = visitor.mapred(node, env) #depth first
         (_, kind, _, reg, _, _) = node.children
         env.kinds[kind] = 'type' #register this type
+        env.keywords.add(kind) #add the type name to the keywords
         g = """{kind} = {kind}_def / _solo_ident
     {kind}_def = _alias_def / {kind}_annoted / {kind}_not_annoted
     {kind}_annoted = (_ident _ ':' _)? '{kind}' _ {kind}_value
@@ -115,7 +116,7 @@ def gen_grammar(language_tree, params, env):
         (name, kind, mod) = node.children
         mod = '*' if mod else ''
         g = "'{name}' _ {kind}{mod}".format(name=name, kind=kind, mod=mod)
-        env.keywords.add(name) #register the field as existing
+        env.keywords.add(name) #register the field name as keyword
         return g, env
 
     def clas(visitor, node, env):
@@ -177,33 +178,27 @@ def gen_tree_to_ast(language_tree, env):
         #    but go fetch the kind in defKind.
         kind = mnode.children[1].children[0]
 
-        def m_def(ident_el, value_el, namespace, loc):
-            if isinstance(ident_el, parsimonious.nodes.Node):
-                name = ident_el.text
-            else:
-                name = namespace.gen_fresh("_"+kind)
-            value = value_el.match.group('value')
-            n = AstNode(kind, name, [value], namespace, loc)
-            namespace.register(name, n)
-            return n, namespace
-
-        def m_kind_def_annot(visitor, node, namespace):
-            childs, _ = visitor.mapacc(node.children, namespace)
-            loc = loc_of_parsimonious(node)
-            ident = childs[0][0] if childs[0] else None
-            return m_def(ident, childs[2], namespace, loc)
-
-        def m_kind_def_not_annot(visitor, node, namespace):
-            childs, _ = visitor.mapacc(node.children, namespace)
-            loc = loc_of_parsimonious(node)
-            return m_def(childs[0], childs[1], namespace, loc)
+        def m_def_gen(value_child_nb):
+            def m_def(visitor, node, namespace):
+                childs, _ = visitor.mapacc(node.children, namespace)
+                loc = loc_of_parsimonious(node)
+                ident = childs[0][0] if childs[0] else None
+                if isinstance(ident, parsimonious.nodes.Node):
+                    qname = namespace.qualify(ident.text)
+                else:
+                    qname = namespace.generate("_"+kind)
+                value = childs[value_child_nb].match.group('value')
+                n = AstNode(kind, qname, [value], namespace, loc)
+                namespace.associate(qname, n)
+                return n, namespace
+            return m_def
 
         #basic rules are simply replaced by their lone child
         menv[kind] = ParseVisitor.left_mapacc
         menv[kind+'_def'] = ParseVisitor.left_mapacc
         menv[kind+'_value'] = ParseVisitor.left_mapacc
-        menv[kind+'_annoted'] = m_kind_def_annot
-        menv[kind+'_not_annoted'] = m_kind_def_not_annot
+        menv[kind+'_annoted'] = m_def_gen(2)
+        menv[kind+'_not_annoted'] = m_def_gen(1)
         return (), menv
 
     def field(mvisitor, mnode, menv):
@@ -226,58 +221,51 @@ def gen_tree_to_ast(language_tree, env):
             fname = field.children[0].text
             field_specs.append((fname, mod))
 
-        def m_def(ident_el, fields_el, thisnamespace, namespace, loc):
-            fields = BucketDict(fields_el)
-            for (fname, mod) in field_specs:
-                v = fields.get(fname, False)
-                err = lambda m: error(m.format(fname), loc)
-                if not mod:
-                    if v is False:
-                        err("field {} is mandatory.")
-                    elif isinstance(v, list):
-                        err("field {} requires one and only one value.")
-                elif mod == '?':
-                    if v is False:
-                        fields[fname] = None
-                    elif len(v) != 1:
-                        err("field {} may be given at most one value.")
+        def m_def_gen(fields_child_nb):
+            def m_def(visitor, node, namespace):
+                ident = node.children[0][0] if node.children[0] else None
+                if isinstance(ident, parsimonious.nodes.Node):
+                    qname = namespace.qualify(ident.text)
+                else: #generate a name since none is given
+                    qname = namespace.generate("_"+kind)
+                thisnamespace = namespace.push(qname)
+                childs, _ = visitor.mapacc(node.children, thisnamespace)
+                loc = loc_of_parsimonious(node)
+                fields = BucketDict(childs[fields_child_nb])
+                for (fname, mod) in field_specs:
+                    v = fields.get(fname, False)
+                    err = lambda m: error(m.format(fname), loc)
+                    if not mod:
+                        if v is False:
+                            err("field {} is mandatory.")
+                        elif isinstance(v, list):
+                            err("field {} requires one and only one value.")
+                    elif mod == '?':
+                        if v is False:
+                            fields[fname] = None
+                        elif len(v) != 1:
+                            err("field {} may be given at most one value.")
+                        else:
+                            fields[fname] = v[0]
+                    elif mod == '*':
+                        if v is False:
+                            fields[fname] = []
+                    elif mod == '+':
+                        if v is False:
+                            err("field {} requires at least one value.")
                     else:
-                        fields[fname] = v[0]
-                elif mod == '*':
-                    if v is False:
-                        fields[fname] = []
-                elif mod == '+':
-                    if v is False:
-                        err("field {} requires at least one value.")
-                else:
-                    internal_error("unknown modifier")
-            if isinstance(ident_el, parsimonious.nodes.Node):
-                name = ident_el.text
-            else: #generate a name since none is given
-                name = namespace.gen_fresh("_"+kind)
-            n = AstNode(kind, name, fields, thisnamespace, loc)
-            namespace.register(name, n)
-            return n, namespace
-
-        def m_kind_def_annot(visitor, node, namespace):
-            thisnamespace = namespace.push()
-            childs, _ = visitor.mapacc(node.children, thisnamespace)
-            loc = loc_of_parsimonious(node)
-            ident = childs[0][0] if childs[0] else None
-            return m_def(ident, childs[2], thisnamespace, namespace, loc)
-
-        def m_kind_def_not_annot(visitor, node, namespace):
-            thisnamespace = namespace.push()
-            childs, _ = visitor.mapacc(node.children, thisnamespace)
-            loc = loc_of_parsimonious(node)
-            return m_def(childs[0], childs[1], thisnamespace, namespace, loc)
+                        internal_error("unknown modifier")
+                n = AstNode(kind, qname, fields, thisnamespace, loc)
+                namespace.associate(qname, n)
+                return n, namespace
+            return m_def
 
         #basic rules are simply replaced by their lone child
         menv[kind] = ParseVisitor.left_mapacc
         menv[kind+'_def'] = ParseVisitor.left_mapacc
         menv[kind+'_value'] = partial(ParseVisitor.left_mapacc, el_num=1)
-        menv[kind+'_annoted'] = m_kind_def_annot
-        menv[kind+'_not_annoted'] = m_kind_def_not_annot
+        menv[kind+'_annoted'] = m_def_gen(2)
+        menv[kind+'_not_annoted'] = m_def_gen(1)
         return (), menv
 
     def meta(mvisitor, mnode, menv):
@@ -285,16 +273,16 @@ def gen_tree_to_ast(language_tree, env):
 
         def _lang(visitor, node, namespace):
             #depth first, get a list of definitions
-            defs, _ = visitor.mapacc(node.children, namespace)
+            defs, _ = ParseVisitor.left_mapacc(visitor, node, namespace)
             return (loc_of_parsimonious(node), defs), namespace
 
         def _alias_def(visitor, node, namespace):
             #depth first, return three childs, ident '=' ident
             loc = loc_of_parsimonious(node)
             ((alias, _, target), _) = visitor.mapacc(node.children, namespace)
-            name = alias.text
-            n = AstNode('_alias', name, [target], namespace, loc)
-            namespace.register(name, n)
+            qname = namespace.qualify(alias.text)
+            n = AstNode('_alias', qname, [target], namespace, loc)
+            namespace.associate(qname, n)
             return n, namespace
 
         #get the _ident from _solo_ident
@@ -316,13 +304,12 @@ def gen_tree_to_ast(language_tree, env):
             if leaf.expr_name != '_ident':
                 raise Exception("The Ast have parsing node "
                                 "{} left over".format(leaf.expr_name))
-            name = leaf.text
             try:
-                node = namespace.get_node(name)
+                qname = namespace.resolve(leaf.text)
             except NonExistingIdent:
                 raise Exception("{l}Undefined identifier {t}"
-                    "".format(l=str(loc_of_parsimonious(leaf)), t=name))
-            return Ident(name, False, loc_of_parsimonious(leaf), node), namespace
+                    "".format(l=str(loc_of_parsimonious(leaf)), t=qname))
+            return Ident(qname, loc_of_parsimonious(leaf)), namespace
         else:
             return leaf, namespace
     def onnode(visitor, node, namespace):
@@ -330,12 +317,12 @@ def gen_tree_to_ast(language_tree, env):
         return node, namespace
     resolver = AstVisitor(onleaf=onleaf, default=onnode)
 
-    def tree_to_ast(program_tree, program_name, namespace):
-        thisnamespace = namespace.push()
+    def tree_to_ast(program_tree, program_qname, namespace):
+        thisnamespace = namespace.push(program_qname)
         (location, defs), _ = gen.visit(program_tree, thisnamespace)
-        ast = Ast(program_name, location, env.kinds,
+        ast = Ast(program_qname, location, env.kinds,
                   env.keywords, thisnamespace, defs)
-        namespace.register(program_name, ast)
+        namespace.associate(program_qname, ast)
         ast, _ = resolver.visit(ast, namespace)
         return ast
     return tree_to_ast
@@ -401,7 +388,7 @@ class Semantics:
         self.tree_to_ast = gen_tree_to_ast(language_tree, self.env)
         self.ast_checker = gen_ast_checker(language_tree)
 
-    def __call__(self, program, program_name, namespace):
+    def __call__(self, program, program_qname, namespace):
         """ The parser
         #TODO: 6 allow to extend the ast
         """
@@ -417,7 +404,7 @@ class Semantics:
             log_err(str(e))
             exit(-3)
         log3(lambda: spprint_node(program_tree))
-        ast = self.tree_to_ast(program_tree, program_name, namespace)
+        ast = self.tree_to_ast(program_tree, program_qname, namespace)
         ast = sanitize.update_idents(ast, namespace)
         log1(lambda: str(ast))
         self.ast_checker(ast)

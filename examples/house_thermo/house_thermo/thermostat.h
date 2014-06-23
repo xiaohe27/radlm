@@ -1,7 +1,5 @@
 #include "thermostat_node.h"
 
-namespace house_thermo {
-
 class Thermostat {
  private:
   float set_temp;
@@ -9,7 +7,5 @@ class Thermostat {
   float tol;
  public:
   Thermostat();
-  void step(_in_thermostat * inmsgs, _flags_thermostat*, _out_thermostat * outmsgs);
+  void step(const _in_t*, const _in_flags_t*, _out_t*, _out_flags_t*);
 };
-
-}

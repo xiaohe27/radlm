@@ -39,7 +39,7 @@ def collect(ast):
                         " ros type {}".format(str(rt)), node._location)
         else:
             if not expect_rt:
-                rt = ast._namespace.gen_fresh('radl__msg')
+                rt = ast._namespace.generate('radl__msg')
             else:
                 rt = expect_rt
             s[t] = rt
@@ -74,7 +74,7 @@ def gen(msg_directory, ast):
     msgtogen = collect(ast)
     #Generate the needed message files
     for (struct_t, rosname) in msgtogen.items():
-        filename = rosname + '.msg'
+        filename = rosname.name() + '.msg'
         msg_filenames.append(filename)
         filepath = msg_directory / filename
         filecontent = ros_msgdef(struct_t)

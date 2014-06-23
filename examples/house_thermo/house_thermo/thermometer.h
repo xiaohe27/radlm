@@ -1,10 +1,6 @@
 #include "thermometer_node.h"
 
-namespace house_thermo {
-
 class Thermometer {
  public: 
-  void step(_in_thermometer * inmsgs, _flags_thermometer*, _out_thermometer * outmsgs);
+  void step(const _in_t*, const _in_flags_t*, _out_t*, _out_flags_t*);
 };
-
-}

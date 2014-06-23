@@ -48,7 +48,7 @@ def of(node):
         size = len(values)
         t = ArrayType(size, elem_t)
     elif node._kind == 'struct' or node._kind == 'topic':
-        t = StructType(tuple(((f._name, of(f)) for f in node['FIELDS'])))
+        t = StructType(tuple(((f._qname.name(), of(f)) for f in node['FIELDS'])))
     else:
         internal_error("Trying to get the datatype of non data node.\n{}"
                        "".format(str(node._location)))

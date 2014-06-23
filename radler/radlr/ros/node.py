@@ -6,13 +6,11 @@ Created on May, 2014
 Generate one ROS _node.cpp file per node declaration.
 
 '''
-from pathlib import Path
 
-from radler.astutils.idents import Ident
 from radler.astutils.tools import write_file
-from radler.radlr.errors import error, warning, internal_error
-from radler.radlr.rast import AstVisitor
-from radler.radlr import infos
+from radler.radlr.errors import warning, internal_error
+from radler.radlr.rast import AstVisitor, Ident
+from radler.radlr.ros.utils import qn_cpp, qn_file, qn_topic
 
 
 templates = {
@@ -45,8 +43,14 @@ int main(int argc, const char* argv[]) {{
   {out_struct} _out;
   {out_fill}
 
-  {flags_struct} _flags;
+  {out_flags_struct} _out_flags;
+
+  {in_flags_struct} _in_flags;
+  const {in_flags_struct} * const _pin_flags = &_in_flags;
+
   {in_struct} _in;
+  const {in_struct} * const _pin = &_in;
+
   {node[CXX][CLASS]._val} _node;
 
   while (ros::ok()) {{
@@ -59,7 +63,7 @@ int main(int argc, const char* argv[]) {{
     radl::flags_t _gathered_flags = {gathered_flags};
     {pub_flags_fill}
 
-    _node.step(&_in, &_flags, &_out);
+    _node.step(_pin, _pin_flags, &_out, &_out_flags);
 
     //call publishers
     {pub_call}
@@ -82,8 +86,6 @@ int main(int argc, const char* argv[]) {{
 
 {msg_include}
 
-namespace {namespace} {{
-
 struct {out_struct} {{
   {out_struct_def}
 }};
@@ -92,24 +94,27 @@ struct {in_struct} {{
   {in_struct_def}
 }};
 
-struct {flags_struct} {{
-  {flags_struct_def}
+struct {in_flags_struct} {{
+  {in_flags_struct_def}
 }};
 
-}}
+struct {out_flags_struct} {{
+  {out_flags_struct_def}
+}};
+
 """
-, 'msg_include'       : '#include "{namespace}/{topic_t}.h"'
-, 'out_struct_def'    : "{topic_t}* {name};"
+, 'msg_include'       : '#include "{topic_file}.h"'
+, 'out_struct_def'    : "{topic_t}* {pubname};"
 , 'out_fill'          :
 """{topic_t} {initmsg};
   {init_msg_fill}
-  _out.{name} = &{initmsg};"""
-, 'pub_call'          : "{actionname}(*_out.{name});"
+  _out.{pubname} = &{initmsg};"""
+, 'pub_call'          : "{actionname}(*_out.{pubname});"
 , 'set_pub'           :
-"""ros::Publisher {actionname}_ros = _h.advertise<{topic_t}>("{name}", 2);
+"""ros::Publisher {actionname}_ros = _h.advertise<{topic_t}>("{topic_name}", 2);
   {actionclass}<{topic_t}> {actionname}({actionname}_ros);"""
-, 'in_struct_def'     : "{topic_t}::ConstPtr {name};"
-, 'in_fill'           : "_in.{name} = {actionname}.value();"
+, 'in_struct_def'     : "{topic_t}::ConstPtr {subname};"
+, 'in_fill'           : "_in.{subname} = {actionname}.value();"
 , 'init_msg_fill'     : "{initmsg}.{fieldname} = {fieldval};"
 , 'set_sub'           :
 """{topic_t} {initmsg};
@@ -118,11 +123,12 @@ struct {flags_struct} {{
   {actionclass}<{topic_t}> {actionname}(_wrap{initmsg}, {maxlatency}, {pubperiod});
   boost::function<void (const {topic_t}::ConstPtr&)> {actionname}_func;   // boost still needed by ROS ?
   {actionname}_func = boost::ref({actionname});
-  ros::Subscriber {actionname}_ros = _h.subscribe<{topic_t}>("{name}", 10, {actionname}_func);"""
-, 'sub_flags_fill'    : "_flags.{name} = {actionname}.get_flags();"
-, 'pub_flags_fill'    : "_flags.{name} = _gathered_flags;"
-, 'flags_struct_def'  : "radl::flags_t {name};"
-, 'gathered_flags'    : "_flags.{name}"
+  ros::Subscriber {actionname}_ros = _h.subscribe<{topic_t}>("{topic_name}", 10, {actionname}_func);"""
+, 'sub_flags_fill'    : "_in_flags.{subname} = {actionname}.get_flags();"
+, 'pub_flags_fill'    : "_out_flags.{pubname} = _gathered_flags;"
+, 'in_flags_struct_def'  : "radl::flags_t {subname};"
+, 'out_flags_struct_def'  : "radl::flags_t {pubname};"
+, 'gathered_flags'    : "_in_flags.{subname}"
 }
 
 separators = {'msg_include'       : '\n'    , 'out_struct_def'    : '\n  ',
@@ -130,8 +136,8 @@ separators = {'msg_include'       : '\n'    , 'out_struct_def'    : '\n  ',
               'set_pub'           : '\n  '  , 'in_struct_def'     : '\n  ',
               'in_fill'           : '\n    ', 'init_msg_fill'     : '\n  ',
               'set_sub'           : '\n  '  , 'sub_flags_fill'    : '\n    ',
-              'pub_flags_fill'    : '\n    ', 'flags_struct_def'  : '\n  ',
-              'gathered_flags'    : '|'}
+              'pub_flags_fill'    : '\n    ', 'in_flags_struct_def'  : '\n  ',
+              'gathered_flags'    : '|'     , 'out_flags_struct_def'  : '\n  '}
 
 def app(d, s):
     v = templates[s].format(**d)
@@ -164,7 +170,7 @@ def to_nsec(node):
         msec = int(node._val)
         nsec = msec * 1000000
     else:
-        internal_error("can't compute time from {n}".format(n=node._name))
+        internal_error("can't compute time from {}".format(str(node._qname)))
     return str(nsec)
 
 def to_ros_duration(node):
@@ -188,57 +194,64 @@ def to_ros_val(node):
 def gennode(visitor, node, acc):
     """ Nodes are not recursive for now """
     cpps, namespace, dest_directory = acc
-    name = node._name
+    name = node._qname.name()
 
-    d = {'namespace'    : namespace,
-         'in_struct'    : '_in_' + name,
-         'out_struct'   : '_out_' + name,
-         'flags_struct' : '_flags_' + name,
-         'cxx_includes' : getincludes(node),
-         'period'       : to_ros_duration(node['PERIOD'])}
+    d = {'namespace'       : namespace,
+         'in_struct'       : '_in_t',
+         'out_struct'      : '_out_t',
+         'in_flags_struct' : '_in_flags_t',
+         'out_flags_struct': '_out_flags_t',
+         'cxx_includes'    : getincludes(node),
+         'period'          : to_ros_duration(node['PERIOD'])}
 
     #Over publications and subscriptions
-    pubsub_templates = ['msg_include', 'flags_struct_def']
+    pubsub_templates = ['msg_include']
     for pt in pubsub_templates: d[pt] = ''
     #Over the publications
-    pub_templates = ['pub_call', 'out_fill' , 'set_pub',
+    pub_templates = ['pub_call', 'out_fill' , 'set_pub', 'out_flags_struct_def',
                      'out_struct_def', 'pub_flags_fill']
     for pt in pub_templates: d[pt] = ''
     for pub in node['PUBLISHES']:
-        d.update({'name'        : pub._name,
-                  'actionname'  : '_' + pub._name + '_pub',
+        d.update({'pubname'     : pub._qname.name(),
+                  'topic_name'  : qn_topic(pub._qname),
+                  'actionname'  : '_' + pub._qname.name() + '_pub',
                   'actionclass' : pub['PUBLISHER']['CXX']['CLASS']._val,
-                  'topic_t'     : pub['TOPIC']._ros_msg_typename,
-                  'initmsg'     : '_init_' + pub._name})
+                  'topic_file'  : qn_file(pub['TOPIC']._ros_msg_typename),
+                  'topic_t'     : qn_cpp(pub['TOPIC']._ros_msg_typename),
+                  'initmsg'     : '_init_' + pub._qname.name()})
         d['init_msg_fill'] = ''
         for field in pub['TOPIC']['FIELDS']:
-            d.update({'fieldname': field._name, 'fieldval': to_ros_val(field)})
+            d.update({'fieldname': field._qname.name(),
+                      'fieldval': to_ros_val(field)})
             app(d, 'init_msg_fill')
         for f in pub_templates: app(d, f)
         for f in pubsub_templates: app(d, f)
 
     #Over the subscriptions
-    sub_templates = ['in_fill', 'set_sub', 'in_struct_def',
+    sub_templates = ['in_fill', 'set_sub', 'in_struct_def', 'in_flags_struct_def',
                      'sub_flags_fill', 'gathered_flags']
     for st in sub_templates: d[st] = ''
     d['gathered_flags'] = '0'
     for sub in node['SUBSCRIBES']:
-        d.update({'name'        : sub._name,
-                  'actionname'  : '_' + sub._name + '_sub',
+        d.update({'subname'     : sub._qname.name(),
+                  'topic_name'  : qn_topic(sub._qname),
+                  'actionname'  : '_' + sub._qname.name() + '_sub',
                   'actionclass' : sub['SUBSCRIBER']['CXX']['CLASS']._val,
-                  'topic_t'     : sub['TOPIC']._ros_msg_typename,
-                  'initmsg'     : '_init_' + sub._name,
+                  'topic_file'  : qn_file(sub['TOPIC']._ros_msg_typename),
+                  'topic_t'     : qn_cpp(sub['TOPIC']._ros_msg_typename),
+                  'initmsg'     : '_init_' + sub._qname.name(),
                   'maxlatency'  : to_ros_duration(sub['MAXLATENCY'])})
         try:
             pubperiod = sub['TOPIC']._publisher['PERIOD']
         except AttributeError: #no publisher
             warning("Subscription {} won't compute timeout by lack of declared"
-                    " publisher.".format(sub._name), sub._location)
+                    " publisher.".format(str(sub._qname)), sub._location)
             pubperiod = None
         d['pubperiod'] = to_ros_duration(pubperiod)
         d['init_msg_fill'] = ''
         for field in sub['TOPIC']['FIELDS']:
-            d.update({'fieldname': field._name, 'fieldval': to_ros_val(field)})
+            d.update({'fieldname': field._qname.name(),
+                      'fieldval': to_ros_val(field)})
             app(d, 'init_msg_fill')
         for f in sub_templates: app(d, f)
         for f in pubsub_templates: app(d, f)
@@ -264,9 +277,6 @@ def gennode(visitor, node, acc):
 visitor = AstVisitor({'node' : gennode})
 
 def gen(dest_directory, ast):
-    namespace = ast._name
+    namespace = ast._qname
     _, (cpps, _, _) = visitor.visit(ast, ({}, namespace, dest_directory))
     return cpps
-
-
-#TODO: 2 seperate in and out flags. it allows to make clear the difference (input flags will be const while output won’t).

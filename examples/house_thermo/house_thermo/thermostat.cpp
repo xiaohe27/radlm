@@ -1,29 +1,27 @@
 
 #include "thermostat.h"
 
-namespace house_thermo {
-
 Thermostat::Thermostat() {
   this->set_temp = 75.0;
   this->status = false;
   this->tol = 2.0;
 }
 
-void Thermostat::step(_in_thermostat * inmsgs, _flags_thermostat* flags, _out_thermostat * outmsgs) {
+void Thermostat::step(const _in_t * in, const _in_flags_t* inflags,
+                      _out_t * out, _out_flags_t* outflags){
   // change the set temperature 
-  this->set_temp = inmsgs->thermostat_set_temp->temp;
+  this->set_temp = in->thermostat_set_temp->temp;
 
   // set the status
-  this->status = inmsgs->thermostat_switch->status;
+  this->status = in->thermostat_switch->status;
 
   // decide whether to switch on the heater
-  if (inmsgs->thermometer_temp->temp > (this->set_temp + this->tol)) {
-    outmsgs->heater_switch->switch_on = false;
-  } else if (this->status && (inmsgs->thermometer_temp->temp < this->set_temp)) {
-    outmsgs->heater_switch->switch_on = true;
+  if (in->thermometer_temp->temp > (this->set_temp + this->tol)) {
+    out->heater_switch->switch_on = false;
+  } else if (this->status && (in->thermometer_temp->temp < this->set_temp)) {
+    out->heater_switch->switch_on = true;
   } else {
-    outmsgs->heater_switch->switch_on = this->status;
+    out->heater_switch->switch_on = this->status;
   } 
 }
 
-}

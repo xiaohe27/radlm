@@ -1,8 +1,7 @@
 #include "heater.h"
 
-namespace house_thermo {
-
-void Heater::step(_in_heater * in, _flags_heater* flags, _out_heater * out) {
+void Heater::step(const _in_t * in, const _in_flags_t* inflags,
+                  _out_t * out, _out_flags_t* outflags) {
   if (in->heater_switch->switch_on) {
     out->heater_rate->rate = 3.0;
   } else {
@@ -10,5 +9,4 @@ void Heater::step(_in_heater * in, _flags_heater* flags, _out_heater * out) {
   }
 }
 
-}
 

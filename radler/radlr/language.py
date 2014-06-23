@@ -21,9 +21,7 @@ extra_keywords = {
 'static_assert', 'static_cast', 'struct', 'switch', 'template', 'this',
 'thread_local', 'throw', 'true', 'try', 'typedef', 'typeid', 'typename',
 'union', 'unsigned', 'using', 'virtual', 'void', 'volatile', 'wchar_t',
-'while', 'xor', 'xor_eq',
-#basic types
-'int8_t', 'int16_t'
+'while', 'xor', 'xor_eq'
 }
 
 forbidden_prefix = "radl__"

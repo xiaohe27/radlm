@@ -1,7 +1,5 @@
 #include "house_node.h"
 
-namespace house_thermo {
-
 class House {
  private:
   float temp;
@@ -9,10 +7,8 @@ class House {
   float interval;
  public:
   House();
-  void step(_in_house * inmsgs, _flags_house*, _out_house * outmsgs);
+  void step(const _in_t*, const _in_flags_t*, _out_t*, _out_flags_t*);
 };
-
-}
 
 
 

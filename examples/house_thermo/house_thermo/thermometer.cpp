@@ -2,12 +2,10 @@
 
 #include <stdlib.h>
 
-namespace house_thermo {
-
-void Thermometer::step(_in_thermometer * inmsgs, _flags_thermometer* flags, _out_thermometer * outmsgs) {
+void Thermometer::step(const _in_t * in, const _in_flags_t* inflags,
+                       _out_t * out, _out_flags_t* outflags){
   float noise = (float)(rand()%20000 - 10000)/10000;
-  outmsgs->thermometer_temp->temp = inmsgs->house_temp->temp + noise;
+  out->thermometer_temp->temp = in->house_temp->temp + noise;
 }
 
-}
 

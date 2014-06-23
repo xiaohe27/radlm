@@ -58,7 +58,7 @@ _sources_visitor = AstVisitor({'cxx_class' : _sources_cxx,
 
 def get_sources(node, gened_cpp_files):
     _, sources = _sources_visitor.visit(node, [])
-    sources.append('src/' + str(gened_cpp_files[node._name]))
+    sources.append('src/' + str(gened_cpp_files[node._qname.name()]))
     return ' '.join(sources)
 
 
@@ -77,7 +77,7 @@ def get_dirs(node):
 
 def _from_node(visitor, node, d):
     """ Nodes are not recursives """
-    d['name'] = node._name
+    d['name'] = node._qname.name()
     d['sources'] = get_sources(node, d['gened_cpp_files'])
     d['dirs'] = get_dirs(node)
     d['executables'].append(_template_addexec.format(**d))
@@ -100,7 +100,7 @@ def get_from_nodes(ast, d):
 
 
 def gen(msg_file_list, gened_cpp_files, dest_dir, ast):
-    d = {'namespace'       : ast._name,
+    d = {'namespace'       : ast._qname.name(),
          'msg_files'       : '\n  '.join(msg_file_list),
          'gened_cpp_files' : gened_cpp_files}
     get_from_nodes(ast, d)

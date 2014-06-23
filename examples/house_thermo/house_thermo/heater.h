@@ -1,10 +1,6 @@
 #include "heater_node.h"
 
-namespace house_thermo {
-
 class Heater {
  public:
-  void step(_in_heater*, _flags_heater*, _out_heater*);
+  void step(const _in_t*, const _in_flags_t*, _out_t*, _out_flags_t*);
 };
-
-}

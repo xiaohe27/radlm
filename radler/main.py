@@ -7,13 +7,13 @@ Created on May, 2014
 import argparse
 from pathlib import Path
 
-from radler.astutils.idents import Namespace
 from radler.astutils.tools import ensure_dir
-from radler.radlr import crossrefs, pwds, errors, arrays, infos, alias
+from radler.radlr import crossrefs, pwds, errors, arrays, infos, alias,\
+    language
 from radler.radlr.errors import log_err
-from radler.radlr import language
-from radler.radlr.parser import Semantics
+from radler.astutils.names import root_namespace
 from radler.radlr.ros import msg, node, packagexml, cmakeliststxt
+from radler.radlr.parser import Semantics
 
 ########
 # Parse arguments
@@ -86,13 +86,13 @@ radlr_semantics = Semantics(language)
 # Parse
 ########
 
-global_namespace = Namespace()
+qname = root_namespace.qualify(name)
 with source.open() as f:
-    infos.ast = radlr_semantics(f.read(), name, global_namespace)
+    infos.ast = radlr_semantics(f.read(), qname, root_namespace)
 
 
-########
-# From here on, the ast is "structurally frozen",
+##### Freeze #####
+# From here, the ast is "structurally frozen",
 # No new nodes/children are added and nodes keep their address.
 # This allow cross referencing, etc.
 ########
