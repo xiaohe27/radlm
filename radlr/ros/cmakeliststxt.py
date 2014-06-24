@@ -3,7 +3,7 @@ Created on May, 2014
 
 @author: Léonard Gérard leonard.gerard@sri.com
 '''
-from pathlib import Path
+
 from radlr.rast import AstVisitor
 from astutils.tools import write_file
 
@@ -26,9 +26,10 @@ catkin_package(
  CATKIN_DEPENDS roscpp message_runtime
 )
 include_directories(
-  include src src/_user_code ${{catkin_INCLUDE_DIRS}}
+  include src ${{catkin_INCLUDE_DIRS}}
 )
 {executables}
+{targetincludes}
 {dependencies}
 {link_libraries}
 
@@ -36,19 +37,22 @@ include_directories(
 
 _template_addexec = "add_executable({name} {sources})"
 
+_template_targetinclude = "target_include_directory({name} {dirs})"
+
 _template_adddep = "add_dependencies({name} {namespace}_generate_messages_cpp)"
 
 _template_targetll = "target_link_libraries({name} ${{catkin_LIBRARIES}})"
 
 
-def _sources_cxx(visitor, node, acc):
-        _, sources = visitor.node_mapred(node, acc)
-        f = ('src/_user_code/' + node['PATH']._val
-                    + '/' + node['FILENAME']._val + '.cpp')
+def _sources_cxx(visitor, node, sources):
+    _, sources = visitor.node_mapred(node, sources)
+    for c in node['FILENAME']:
+        f = 'src/_user_code' / node._pwd / c._val
         sources.append(str(f))
-        return _, sources
+    return _, sources
 _sources_visitor = AstVisitor({'cxx_class' : _sources_cxx,
                                'cxx_file'  : _sources_cxx})
+
 
 def get_sources(node, gened_cpp_files):
     _, sources = _sources_visitor.visit(node, [])
@@ -56,30 +60,49 @@ def get_sources(node, gened_cpp_files):
     return ' '.join(sources)
 
 
-def _from_node(visitor, node, acc):
+def _dirs_cxx(visitor, node, dirs):
+    _, dirs = visitor.node_mapred(node, dirs)
+    dirs.add(str(node._pwd))
+    return _, dirs
+_dirs_visitor = AstVisitor({'cxx_class' : _dirs_cxx,
+                            'cxx_file'  : _dirs_cxx})
+
+
+def get_dirs(node):
+    _, dirs = _dirs_visitor.visit(node, set())
+    return '"{}"'.format('" "'.join(dirs))
+
+
+def _from_node(visitor, node, d):
     """ Nodes are not recursives """
-    execs, deps, lls, gened_cpp_files, namespace = acc
-    n = node._name
-    execs.append(_template_addexec.format(
-        name=n, sources=get_sources(node, gened_cpp_files)))
-    deps.append(_template_adddep.format(name=n, namespace=namespace))
-    lls.append(_template_targetll.format(name=n))
-    return (), (execs, deps, lls, gened_cpp_files, namespace)
+    d['name'] = node._name
+    d['sources'] = get_sources(node, d['gened_cpp_files'])
+    d['dirs'] = get_dirs(node)
+    d['executables'].append(_template_addexec.format(**d))
+    d['targetincludes'].append(_template_targetinclude.format(**d))
+    d['dependencies'].append(_template_adddep.format(**d))
+    d['link_libraries'].append(_template_targetll.format(**d))
+    return (), d
 
 _visitor = AstVisitor({'node' : _from_node})
 
-def get_from_nodes(ast, gened_cpp_files, namespace):
-    acc = ([], [], [], gened_cpp_files, namespace)
-    _, (execs, deps, lls, _, _) = _visitor.visit(ast, acc)
-    return ('\n'.join(execs), '\n'.join(deps), '\n'.join(lls))
+
+def get_from_nodes(ast, d):
+    (d['executables'], d['targetincludes'],
+     d['dependencies'], d['link_libraries']) = ([], [], [], [])
+    _visitor.visit(ast, d)
+    d['executables'] = '\n'.join(d['executables'])
+    d['targetincludes'] = '\n'.join(d['targetincludes'])
+    d['dependencies'] = '\n'.join(d['dependencies'])
+    d['link_libraries'] = '\n'.join(d['link_libraries'])
 
 
 def gen(msg_file_list, gened_cpp_files, dest_dir, ast):
-    namespace = ast._name
-    msg_files = '\n  '.join(msg_file_list)
-    executables, dependencies, link_libraries = (
-        get_from_nodes(ast, gened_cpp_files, namespace))
-    cmakeliststxt = _template_cmakeliststxt.format(**locals())
+    d = {'namespace'       : ast._name,
+         'msg_files'       : '\n  '.join(msg_file_list),
+         'gened_cpp_files' : gened_cpp_files}
+    get_from_nodes(ast, d)
+    cmakeliststxt = _template_cmakeliststxt.format(**d)
     cmakeliststxt_path = dest_dir / "CMakeLists.txt"
     write_file(cmakeliststxt_path, cmakeliststxt)
 
