@@ -142,8 +142,7 @@ def join(storage):
 
 def _include_cxx_class(visitor, node, acc):
         _, acc = visitor.node_mapred(node, acc)
-        f = ('_user_code/' + node['PATH']._val
-                    + '/' + node['FILENAME']._val + '.h')
+        f = '_user_code/' / node._pwd / node['HEADER']._val
         acc.append('#include "' + str(f) + '"')
         return _, acc
 _include_visitor = AstVisitor({'cxx_class' : _include_cxx_class})

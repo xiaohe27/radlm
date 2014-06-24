@@ -61,6 +61,7 @@ type msec
 
 class cxx_class
     PATH string *
+    HEADER string
     FILENAME string *
     CLASS string
 #TODO: 8 support string calling code (note the order has to be respected)
