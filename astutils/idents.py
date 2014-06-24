@@ -7,10 +7,9 @@ Used to ensure uniqueness of identifiers.
 '''
 from astutils.tools import str
 from astutils.location import dummy_loc
-from radlr.errors import internal_error
+from radlr.errors import internal_error, error
 
 
-class ExistingIdent(Exception): pass
 class NonExistingIdent(AttributeError): pass
 class AlreadyAttached(Exception): pass
 
@@ -87,7 +86,7 @@ class Namespace:
         except NonExistingIdent:
             self.idents[name] = node
         else:
-            raise ExistingIdent(name)
+            error("Existing identifier {}".format(name), node._location)
 
     def refresh(self, name, node):
         #verify it already exists
