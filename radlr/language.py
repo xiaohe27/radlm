@@ -60,8 +60,8 @@ type msec
     CXX "std::int32_t"
 
 class cxx_class
-    PATH string
-    FILENAME string
+    PATH string *
+    FILENAME string *
     CLASS string
 #TODO: 8 support string calling code (note the order has to be respected)
 #    PATH string ? 'src'
@@ -69,8 +69,8 @@ class cxx_class
 #    CLASS string ? @ str.capitalize({this}['FILENAME']) @
 
 class cxx_file
-    PATH string
-    FILENAME string
+    PATH string *
+    FILENAME string *
 
 #TODO: 4 support base path in nodes, etc
 
@@ -109,6 +109,7 @@ class subscription
     MAXLATENCY msec
 
 class node
+    PATH string *
     PUBLISHES publication *
     SUBSCRIBES subscription *
     CXX cxx_class
