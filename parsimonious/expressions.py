@@ -41,7 +41,9 @@ class Expression(StrAndRepr):
         """
         node = self.match(text, pos=pos)
         if node.end < len(text):
-            raise IncompleteParseError(text, node.end, self)
+            e = IncompleteParseError(text, node.end, self)
+            e.node = node
+            raise e
         return node
 
     def match(self, text, pos=0):

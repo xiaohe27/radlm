@@ -19,6 +19,7 @@ from parsimonious.grammar import Grammar
 from astutils.idents import Namespace, NonExistingIdent, Ident
 import parsimonious
 from radlr import sanitize
+from parsimonious.exceptions import IncompleteParseError
 
 
 class Env:
@@ -146,7 +147,7 @@ def gen_grammar(language_tree, params, env):
         topleveldefs = '_' + '_def / _'.join(env.kinds) + '_def'
     else:
         topleveldefs = ''
-    lang = """_lang = _ ({tops})* _ _end""".format(tops=topleveldefs)
+    lang = """_lang = _ ({tops})* _""".format(tops=topleveldefs)
     print(g+lang)
     return Grammar(g+lang, '_lang'), env
 
@@ -348,9 +349,17 @@ class Semantics:
     def __call__(self, program, program_name, namespace):
         """ The parser
         """
-        program_tree = self.grammar.parse(program)
-        program_tree = clean_node(program_tree, to_prune=['_', '_end'],
-                                  keep_regex=True)
+        try:
+            program_tree = self.grammar.parse(program)
+            program_tree = clean_node(program_tree, to_prune=['_', '_end'],
+                                      keep_regex=True)
+        except IncompleteParseError as e:
+            print(str(e))
+            print("parsed tree is:")
+            program_tree = clean_node(e.node, to_prune=['_', '_end'],
+                                      keep_regex=True)
+            pprint_node(program_tree)
+            exit(-3)
         pprint_node(program_tree)
         ast = self.tree_to_ast(program_tree, program_name, namespace)
 #         pp_ast(ast)
