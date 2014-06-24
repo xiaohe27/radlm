@@ -10,6 +10,7 @@ from radlr.rast import AstVisitor
 from astutils.tools import write_file
 from pathlib import Path
 from radlr.errors import error, warning, internal_error
+from astutils.idents import Ident
 
 templates = {
 'node_cpp':
@@ -167,7 +168,22 @@ def to_ros_duration(node):
     nsec = to_nsec(node)
     return "ros::Duration().fromNSec({})".format(nsec)
 
+def to_ros_val(node):
+    if isinstance(node, Ident):
+        #TODO: 5 instead of inlining values, use variable declarations
+        pass
+    if node._kind == 'struct':
+        return '{{{}}}'.format(', '.join((to_ros_val(v) for v in node['FIELDS'])))
+    elif node._kind == 'field_struct':
+        return to_ros_val(node['STRUCT'])
+    else:
+        return node._val
 
+def topic_fields(topic):
+    if topic._kind == 'topic_of_struct':
+        return topic['STRUCT']['FIELDS']
+    else:
+        return topic['FIELDS']
 
 def gennode(visitor, node, acc):
     """ Nodes are not recursive for now """
@@ -192,8 +208,8 @@ def gennode(visitor, node, acc):
                   'topic'       : pub['TOPIC']._name,
                   'initmsg'     : '_init_' + pub._name})
         d['init_msg_fill'] = ''
-        for field in pub['TOPIC']['FIELDS']:
-            d.update({'fieldname': field._name, 'fieldval': field._val})
+        for field in topic_fields(pub['TOPIC']):
+            d.update({'fieldname': field._name, 'fieldval': to_ros_val(field)})
             app(d, 'init_msg_fill')
         for f in pub_templates: app(d, f)
 
@@ -216,8 +232,8 @@ def gennode(visitor, node, acc):
             pubperiod = None
         d['pubperiod'] = to_ros_duration(pubperiod)
         d['init_msg_fill'] = ''
-        for field in sub['TOPIC']['FIELDS']:
-            d.update({'fieldname': field._name, 'fieldval': field._val})
+        for field in topic_fields(sub['TOPIC']):
+            d.update({'fieldname': field._name, 'fieldval': to_ros_val(field)})
             app(d, 'init_msg_fill')
         for f in sub_templates: app(d, f)
     #generate the header file

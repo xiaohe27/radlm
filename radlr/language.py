@@ -87,14 +87,23 @@ class library
 #     FILENAME string
 
 class struct
-    S int/bool/string/float32/struct *
+    FIELDS int8/int32/int/bool/string/float32/struct/field_struct *
+
+class field_struct
+    STRUCT struct
 
 class topic
-    FIELDS int/bool/string/float32/struct *
+#Pay attention to the order of the types, parsing higher priority to the firsts
+    FIELDS int8/int32/int/bool/string/float32/struct/field_struct *
 #    PACKED bool
 
+
+#TODO: 4 struct should be real types... incremental parsing?
+class topic_of_struct
+    STRUCT struct
+
 class publication
-    TOPIC topic
+    TOPIC topic/topic_of_struct
     PUBLISHER publisher
 
 class subscriber
@@ -104,7 +113,7 @@ class publisher
     CXX cxx_class
 
 class subscription
-    TOPIC topic
+    TOPIC topic/topic_of_struct
     SUBSCRIBER subscriber
 #TODO: 5 support '?' modifier in the meta grammar and default values.
     MAXLATENCY msec
