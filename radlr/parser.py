@@ -134,7 +134,7 @@ def gen_grammar(language_tree, params, env):
         g = r"""{rules}
             _ident = ~r"(?!({keywords})\b)(?!{forbidden_prefix})[a-zA-Z][a-zA-Z0-9_]*"
             _solo_ident = _ident _ !(':' / '{{')
-            _ = ~r"\s*(?:#[^\r\n]*)?\s*"
+            _ = ~r"\s*(#[^\r\n]*\s*)*\s*"
             _end = ~r"$"
             """.format(rules=rules, keywords=keywords,
                        forbidden_prefix=visitor['forbidden_prefix'])
