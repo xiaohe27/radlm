@@ -97,8 +97,8 @@ def Functor(node_class, attr_children, attr_name):
     def is_node(node):
         return isinstance(node, node_class)
 
-    class NodeTreeVisitor:
-        """ A NodeTreeVisitor is by default the identity mapred on node trees.
+    class Visitor:
+        """ A nodetree Visitor is by default the identity mapred on node trees.
         To behave differently on leafs, provide a onleaf function,
             on lists, provide a onlist function,
             on nodes, - the default one may be changed by providing default
@@ -154,7 +154,7 @@ def Functor(node_class, attr_children, attr_name):
                 internal_error("Trying to modify in place a tuple.")
             return imapred(self.visit, t, acc)
 
-        def tuple_mapcc(self, t, acc):
+        def tuple_mapacc(self, t, acc):
             """ tmapacc self.visit on t"""
             if self.inplace:
                 internal_error("Trying to modify in place a tuple.")
@@ -174,22 +174,25 @@ def Functor(node_class, attr_children, attr_name):
         def leaf_mapacc(self, leaf, acc):
             return leaf, acc
 
-        def __init__(self, definitions=None, default=node_mapred,
-                     onlist=list_mapred, ontuple=tuple_mapred,
-                     ondict=dict_mapred, onleaf=leaf_mapred, params=None,
-                     inplace=False):
+        def __init__(self, definitions=None, default=None,
+                     onlist=None, ontuple=None,
+                     ondict=None, onleaf=None, params=None,
+                     inplace=False, mapacc=False):
             """ definitions is a dict specifing some functions 'fun
             which will be called on Nodes named 'fun
             if 'fun doesn't exist, we use default.
             """
+            def optarg(var, mapacc_ver, mapred_ver):
+                return var if var else mapacc_ver if mapacc else mapred_ver
+
             self.definitions = definitions if definitions else {}
-            self.default = default
-            self.onlist = onlist
-            self.ontuple = ontuple
-            self.ondict = ondict
-            self.onleaf = onleaf
-            self.params = params if params else {}
+            self.default = optarg(default, Visitor.node_mapacc, Visitor.node_mapred)
+            self.onlist = optarg(onlist, Visitor.list_mapacc, Visitor.list_mapred)
+            self.ontuple = optarg(ontuple, Visitor.tuple_mapacc, Visitor.tuple_mapred)
+            self.ondict = optarg(ondict, Visitor.dict_mapacc, Visitor.dict_mapred)
+            self.onleaf = optarg(onleaf, Visitor.leaf_mapacc, Visitor.leaf_mapred)
             self.inplace = inplace
+            self.params = params
 
 #         def change(self, definitions={}, default=None, onlist=None,
 #                    ontuple=None, ondict=None, onleaf=None):
@@ -205,7 +208,7 @@ def Functor(node_class, attr_children, attr_name):
 
         def __getitem__(self, key):
             if self.params: return self.params[key]
-            raise KeyError
+            else: raise KeyError
 
         ##### visiting methods
 
@@ -446,11 +449,11 @@ def Functor(node_class, attr_children, attr_name):
             left = '<{nn} '.format(nn=name_of(n))
             return print_seq(left, ' ', '>', visitor, children_of(n), width)
 
-        visitor = NodeTreeVisitor({}, default=print_node,
-                                   onlist=partial(print_seq, '[', ', ', ']'),
-                                   ontuple=partial(print_seq, '(', ', ', ')'),
-                                   ondict=partial(print_seq, '{', ', ', '}'),
-                                   onleaf=print_leaf)
+        visitor = Visitor({}, default=print_node,
+                          onlist=partial(print_seq, '[', ', ', ']'),
+                          ontuple=partial(print_seq, '(', ', ', ')'),
+                          ondict=partial(print_seq, '{', ', ', '}'),
+                          onleaf=print_leaf)
         s, _ = visitor.visit(node, maxwidth)
         return s
 

@@ -10,7 +10,7 @@ from astutils.nodetrees import Functor
 from copy import copy
 
 nodetreesutils = Functor(Node, 'children', 'expr_name')
-ParseVisitor = nodetreesutils.NodeTreeVisitor
+ParseVisitor = nodetreesutils.Visitor
 pprint_node = nodetreesutils.pprint_node
 
 
