@@ -87,7 +87,7 @@ def write_file(filepath, filecontent):
               "------------------------\n"
               "{filecontent}\n"
               "------------------------\n".format(**locals()))
-    with filepath.open('w') as f:
+    with filepath.open('w', encoding='UTF-8') as f:
         f.write(filecontent)
 
 def ensure_dir(path):
