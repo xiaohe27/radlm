@@ -38,7 +38,7 @@ include_directories(
 
 _template_addexec = "add_executable({name} {sources})"
 
-_template_targetinclude = "target_include_directories({name} {dirs})"
+_template_targetinclude = "target_include_directories({name} PUBLIC {dirs})"
 
 _template_adddep = "add_dependencies({name} {namespace}_generate_messages_cpp)"
 
