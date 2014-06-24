@@ -197,8 +197,11 @@ def gennode(visitor, node, acc):
          'cxx_includes' : getincludes(node),
          'period'       : to_ros_duration(node['PERIOD'])}
 
+    #Over publications and subscriptions
+    pubsub_templates = ['msg_include']
+    for pt in pubsub_templates: d[pt] = ''
     #Over the publications
-    pub_templates = ['pub_call', 'out_fill' , 'set_pub' , 'msg_include',
+    pub_templates = ['pub_call', 'out_fill' , 'set_pub',
                      'out_struct_def' , 'flags_struct_def' , 'pub_flags_fill']
     for pt in pub_templates: d[pt] = ''
     for pub in node['PUBLISHES']:
@@ -212,9 +215,10 @@ def gennode(visitor, node, acc):
             d.update({'fieldname': field._name, 'fieldval': to_ros_val(field)})
             app(d, 'init_msg_fill')
         for f in pub_templates: app(d, f)
+        for f in pubsub_templates: app(d, f)
 
     #Over the subscriptions
-    sub_templates = ['in_fill', 'set_sub', 'msg_include', 'in_struct_def',
+    sub_templates = ['in_fill', 'set_sub', 'in_struct_def',
                      'flags_struct_def', 'sub_flags_fill', 'gathered_flags']
     for st in sub_templates: d[st] = ''
     for sub in node['SUBSCRIBES']:
@@ -236,6 +240,7 @@ def gennode(visitor, node, acc):
             d.update({'fieldname': field._name, 'fieldval': to_ros_val(field)})
             app(d, 'init_msg_fill')
         for f in sub_templates: app(d, f)
+        for f in pubsub_templates: app(d, f)
     #generate the header file
     d['name'] = name
     node_h_name = name + '_node.h'
