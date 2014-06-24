@@ -32,19 +32,23 @@ defs = r"""
 
 #TODO: 6 size checks
 type int8
-    REGEX ~r"(?P<value>\d+)"
+    REGEX ~r"\b(?P<value>\d+)"
     CXX "std::int8_t"
 
-type float32
-    REGEX ~r"(?P<value>[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?)"
-    CXX "std::float32_t"
-
-type int
-    REGEX ~r"(?P<value>\d+)"
+type int32
+    REGEX ~r"\b(?P<value>\d+)"
     CXX "std::int32_t"
 
+type int
+    REGEX ~r"\b(?P<value>\d+)"
+    CXX "std::int32_t"
+
+type float32
+    REGEX ~r"\b(?P<value>[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?)"
+    CXX "std::float32_t"
+
 type bool
-    REGEX ~r"(?P<value>true|false)"
+    REGEX ~r"\b(?P<value>true|false)"
     CXX "std::bool"
 
 type string
@@ -52,7 +56,7 @@ type string
     CXX "std::string"
 
 type msec
-    REGEX ~r"(?P<value>\d+)"
+    REGEX ~r"\b(?P<value>\d+)"
     CXX "std::int32_t"
 
 class cxx_class
