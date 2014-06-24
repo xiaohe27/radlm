@@ -124,7 +124,7 @@ struct {flags_struct} {{
 separators = {'msg_include'       : '\n'    , 'out_struct_def'    : '\n  ',
               'out_fill'          : '\n  '  , 'pub_call'          : '\n  ',
               'set_pub'           : '\n  '  , 'in_struct_def'     : '\n  ',
-              'in_fill'           : '\n    ', 'init_msg_fill'     : '\n    ',
+              'in_fill'           : '\n    ', 'init_msg_fill'     : '\n  ',
               'set_sub'           : '\n  '  , 'sub_flags_fill'    : '\n    ',
               'pub_flags_fill'    : '\n    ', 'flags_struct_def'  : '\n  ',
               'gathered_flags'    : '|'}
