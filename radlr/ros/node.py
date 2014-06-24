@@ -198,11 +198,11 @@ def gennode(visitor, node, acc):
          'period'       : to_ros_duration(node['PERIOD'])}
 
     #Over publications and subscriptions
-    pubsub_templates = ['msg_include']
+    pubsub_templates = ['msg_include', 'flags_struct_def']
     for pt in pubsub_templates: d[pt] = ''
     #Over the publications
     pub_templates = ['pub_call', 'out_fill' , 'set_pub',
-                     'out_struct_def' , 'flags_struct_def' , 'pub_flags_fill']
+                     'out_struct_def', 'pub_flags_fill']
     for pt in pub_templates: d[pt] = ''
     for pub in node['PUBLISHES']:
         d.update({'name'        : pub._name,
@@ -219,7 +219,7 @@ def gennode(visitor, node, acc):
 
     #Over the subscriptions
     sub_templates = ['in_fill', 'set_sub', 'in_struct_def',
-                     'flags_struct_def', 'sub_flags_fill', 'gathered_flags']
+                     'sub_flags_fill', 'gathered_flags']
     for st in sub_templates: d[st] = ''
     for sub in node['SUBSCRIBES']:
         d.update({'name'        : sub._name,
