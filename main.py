@@ -11,7 +11,7 @@ from radlr.examples import basic_1to1, thermostat, onetopic
 from pathlib import Path
 from radlr.ros import msg, node, packagexml, cmakeliststxt
 from astutils.tools import ensure_dir
-from radlr import crossrefs
+from radlr import crossrefs, pwds
 from radlr import sanitize
 from astutils.idents import Namespace
 
@@ -78,6 +78,7 @@ if not radllib_link.exists():
 
 #From here, the ast is "frozen" no copies, etc , to allow cross referencing.
 crossrefs.add(ast)
+pwds.add(ast, user_src_dir)
 
 msg_file_list = msg.gen(msg_dir, ast)
 gened_cpp_files = node.gen(src_dir, ast)
