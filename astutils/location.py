@@ -21,7 +21,7 @@ class Location:
 
     def __str__(self):
         """ Standard printing of location, especially used for error reporting
-        It begins and ends with a new line.
+        It ends with a new line.
         """
         t = self.filetext
         (bl, bc) = (self.start_line, self.start_column)
@@ -38,13 +38,13 @@ class Location:
             buline = ' '*(bc+len(pref_bline))+ '^'*(ebc-bbc-bc)
             euline = ' '*(len(pref_bline)) + '^'*(ec)
             inter = '[...]\n' if (el - bl)>2 else ''
-            s = ("\nFrom line {bl} column {bc} to line {el} column {ec}:"
-                 "\n{bline}\n{buline}\n{inter}{eline}\n{euline}"
-                 "\n".format(**locals()))
+            s = ("from line {bl} column {bc} to line {el} column {ec}:\n"
+                 "{bline}\n{buline}\n{inter}{eline}\n{euline}\n"
+                 "".format(**locals()))
         else: # One liner
             line = t[bbc : eec]
             uline = ' '*(bc) + '^'*(ec-bc)
-            s = ("\nAt line {bl}, column {bc}-{ec}:\n"
+            s = ("at line {bl}, column {bc}-{ec}:\n"
                  "{line}\n{uline}\n".format(**locals()))
         return s
 
