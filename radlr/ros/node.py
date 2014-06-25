@@ -185,6 +185,12 @@ def topic_fields(topic):
     else:
         return topic['FIELDS']
 
+def topic_type(topic):
+    if topic._kind == 'topic_of_struct':
+        return topic['STRUCT']._name
+    else:
+        return topic._name
+
 def gennode(visitor, node, acc):
     """ Nodes are not recursive for now """
     cpps, namespace, dest_directory = acc
@@ -208,7 +214,7 @@ def gennode(visitor, node, acc):
         d.update({'name'        : pub._name,
                   'actionname'  : '_' + pub._name + '_pub',
                   'actionclass' : pub['PUBLISHER']['CXX']['CLASS']._val,
-                  'topic'       : pub['TOPIC']._name,
+                  'topic'       : topic_type(pub['TOPIC']),
                   'initmsg'     : '_init_' + pub._name})
         d['init_msg_fill'] = ''
         for field in topic_fields(pub['TOPIC']):
@@ -225,7 +231,7 @@ def gennode(visitor, node, acc):
         d.update({'name'        : sub._name,
                   'actionname'  : '_' + sub._name + '_sub',
                   'actionclass' : sub['SUBSCRIBER']['CXX']['CLASS']._val,
-                  'topic'       : sub['TOPIC']._name,
+                  'topic'       : topic_type(sub['TOPIC']),
                   'initmsg'     : '_init_' + sub._name,
                   'maxlatency'  : to_ros_duration(sub['MAXLATENCY'])})
         try:
