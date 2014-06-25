@@ -11,7 +11,7 @@ from copy import copy
 
 nodetreesutils = Functor(Node, 'children', 'expr_name')
 ParseVisitor = nodetreesutils.Visitor
-pprint_node = nodetreesutils.pprint_node
+spprint_node = nodetreesutils.spprint_node
 
 
 def prune(node, to_prune=[]):

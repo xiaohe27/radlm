@@ -14,7 +14,7 @@ Created on May, 2014
 
 from parsimonious import Grammar
 from parsimonious.grammar import rule_syntax
-from parsimonious.nodeutils import clean_node, ParseVisitor, pprint_node
+from parsimonious.nodeutils import clean_node
 
 
 meta_keywords = "class|type"

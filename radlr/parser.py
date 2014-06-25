@@ -13,13 +13,14 @@ The output is composed of
 
 from astutils.tools import BucketDict, str
 from radlr.metaParser import meta_parser
-from parsimonious.nodeutils import clean_node, pprint_node, ParseVisitor
-from radlr.rast import AstNode, Ast, pp_ast, AstVisitor
+from parsimonious.nodeutils import clean_node, ParseVisitor, spprint_node
+from radlr.rast import AstNode, Ast, AstVisitor, spp_ast
 from parsimonious.grammar import Grammar
-from astutils.idents import Namespace, NonExistingIdent, Ident
+from astutils.idents import NonExistingIdent, Ident
 import parsimonious
 from radlr import sanitize
 from parsimonious.exceptions import IncompleteParseError
+from radlr.errors import log1, log_err, log3, log2
 
 
 class Env:
@@ -148,7 +149,7 @@ def gen_grammar(language_tree, params, env):
     else:
         topleveldefs = ''
     lang = """_lang = _ ({tops})* _""".format(tops=topleveldefs)
-    print(g+lang)
+    log3(g+lang)
     return Grammar(g+lang, '_lang'), env
 
 def gen_tree_to_ast(language_tree, env):
@@ -348,23 +349,23 @@ class Semantics:
 
     def __call__(self, program, program_name, namespace):
         """ The parser
+        #TODO: 6 allow to extend the ast
         """
         try:
             program_tree = self.grammar.parse(program)
             program_tree = clean_node(program_tree, to_prune=['_', '_end'],
                                       keep_regex=True)
         except IncompleteParseError as e:
-            print(str(e))
-            print("parsed tree is:")
+            log1("Incomplete parsed tree is:")
             program_tree = clean_node(e.node, to_prune=['_', '_end'],
                                       keep_regex=True)
-            pprint_node(program_tree)
+            log1(spprint_node(program_tree))
+            log_err(str(e))
             exit(-3)
-        pprint_node(program_tree)
+        log3(spprint_node(program_tree))
         ast = self.tree_to_ast(program_tree, program_name, namespace)
-#         pp_ast(ast)
         ast = sanitize.update_idents(ast, namespace)
-        pp_ast(ast)
+        log2(spp_ast(ast))
         #TODO: 5 enable ast checks
 #         self.ast_checker(ast)
         return ast

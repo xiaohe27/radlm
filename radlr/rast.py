@@ -74,8 +74,7 @@ class AstNode:
 
 rastutils = Functor(AstNode, '_children', '_kind')
 AstVisitor = rastutils.Visitor
-pp_ast = rastutils.pprint_node
-
+spp_ast = rastutils.spprint_node
 
 class Ast(AstNode):
     """ An ast object stores the toplevel definitions in the mappings

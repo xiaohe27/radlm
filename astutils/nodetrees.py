@@ -353,7 +353,7 @@ def Functor(node_class, attr_children, attr_name):
                 return None
 
 
-    def spprint_node(node, indentsize=2, maxwidth=80):
+    def spprint_node(node, indentsize=2, maxwidth=100):
         """ pretty print a node
         @Return a string
         """
@@ -456,8 +456,5 @@ def Functor(node_class, attr_children, attr_name):
                           onleaf=print_leaf)
         s, _ = visitor.visit(node, maxwidth)
         return s
-
-    def pprint_node(n, indentsize=2, maxwidth=100):
-        print(spprint_node(n, indentsize, maxwidth))
 
     return Bunch(**locals())
