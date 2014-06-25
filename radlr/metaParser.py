@@ -16,6 +16,7 @@ from parsimonious import Grammar
 from parsimonious.grammar import rule_syntax
 from parsimonious.nodeutils import clean_node
 
+#TODO: 4 Allow to force type annotation
 
 meta_keywords = "class|type"
 
