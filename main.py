@@ -62,7 +62,9 @@ ensure_dir(root_dir)
 
 
 global_namespace = Namespace()
-ast = radlr_semantics(source.open().read(), name, global_namespace)
+
+with source.open() as f:
+    infos.ast = radlr_semantics(f.read(), name, global_namespace)
 
 msg_dir = root_dir / 'msg'
 ensure_dir(msg_dir)
@@ -77,14 +79,19 @@ if not radllib_link.exists():
     lib_dir = script_dir / 'lib'
     radllib_link.symlink_to(lib_dir, True)
 
-#TODO: 1 reenable cross refs to allow publisher period to be given to the subsrcibtion.
-# ast = crossrefs.check_and_link_topics_publisher(ast)
 
-#From here, the ast is "frozen" no copies, etc , to allow cross referencing.
-crossrefs.add(ast)
-pwds.add(ast, user_src_dir)
+#################
+# From here, the ast is "frozen" (a node will keep its address),
+# to allow cross referencing, etc.
+#################
 
-msg_file_list = msg.gen(msg_dir, ast)
-gened_cpp_files = node.gen(src_dir, ast)
-packagexml.gen(source, root_dir, ast)
-cmakeliststxt.gen(msg_file_list, gened_cpp_files, root_dir, ast)
+
+# Embedding information in nodes to allow easier manipulation
+crossrefs.add(infos.ast)
+pwds.add(infos.ast, user_src_dir)
+
+# ROS files generation
+msg_file_list = msg.gen(msg_dir, infos.ast)
+gened_cpp_files = node.gen(src_dir, infos.ast)
+packagexml.gen(source, root_dir, infos.ast)
+cmakeliststxt.gen(msg_file_list, gened_cpp_files, root_dir, infos.ast)
