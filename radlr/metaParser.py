@@ -32,7 +32,7 @@ meta_rules = (rule_syntax +
 
     end = ~r"$"
     quoted = ('"' ~r'[^"]*' '"') / ("'" ~r"[^']*" "'")
-    some_kind = kind ('/' kind)*
+    some_kind = kind ('/' _ kind)*
     kind = _basic_word _     # will be checked to be defined
     defKind = _basic_word _  # define a new kind
     symbol = _basic_word _   # is lower priority over kind
