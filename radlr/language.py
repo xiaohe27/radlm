@@ -23,7 +23,9 @@ extra_keywords = {
 'static_assert', 'static_cast', 'struct', 'switch', 'template', 'this',
 'thread_local', 'throw', 'true', 'try', 'typedef', 'typeid', 'typename',
 'union', 'unsigned', 'using', 'virtual', 'void', 'volatile', 'wchar_t',
-'while', 'xor', 'xor_eq'
+'while', 'xor', 'xor_eq',
+#basic types
+'int8_t', 'int16_t'
 }
 
 forbidden_prefix = "radl__"
@@ -32,20 +34,44 @@ defs = r"""
 
 #TODO: 6 size checks
 type int8
-    REGEX ~r"\b(?P<value>\d+)"
+    REGEX ~r"\b(?P<value>[+-]?\d+)\b(?!\.)"
     CXX "std::int8_t"
 
+type uint8
+    REGEX ~r"\b(?P<value>\d+)\b(?!\.)"
+    CXX "std::uint8_t"
+
+type int16
+    REGEX ~r"\b(?P<value>[+-]?\d+)\b(?!\.)"
+    CXX "std::int16_t"
+
+type uint16
+    REGEX ~r"\b(?P<value>\d+)\b(?!\.)"
+    CXX "std::uint16_t"
+
 type int32
-    REGEX ~r"\b(?P<value>\d+)"
+    REGEX ~r"\b(?P<value>[+-]?\d+)\b(?!\.)"
     CXX "std::int32_t"
 
-type int
-    REGEX ~r"\b(?P<value>\d+)"
-    CXX "std::int32_t"
+type uint32
+    REGEX ~r"\b(?P<value>\d+)\b(?!\.)"
+    CXX "std::uint32_t"
+
+type int64
+    REGEX ~r"\b(?P<value>[+-]?\d+)\b(?!\.)"
+    CXX "std::int64_t"
+
+type uint64
+    REGEX ~r"\b(?P<value>\d+)\b(?!\.)"
+    CXX "std::uint64_t"
 
 type float32
-    REGEX ~r"\b(?P<value>[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?)"
+    REGEX ~r"\b(?P<value>[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?)\b(?!\.)"
     CXX "std::float32_t"
+
+type float64
+    REGEX ~r"\b(?P<value>[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?)\b(?!\.)"
+    CXX "std::float64_t"
 
 type bool
     REGEX ~r"\b(?P<value>true|false)"
@@ -58,6 +84,10 @@ type string
 type msec
     REGEX ~r"\b(?P<value>\d+)"
     CXX "std::int32_t"
+
+type basic_type
+    REGEX ~r"\b(?P<value>int8|int16)_t"
+    CXX "radl__internal__should__never_get__outside"
 
 class cxx_class
     PATH string *
@@ -73,8 +103,6 @@ class cxx_file
     PATH string *
     FILENAME string *
 
-#TODO: 4 support base path in nodes, etc
-
 class library
     CXX cxx_file *
 # ->
@@ -87,14 +115,32 @@ class library
 #     FILENAME string
 
 class struct
-    FIELDS int8/int32/int/bool/string/float32/struct/field_struct *
+    FIELDS int8/uint8/int16/uint16/int32/uint32/int64/uint64/
+           float32/float64/
+           bool/string/struct/field_struct/array *
 
 class field_struct
     STRUCT struct
 
+
+
+#TODO: 5 add structs inside arrays
+class array_type
+    ELEM_TYPE basic_type/array_type
+    SIZE uint8
+
+class array
+    TYPE array_type
+    VALUES int8/uint8/int16/uint16/int32/uint32/int64/uint64/
+           float32/float64/
+           bool/string/array *
+
+
 class topic
 #Pay attention to the order of the types, parsing higher priority to the firsts
-    FIELDS int8/int32/int/bool/string/float32/struct/field_struct *
+    FIELDS int8/uint8/int16/uint16/int32/uint32/int64/uint64/
+           float32/float64/
+           bool/string/array/field_struct/struct *
 #    PACKED bool
 
 

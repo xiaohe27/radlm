@@ -176,6 +176,8 @@ def to_ros_val(node):
         return '{{{}}}'.format(', '.join((to_ros_val(v) for v in node['FIELDS'])))
     elif node._kind == 'field_struct':
         return to_ros_val(node['STRUCT'])
+    elif node._kind == 'array':
+        return '{{{}}}'.format(', '.join((to_ros_val(v) for v in node['VALUES'])))
     else:
         return node._val
 

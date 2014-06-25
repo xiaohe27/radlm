@@ -85,6 +85,8 @@ if not radllib_link.exists():
 # to allow cross referencing, etc.
 #################
 
+# Checks
+arrays.typecheck(infos.ast)
 
 # Embedding information in nodes to allow easier manipulation
 crossrefs.add(infos.ast)

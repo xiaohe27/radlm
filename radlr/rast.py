@@ -90,9 +90,7 @@ class Ast(AstNode):
             children = dict()
         AstNode.__init__(self, '_ast', name, children, namespace, location)
 
-    def _kind_of(self, ident):
-        return self.kinds[ident]
-    def _def_of(self, ident):
-        return self.defs[ident]
+    def _metakind_of_kind(self, k):
+        return self._kinds[k]
     def __str__(self):
         return "defs:\n{defs}".format(defs=str(self._namespace))
