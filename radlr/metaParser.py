@@ -12,12 +12,12 @@ Created on May, 2014
                            placed on the right of any leaf)
 """
 
+from astutils.nodeutils import clean_node
 from parsimonious import Grammar
 from parsimonious.grammar import rule_syntax
-from parsimonious.nodeutils import clean_node
+
 
 #TODO: 4 Allow to force type annotation
-
 meta_keywords = "class|type"
 
 meta_rules = (rule_syntax +

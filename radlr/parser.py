@@ -11,16 +11,16 @@ The output is composed of
     - 'types': a mapping between type names and 
 '''
 
-from astutils.tools import BucketDict, str
-from radlr.metaParser import meta_parser
-from parsimonious.nodeutils import clean_node, ParseVisitor, spprint_node
-from radlr.rast import AstNode, Ast, AstVisitor, spp_ast
-from parsimonious.grammar import Grammar
 from astutils.idents import NonExistingIdent, Ident
+from astutils.nodeutils import clean_node, ParseVisitor, spprint_node
+from astutils.tools import BucketDict, str
 import parsimonious
-from radlr import sanitize
 from parsimonious.exceptions import IncompleteParseError
+from parsimonious.grammar import Grammar
+from radlr import sanitize
 from radlr.errors import log1, log_err, log3, log2
+from radlr.metaParser import meta_parser
+from radlr.rast import AstNode, Ast, AstVisitor, spp_ast
 
 
 class Env:
