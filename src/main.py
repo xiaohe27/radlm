@@ -4,18 +4,18 @@ Created on May, 2014
 @author: Léonard Gérard leonard.gerard@sri.com
 '''
 
-from radlr.parser import Semantics
-import radlr.language
-from radlr.examples import basic_1to1, thermostat, onetopic
+import argparse
 from pathlib import Path
-from radlr.ros import msg, node, packagexml, cmakeliststxt
+
+from astutils.idents import Namespace
 from astutils.tools import ensure_dir
 from radlr import crossrefs, pwds, errors, arrays, infos
-from astutils.idents import Namespace
 from radlr.errors import log_err
+from radlr.examples import basic_1to1, thermostat, onetopic
+import radlr.language
+from radlr.parser import Semantics
+from radlr.ros import msg, node, packagexml, cmakeliststxt
 
-
-import argparse
 
 parser = argparse.ArgumentParser()
 parser.add_argument('file', help='the RADL description file')

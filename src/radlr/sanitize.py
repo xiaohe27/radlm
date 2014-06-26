@@ -6,6 +6,7 @@ Created on Jun, 2014
 from astutils.idents import Ident
 from radlr.rast import AstVisitor
 
+
 def _un_onnode(visitor, node, namespace):
     namespace.refresh(node._name, node)
     visitor.mapacc(node._children, node._namespace)

@@ -3,9 +3,10 @@ Created on May, 2014
 
 @author: Léonard Gérard leonard.gerard@sri.com
 '''
-from radlr.rast import AstVisitor
 from astutils.idents import Ident
 from radlr.errors import warning
+from radlr.rast import AstVisitor
+
 
 def _check_and_map_topics_publisher(ast):
     """ When there is one and only one publisher per topic, cross ref the publisher

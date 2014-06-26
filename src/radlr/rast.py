@@ -4,10 +4,9 @@ Created on May, 2014
 @author: Léonard Gérard leonard.gerard@sri.com
 '''
 
-from astutils.nodetrees import Functor
 from astutils.idents import Namespace
+from astutils.nodetrees import Functor
 from astutils.tools import str
-
 
 
 class AstNode:

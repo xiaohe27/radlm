@@ -5,8 +5,8 @@ Created on May, 2014
 
 Used to ensure uniqueness of identifiers.
 '''
-from astutils.tools import str
 from astutils.location import dummy_loc
+from astutils.tools import str
 from radlr.errors import internal_error, error
 
 

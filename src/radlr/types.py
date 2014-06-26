@@ -6,6 +6,7 @@ Created on Jun, 2014
 from radlr import infos
 from radlr.errors import internal_error
 
+
 def of(node):
     """Return the type of a node."""
     mk = infos.ast._metakind_of_kind(node._kind)

@@ -5,9 +5,11 @@ Created on May 2014
 
 '''
 
-from parsimonious.nodes import Node
-from astutils.nodetrees import Functor
 from copy import copy
+
+from astutils.nodetrees import Functor
+from parsimonious.nodes import Node
+
 
 nodetreesutils = Functor(Node, 'children', 'expr_name')
 ParseVisitor = nodetreesutils.Visitor

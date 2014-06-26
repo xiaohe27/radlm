@@ -4,8 +4,9 @@ Created on May, 2014
 @author: Léonard Gérard leonard.gerard@sri.com
 '''
 
-from radlr.rast import AstVisitor
 from astutils.tools import write_file
+from radlr.rast import AstVisitor
+
 
 _template_cmakeliststxt = """
 cmake_minimum_required(VERSION 2.8.3)

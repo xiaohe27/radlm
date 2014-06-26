@@ -8,9 +8,10 @@ Generate one ROS .msg file per topic and struct declaration.
 
 '''
 
-from radlr.rast import AstVisitor
 from astutils.tools import write_file
 from radlr import types
+from radlr.rast import AstVisitor
+
 
 def to_ros_typedef(field):
     if field._kind == 'field_struct':

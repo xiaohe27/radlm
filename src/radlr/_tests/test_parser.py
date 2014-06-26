@@ -5,8 +5,8 @@ Created on Apr, 2014
 '''
 import unittest
 
-from radlr.parser import meta_parser
 from parsimonious.exceptions import ParseError
+from radlr.parser import meta_parser
 
 
 class TestMetaParser(unittest.TestCase):
