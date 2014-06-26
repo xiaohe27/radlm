@@ -1,0 +1,3 @@
+[submodule "parsimonious"]
+	path = parsimonious
+	url = git@github.com:lgerardSRI/parsimonious.git
