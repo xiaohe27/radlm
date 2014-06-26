@@ -22,7 +22,6 @@ from radlr.errors import log1, log_err, log3, log2
 from radlr.metaParser import meta_parser
 from radlr.rast import AstNode, Ast, AstVisitor, spp_ast
 
-
 class Env:
     """ Environment associated to a language:
     env.kinds maps kind_name -> 'clas' | 'typ' | 'enum' | 'struct'

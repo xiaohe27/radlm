@@ -32,7 +32,7 @@ verbgroup.add_argument('--verbose', '-v', dest='verb', action='count',
     help='increase verbosity by 1')
 parser.add_argument('--warning_as_errors', action='store_true')
 parser.add_argument('--continue_when_errors', action='store_true')
-
+parser.add_argument('--gen', action='accumulate', default='ROS')
 args = parser.parse_args()
 
 errors.continue_when_errors = args.continue_when_errors
@@ -81,8 +81,9 @@ if not radllib_link.exists():
 
 
 #################
-# From here, the ast is "frozen" (a node will keep its address),
-# to allow cross referencing, etc.
+# From here, the ast is "structurally frozen",
+# No new nodes/children are added and nodes keep their address.
+# This allow cross referencing, etc.
 #################
 
 # Checks
