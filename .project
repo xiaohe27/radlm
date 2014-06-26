@@ -3,6 +3,7 @@
 	<name>radler</name>
 	<comment></comment>
 	<projects>
+		<project>parsimonious</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
@@ -14,4 +15,15 @@
 	<natures>
 		<nature>org.python.pydev.pythonNature</nature>
 	</natures>
+	<filteredResources>
+		<filter>
+			<id>1403765026878</id>
+			<name></name>
+			<type>10</type>
+			<matcher>
+				<id>org.eclipse.ui.ide.multiFilter</id>
+				<arguments>1.0-projectRelativePath-matches-false-false-lib</arguments>
+			</matcher>
+		</filter>
+	</filteredResources>
 </projectDescription>
