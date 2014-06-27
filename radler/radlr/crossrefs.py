@@ -3,9 +3,9 @@ Created on May, 2014
 
 @author: Léonard Gérard leonard.gerard@sri.com
 '''
-from astutils.idents import Ident
-from radlr.errors import warning
-from radlr.rast import AstVisitor
+from radler.astutils.idents import Ident
+from radler.radlr.errors import warning
+from radler.radlr.rast import AstVisitor
 
 
 def _check_and_map_topics_publisher(ast):

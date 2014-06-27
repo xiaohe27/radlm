@@ -11,17 +11,23 @@ The output is composed of
     - 'types': a mapping between type names and 
 '''
 
-from astutils.idents import NonExistingIdent, Ident
-from astutils.nodeutils import clean_node, ParseVisitor, spprint_node
-from astutils.tools import BucketDict, str
+from radler.astutils.idents import NonExistingIdent, Ident
+from radler.astutils.nodeutils import clean_node, ParseVisitor, spprint_node
+from radler.astutils.tools import BucketDict, str
 import parsimonious
 from parsimonious.exceptions import IncompleteParseError
 from parsimonious.grammar import Grammar
-from radlr import sanitize
-from radlr.errors import log1, log_err, log3, log2
-from radlr.metaParser import meta_parser
-from radlr.rast import AstNode, Ast, AstVisitor, spp_ast
+from radler.radlr import sanitize
+from radler.radlr.errors import log1, log_err, log3, log2
+from radler.radlr.metaParser import meta_parser
+from radler.radlr.rast import AstNode, Ast, AstVisitor, spp_ast
+from radler.astutils.location import Location
+from collections import OrderedDict
 
+def loc_of_parsimonious(parsimonious_node):
+    return Location('', parsimonious_node.full_text,
+                        parsimonious_node.start,
+                        parsimonious_node.end)
 
 class Env:
     """ Environment associated to a language:
@@ -29,7 +35,7 @@ class Env:
     env.keywords is a set of keywords
     """
     def __init__(self, keywords):
-        self.kinds = dict()
+        self.kinds = OrderedDict()
         self.keywords = set(keywords)
 
 
@@ -173,12 +179,12 @@ def gen_tree_to_ast(language_tree, env):
                 we extract the special group named 'value'."""
             childs, _ = visitor.mapacc(node.children, namespace)
             value = childs[1].match.group('value')
+            loc = loc_of_parsimonious(node)
             if isinstance(childs[0], parsimonious.nodes.Node):
                 name = childs[0].text
-                n = AstNode(kind, name, [value], namespace, node.location)
             else: #generated a kind since none is given
                 name = namespace.gen_fresh("_"+kind)
-                n = AstNode(kind, name, [value], namespace, node.location)
+            n = AstNode(kind, name, [value], namespace, loc)
             namespace.register(name, n)
             return n, namespace
 
@@ -239,7 +245,7 @@ def gen_tree_to_ast(language_tree, env):
         def _lang(visitor, node, namespace):
             #depth first, get a list of definitions
             defs, _ = visitor.mapacc(node.children, namespace)
-            return (node.location, defs), namespace
+            return (loc_of_parsimonious(node), defs), namespace
 
         #get the _ident from _solo_ident
         menv['_solo_ident'] = ParseVisitor.left_mapacc

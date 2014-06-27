@@ -12,7 +12,7 @@ Created on May, 2014
                            placed on the right of any leaf)
 """
 
-from astutils.nodeutils import clean_node
+from radler.astutils.nodeutils import clean_node
 from parsimonious import Grammar
 from parsimonious.grammar import rule_syntax
 

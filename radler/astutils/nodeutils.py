@@ -7,7 +7,7 @@ Created on May 2014
 
 from copy import copy
 
-from astutils.nodetrees import Functor
+from radler.astutils.nodetrees import Functor
 from parsimonious.nodes import Node
 
 

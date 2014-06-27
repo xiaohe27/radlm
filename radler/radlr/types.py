@@ -3,8 +3,8 @@ Created on Jun, 2014
 
 @author: Léonard Gérard leonard.gerard@sri.com
 '''
-from radlr import infos
-from radlr.errors import internal_error
+from radler.radlr import infos
+from radler.radlr.errors import internal_error
 
 
 def of(node):

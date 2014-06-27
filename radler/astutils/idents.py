@@ -5,9 +5,9 @@ Created on May, 2014
 
 Used to ensure uniqueness of identifiers.
 '''
-from astutils.location import dummy_loc
-from astutils.tools import str
-from radlr.errors import internal_error, error
+from radler.astutils.location import dummy_loc
+from radler.astutils.tools import str
+from radler.radlr.errors import internal_error, error
 
 
 class NonExistingIdent(AttributeError): pass

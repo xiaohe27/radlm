@@ -8,10 +8,10 @@ Generate one ROS _node.cpp file per node declaration.
 '''
 from pathlib import Path
 
-from astutils.idents import Ident
-from astutils.tools import write_file
-from radlr.errors import error, warning, internal_error
-from radlr.rast import AstVisitor
+from radler.astutils.idents import Ident
+from radler.astutils.tools import write_file
+from radler.radlr.errors import error, warning, internal_error
+from radler.radlr.rast import AstVisitor
 
 
 templates = {

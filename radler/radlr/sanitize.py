@@ -3,8 +3,8 @@ Created on Jun, 2014
 
 @author: Léonard Gérard leonard.gerard@sri.com
 '''
-from astutils.idents import Ident
-from radlr.rast import AstVisitor
+from radler.astutils.idents import Ident
+from radler.radlr.rast import AstVisitor
 
 
 def _un_onnode(visitor, node, namespace):

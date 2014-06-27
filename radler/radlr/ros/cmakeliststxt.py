@@ -4,8 +4,8 @@ Created on May, 2014
 @author: Léonard Gérard leonard.gerard@sri.com
 '''
 
-from astutils.tools import write_file
-from radlr.rast import AstVisitor
+from radler.astutils.tools import write_file
+from radler.radlr.rast import AstVisitor
 
 
 _template_cmakeliststxt = """

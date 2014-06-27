@@ -7,7 +7,7 @@ import unittest
 
 import pypeg2
 
-from radlr.Oparser import InlineValue, Topic
+from radler.radlr.Oparser import InlineValue, Topic
 
 
 class Test_InlineValue(unittest.TestCase):

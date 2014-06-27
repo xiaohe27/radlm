@@ -12,8 +12,8 @@ from collections import MutableSequence, Sequence, MutableMapping
 from copy import copy
 from functools import partial
 
-from astutils.tools import Bunch
-from radlr.errors import internal_error
+from radler.astutils.tools import Bunch
+from radler.radlr.errors import internal_error
 
 
 def mapred(f, l, acc, inplace):

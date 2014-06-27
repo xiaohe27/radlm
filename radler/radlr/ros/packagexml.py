@@ -3,7 +3,7 @@ Created on May, 2014
 
 @author: Léonard Gérard leonard.gerard@sri.com
 '''
-from astutils.tools import write_file
+from radler.astutils.tools import write_file
 
 
 _template_package_xml = """<?xml version="1.0"?>

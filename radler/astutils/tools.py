@@ -6,7 +6,7 @@ Created on May, 2014
 import builtins
 from collections import OrderedDict
 
-from radlr.errors import log1
+from radler.radlr.errors import log1
 
 
 class Bunch(object):

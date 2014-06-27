@@ -7,14 +7,14 @@ Created on May, 2014
 import argparse
 from pathlib import Path
 
-from astutils.idents import Namespace
-from astutils.tools import ensure_dir
-from radlr import crossrefs, pwds, errors, arrays, infos
-from radlr.errors import log_err
-from radlr.examples import basic_1to1, thermostat, onetopic
-import radlr.language
-from radlr.parser import Semantics
-from radlr.ros import msg, node, packagexml, cmakeliststxt
+from radler.astutils.idents import Namespace
+from radler.astutils.tools import ensure_dir
+from radler.radlr import crossrefs, pwds, errors, arrays, infos
+from radler.radlr.errors import log_err
+from radler.radlr.examples import basic_1to1, thermostat, onetopic
+from radler.radlr import language
+from radler.radlr.parser import Semantics
+from radler.radlr.ros import msg, node, packagexml, cmakeliststxt
 
 
 parser = argparse.ArgumentParser()
@@ -32,7 +32,8 @@ verbgroup.add_argument('--verbose', '-v', dest='verb', action='count',
     help='increase verbosity by 1')
 parser.add_argument('--warning_as_errors', action='store_true')
 parser.add_argument('--continue_when_errors', action='store_true')
-parser.add_argument('--gen', action='accumulate', default='ROS')
+#TODO: 8 flags to decide the generation
+#parser.add_argument('--gen', action='accumulate', default='ROS')
 args = parser.parse_args()
 
 errors.continue_when_errors = args.continue_when_errors
@@ -40,7 +41,7 @@ errors.warning_as_errors = args.warning_as_errors
 errors.verbosity_level = args.verb
 
 #Bootstrap the semantics from the language definition
-radlr_semantics = Semantics(radlr.language)
+radlr_semantics = Semantics(language)
 
 # t = radlr_semantics(onetopic.code)
 # basic_1to1 = radlr_semantics(basic_1to1.code)

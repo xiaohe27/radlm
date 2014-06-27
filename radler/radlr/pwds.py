@@ -7,7 +7,7 @@ Add a _pwd attribute to every nodes qualifying the current path.
 When a relative path is used, 
 '''
 
-from radlr.rast import AstVisitor
+from radler.radlr.rast import AstVisitor
 
 
 def _pwd(visitor, node, pwd):

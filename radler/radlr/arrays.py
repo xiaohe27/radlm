@@ -6,9 +6,9 @@ Created on Jun, 2014
 Verify array values are coherent with their type.
 
 '''
-from radlr import types
-from radlr.errors import error
-from radlr.rast import AstVisitor
+from radler.radlr import types
+from radler.radlr.errors import error
+from radler.radlr.rast import AstVisitor
 
 
 def _tc_arrays(visitor, array, _):

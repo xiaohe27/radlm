@@ -4,9 +4,9 @@ Created on May, 2014
 @author: Léonard Gérard leonard.gerard@sri.com
 '''
 
-from astutils.idents import Namespace
-from astutils.nodetrees import Functor
-from astutils.tools import str
+from radler.astutils.idents import Namespace
+from radler.astutils.nodetrees import Functor
+from radler.astutils.tools import str
 
 
 class AstNode:
