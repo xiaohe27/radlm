@@ -222,12 +222,12 @@ def gen_tree_to_ast(language_tree, env):
             thisnamespace = namespace.push()
             childs, _ = visitor.mapacc(node.children, thisnamespace)
             fields = BucketDict(default_fields).append(childs[2])
+            loc = loc_of_parsimonious(node)
             if isinstance(childs[0], parsimonious.nodes.Node):
                 name = childs[0].text
-                n = AstNode(kind, name, fields, thisnamespace, node.location)
             else: #generate a name since none is given
                 name = namespace.gen_fresh("_"+kind)
-                n = AstNode(kind, name, fields, thisnamespace, node.location)
+            n = AstNode(kind, name, fields, thisnamespace, loc)
             namespace.register(name, n)
             return n, namespace
 
@@ -270,8 +270,8 @@ def gen_tree_to_ast(language_tree, env):
                 node = namespace.get_node(name)
             except NonExistingIdent:
                 raise Exception("{l}Undefined identifier {t}"
-                    "".format(l=str(leaf.location), t=name))
-            return Ident(name, False, leaf.location, node), namespace
+                    "".format(l=str(loc_of_parsimonious(leaf)), t=name))
+            return Ident(name, False, loc_of_parsimonious(leaf), node), namespace
         else:
             return leaf, namespace
     def onnode(visitor, node, namespace):
