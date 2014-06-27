@@ -371,7 +371,7 @@ class Semantics:
         log3(spprint_node(program_tree))
         ast = self.tree_to_ast(program_tree, program_name, namespace)
         ast = sanitize.update_idents(ast, namespace)
-        log2(spp_ast(ast))
+        log1(spp_ast(ast))
         #TODO: 5 enable ast checks
 #         self.ast_checker(ast)
         return ast

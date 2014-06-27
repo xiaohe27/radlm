@@ -6,7 +6,7 @@ Created on May, 2014
 import builtins
 from collections import OrderedDict
 
-from radler.radlr.errors import log1
+from radler.radlr.errors import log2
 
 
 class Bunch(object):
@@ -85,7 +85,7 @@ class BucketDict(OrderedDict):
 def write_file(filepath, filecontent):
     if __debug__:
         exists = ' (existing)' if filepath.exists() else ''
-        log1("file {filepath}{exists} :\n"
+        log2("file {filepath}{exists} :\n"
               "------------------------\n"
               "{filecontent}\n"
               "------------------------\n".format(**locals()))
