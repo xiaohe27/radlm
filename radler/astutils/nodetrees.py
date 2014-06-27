@@ -4,8 +4,8 @@ Created on May, 2014
 @author: Léonard Gérard leonard.gerard@sri.com
 
 The central concept here is a node tree.
-    A node in a node tree is either a node, a list, a tuple, a dict
-    anything else is considered a leaf.
+    A node in a node tree is an instance of node_class, list, tuple or dict.
+    Anything else is considered a leaf.
 
 '''
 from collections import MutableSequence, Sequence, MutableMapping
@@ -188,11 +188,12 @@ def Functor(node_class, attr_children, attr_name):
                 return var if var else mapacc_ver if mapacc else mapred_ver
 
             self.definitions = definitions if definitions else {}
-            self.default = optarg(default, Visitor.node_mapacc, Visitor.node_mapred)
-            self.onlist = optarg(onlist, Visitor.list_mapacc, Visitor.list_mapred)
-            self.ontuple = optarg(ontuple, Visitor.tuple_mapacc, Visitor.tuple_mapred)
-            self.ondict = optarg(ondict, Visitor.dict_mapacc, Visitor.dict_mapred)
-            self.onleaf = optarg(onleaf, Visitor.leaf_mapacc, Visitor.leaf_mapred)
+
+            self.default = optarg(default, Visitor.node_mapacc, Visitor.node_mapred)# @UndefinedVariable
+            self.onlist = optarg(onlist, Visitor.list_mapacc, Visitor.list_mapred)# @UndefinedVariable
+            self.ontuple = optarg(ontuple, Visitor.tuple_mapacc, Visitor.tuple_mapred)# @UndefinedVariable
+            self.ondict = optarg(ondict, Visitor.dict_mapacc, Visitor.dict_mapred)# @UndefinedVariable
+            self.onleaf = optarg(onleaf, Visitor.leaf_mapacc, Visitor.leaf_mapred)# @UndefinedVariable
             self.inplace = inplace
             self.params = params
 
