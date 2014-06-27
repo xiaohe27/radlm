@@ -20,7 +20,7 @@ from parsimonious.grammar import Grammar
 from radler.radlr import sanitize
 from radler.radlr.errors import log1, log_err, log3, log2
 from radler.radlr.metaParser import meta_parser
-from radler.radlr.rast import AstNode, Ast, AstVisitor, spp_ast
+from radler.radlr.rast import AstNode, Ast, AstVisitor
 from radler.astutils.location import Location
 from collections import OrderedDict
 
@@ -371,7 +371,7 @@ class Semantics:
         log3(spprint_node(program_tree))
         ast = self.tree_to_ast(program_tree, program_name, namespace)
         ast = sanitize.update_idents(ast, namespace)
-        log1(spp_ast(ast))
+        log1(str(ast))
         #TODO: 5 enable ast checks
 #         self.ast_checker(ast)
         return ast

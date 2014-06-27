@@ -7,6 +7,7 @@ Created on May, 2014
 from radler.astutils.idents import Namespace
 from radler.astutils.nodetrees import Functor
 from radler.astutils.tools import str
+import types
 
 
 class AstNode:
@@ -64,16 +65,24 @@ class AstNode:
         object.__getattribute__(self, '_namespace')
         return self._namespace.get_node(attr)
 
-    def __str__(self):
-        return "{n} : {k} {c}".format(n=self._name, k=self._kind,
-                                       c=str(self._children))
+    @property
+    def _typed_name(self):
+        return "{n} : {k}".format(n=self._name, k=self._kind)
+
+    def __str__(self): pass # This is replaced bellow since we need the class
+    #to be defined before we can define a visitor which will give us a nice
+    #printing function. 
+
     def __repr__(self):
         return self.__str__()
 
 
-rastutils = Functor(AstNode, '_children', '_kind')
-AstVisitor = rastutils.Visitor
-spp_ast = rastutils.spprint_node
+AstVisitor = Functor(AstNode, '_children', '_kind').Visitor
+"""The visitor for Ast and AstNodes"""
+
+AstNode.__str__ = Functor(AstNode, '_children', '_typed_name').spprint_node
+"""Pretty printer for AstNodes register in the class"""
+
 
 class Ast(AstNode):
     """ An ast object stores the toplevel definitions in the mappings
@@ -91,5 +100,5 @@ class Ast(AstNode):
 
     def _metakind_of_kind(self, k):
         return self._kinds[k]
-    def __str__(self):
-        return "defs:\n{defs}".format(defs=str(self._namespace))
+#     def __str__(self):
+#         return "{defs}".format(defs=str(self._children))
