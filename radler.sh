@@ -1,1 +1,3 @@
-PYTHONPATH='lib/parsimonious:' python3.4 radler/main.py
+#!/bin/bash
+SCRIPT_DIR=`dirname $(python -c "import os, sys; print(os.path.realpath(\"$0\"))")`
+PYTHONPATH="$SCRIPT_DIR/lib/parsimonious:$SCRIPT_DIR" python3.4 $SCRIPT_DIR/radler/main.py $@
