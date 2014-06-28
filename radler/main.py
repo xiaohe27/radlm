@@ -18,7 +18,7 @@ from radler.radlr.ros import msg, node, packagexml, cmakeliststxt
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument('file', help='the RADL description file')
+parser.add_argument('--file', help='the RADL description file')
 parser.add_argument('--dest', default='src',
     help='the destination directory for generated files')
 verbgroup = parser.add_mutually_exclusive_group()
@@ -46,6 +46,11 @@ radlr_semantics = Semantics(language)
 # t = radlr_semantics(onetopic.code)
 # basic_1to1 = radlr_semantics(basic_1to1.code)
 # tast = radlr_semantics(thermostat.code, 'toto')
+
+if not args.file:
+    import tkinter.filedialog
+    tkinter.Tk().withdraw() # Close the root window
+    args.file = tkinter.filedialog.askopenfilename()
 
 source = Path(args.file).resolve() #TODO: 4 pathlib issue with '~'
 if not source.is_file():
