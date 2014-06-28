@@ -24,7 +24,7 @@ parser.add_argument('--dest', default='src',
 verbgroup = parser.add_mutually_exclusive_group()
 verbgroup.add_argument('--silent', dest='verb', action='store_const', const=-1,
     default=0, help='set verbosity to -1')
-verbgroup.add_argument('--verbosity', dest='verb', default=0,
+verbgroup.add_argument('--verbosity', type=int, dest='verb', default=0,
     help='verbosity level, negative removes warnings, '
          'positive gives additional informations, '
          'level 2 and higher are mostly for debugging purposes.')
