@@ -1,0 +1,17 @@
+#include "thermometer.h"
+
+#include <stdlib.h>
+
+namespace house_thermo {
+
+<<<<<<< HEAD
+=======
+}
+>>>>>>> 9daccce3a9d7a8907726c30dafe610f4134ab089
+void Thermometer::step(_in_thermometer * inmsgs, _out_thermometer * outmsgs) {
+  float noise = (float)(rand()%20000 - 10000)/10000;
+  outmsgs->thermometer_temp->temp = inmsgs->house_temp->temp + noise;
+}
+
+}
+

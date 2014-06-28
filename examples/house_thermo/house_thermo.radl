@@ -1,0 +1,105 @@
+################ Pervasives
+
+default_sub : subscriber {
+    CXX { PATH "house_thermo" FILENAME "radl_roslib" CLASS "radl::Default_sub" }
+}
+default_pub : publisher {
+    CXX { PATH "house_thermo" FILENAME "radl_roslib" CLASS "radl::Default_pub" }
+}
+
+
+############# house_thermo
+
+basic_rate : msec 50
+
+house : node {
+    SUBSCRIBES
+        heater_rate { TOPIC heater_data
+                      SUBSCRIBER default_sub MAXLATENCY msec 1}
+    PUBLISHES
+        house_temp : publication { TOPIC house_data
+                                   PUBLISHER default_pub}
+    PERIOD basic_rate
+    CXX { PATH "house_thermo"
+          HEADER   "house.h"
+          FILENAME "house.cpp"
+          CLASS "House" }
+}
+
+house_data : topic {
+    FIELDS
+        temp : float32 75.0
+}
+
+# flatten struct in topic
+# house_data2 : topic {
+#    STRUCT twist
+# }
+
+thermometer : node {
+    PATH "house_thermo"
+    SUBSCRIBES
+        house_temp { TOPIC house_data
+                     SUBSCRIBER default_sub MAXLATENCY msec 1}
+    PUBLISHES
+        thermometer_temp { TOPIC thermometer_data
+                           PUBLISHER default_pub}
+    PERIOD 10
+    CXX { HEADER "thermometer.h" FILENAME "thermometer.cpp" CLASS "Thermometer" }
+}
+
+thermometer_data : topic {
+    FIELDS
+        temp : float32 75
+}
+
+thermostat_button : topic {
+    FIELDS
+        status : bool true
+}
+
+thermostat_set : topic {
+    FIELDS
+        temp : float32 75
+}
+
+
+thermostat : node {
+    PATH "house_thermo"
+    SUBSCRIBES
+        thermostat_switch { TOPIC thermostat_button
+                            SUBSCRIBER default_sub MAXLATENCY msec 1}
+        thermometer_temp { TOPIC thermometer_data
+                           SUBSCRIBER default_sub MAXLATENCY msec 1}
+        thermostat_set_temp { TOPIC thermostat_set
+                              SUBSCRIBER default_sub MAXLATENCY msec 1}
+    PUBLISHES
+        heater_switch { TOPIC thermostat_data
+                        PUBLISHER default_pub}
+    CXX
+        { HEADER "thermostat.h" FILENAME "thermostat.cpp" CLASS "Thermostat" }
+    PERIOD basic_rate
+}
+
+thermostat_data : topic {
+    FIELDS
+        switch_on : bool true
+}
+
+heater : node {
+    PATH "house_thermo"
+    SUBSCRIBES
+        heater_switch { TOPIC thermostat_data
+                        SUBSCRIBER default_sub MAXLATENCY msec 1}
+    PUBLISHES
+        heater_rate { TOPIC heater_data
+                      PUBLISHER default_pub}
+    PERIOD
+        basic_rate
+    CXX { HEADER "heater.h" FILENAME "heater.cpp" CLASS "Heater" }
+}
+
+heater_data : topic {
+    FIELDS
+        rate : float32 3
+}
