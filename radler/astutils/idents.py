@@ -43,10 +43,7 @@ class Ident:
         self._node = node
 
     def __str__(self):
-        if self._node:
-            return "${self._name} -> {self._node}".format(self=self)
-        else:
-            return "${} -/>/".format(self._name)
+        return "${}".format(str(self._name))
     def __repr__(self):
         return self.__str__()
     #container convention, behave like node
