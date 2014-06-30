@@ -25,7 +25,7 @@ public:
   Default_sub(const msg_ptr& init, const ros::Duration max_latency,
               const ros::Duration pub_period) {
     this->mailbox = init;
-    this->flags = 0;
+    this->flags = STALE;
     //Wait for ros time to be synchronized
     ros::Time::waitForValid();
     //Set reception date to an invalid date
