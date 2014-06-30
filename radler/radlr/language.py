@@ -130,11 +130,8 @@ class topic
     ROS__EXTERNAL_DEF string * #TODO: 5 optional field
 
 
-class topic_of_struct
-    STRUCT struct
-
 class publication
-    TOPIC topic/topic_of_struct
+    TOPIC topic
     PUBLISHER publisher
 
 class subscriber
@@ -144,7 +141,7 @@ class publisher
     CXX cxx_class
 
 class subscription
-    TOPIC topic/topic_of_struct
+    TOPIC topic
     SUBSCRIBER subscriber
 #TODO: 5 support '?' modifier in the meta grammar and default values.
     MAXLATENCY msec

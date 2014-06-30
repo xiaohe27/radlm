@@ -49,8 +49,6 @@ def of(node):
         t = ArrayType(size, elem_t)
     elif node._kind == 'struct' or node._kind == 'topic':
         t = StructType(tuple(((f._name, of(f)) for f in node['FIELDS'])))
-    elif node._kind == 'topic_of_struct':
-        t = of(node['STRUCT'])
     else:
         internal_error("Trying to get the datatype of non data node.\n{}"
                        "".format(str(node._location)))

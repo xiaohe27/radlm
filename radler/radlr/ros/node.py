@@ -12,6 +12,7 @@ from radler.astutils.idents import Ident
 from radler.astutils.tools import write_file
 from radler.radlr.errors import error, warning, internal_error
 from radler.radlr.rast import AstVisitor
+from radler.radlr import infos
 
 
 templates = {
@@ -175,25 +176,14 @@ def to_ros_val(node):
         #TODO: 5 instead of inlining values, use variable declarations
         pass
     if node._kind == 'struct':
-        return '{{{}}}'.format(', '.join((to_ros_val(v) for v in node['FIELDS'])))
+        return '{{{}}}'.format(', '.join(map(to_ros_val, node['FIELDS'])))
     elif node._kind == 'field_struct':
         return to_ros_val(node['STRUCT'])
     elif node._kind == 'array':
-        return '{{{}}}'.format(', '.join((to_ros_val(v) for v in node['VALUES'])))
+        return '{{{}}}'.format(', '.join(map(to_ros_val, node['VALUES'])))
     else:
         return node._val
 
-def topic_fields(topic):
-    if topic._kind == 'topic_of_struct':
-        return topic['STRUCT']['FIELDS']
-    else:
-        return topic['FIELDS']
-
-def topic_type(topic):
-    if topic._kind == 'topic_of_struct':
-        return topic['STRUCT']._name
-    else:
-        return topic._name
 
 def gennode(visitor, node, acc):
     """ Nodes are not recursive for now """
@@ -218,10 +208,10 @@ def gennode(visitor, node, acc):
         d.update({'name'        : pub._name,
                   'actionname'  : '_' + pub._name + '_pub',
                   'actionclass' : pub['PUBLISHER']['CXX']['CLASS']._val,
-                  'topic'       : topic_type(pub['TOPIC']),
+                  'topic'       : infos.ros_msgs[pub['TOPIC']._name],
                   'initmsg'     : '_init_' + pub._name})
         d['init_msg_fill'] = ''
-        for field in topic_fields(pub['TOPIC']):
+        for field in pub['TOPIC']['FIELDS']:
             d.update({'fieldname': field._name, 'fieldval': to_ros_val(field)})
             app(d, 'init_msg_fill')
         for f in pub_templates: app(d, f)
@@ -235,7 +225,7 @@ def gennode(visitor, node, acc):
         d.update({'name'        : sub._name,
                   'actionname'  : '_' + sub._name + '_sub',
                   'actionclass' : sub['SUBSCRIBER']['CXX']['CLASS']._val,
-                  'topic'       : topic_type(sub['TOPIC']),
+                  'topic'       : infos.ros_msgs[sub['TOPIC']._name],
                   'initmsg'     : '_init_' + sub._name,
                   'maxlatency'  : to_ros_duration(sub['MAXLATENCY'])})
         try:
@@ -246,7 +236,7 @@ def gennode(visitor, node, acc):
             pubperiod = None
         d['pubperiod'] = to_ros_duration(pubperiod)
         d['init_msg_fill'] = ''
-        for field in topic_fields(sub['TOPIC']):
+        for field in sub['TOPIC']['FIELDS']:
             d.update({'fieldname': field._name, 'fieldval': to_ros_val(field)})
             app(d, 'init_msg_fill')
         for f in sub_templates: app(d, f)
