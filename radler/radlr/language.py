@@ -83,9 +83,6 @@ type msec
     REGEX ~r"\b(?P<value>\d+)"
     CXX "std::int32_t"
 
-type basic_type
-    REGEX ~r"\b(?P<value>int8|int16)_t"
-    CXX "radl__internal__should__never_get__outside"
 
 class cxx_class
     PATH string *
@@ -101,13 +98,13 @@ class cxx_file
     PATH string *
     FILENAME string *
 
-class library
-    CXX cxx_file *
+#TODO: 5 support libraries
+# class library
+#     CXX cxx_file *
 # ->
 # add_library(<name> [STATIC | SHARED | MODULE]
 #               [EXCLUDE_FROM_ALL]
 #               source1 source2 ... sourceN)
-
 #class external_library
 #     INCLUDE_PATH string
 #     FILENAME string
@@ -115,34 +112,24 @@ class library
 class struct
     FIELDS int8/uint8/int16/uint16/int32/uint32/int64/uint64/
            float32/float64/
-           bool/string/struct/field_struct/array *
+           bool/string/struct/array *
+    EXTERNAL_ROS_DEF string * #TODO: 5 optional field
 
-class field_struct
-    STRUCT struct
-
-
-
-#TODO: 5 add structs inside arrays
-class array_type
-    ELEM_TYPE basic_type/array_type
-    SIZE uint8
 
 class array
-    TYPE array_type
     VALUES int8/uint8/int16/uint16/int32/uint32/int64/uint64/
            float32/float64/
-           bool/string/array *
+           bool/string/struct/array *
 
 
 class topic
-#Pay attention to the order of the types, parsing higher priority to the firsts
+#Pay attention to the order of the types, parsing higher priority first
     FIELDS int8/uint8/int16/uint16/int32/uint32/int64/uint64/
            float32/float64/
-           bool/string/array/field_struct/struct *
-#    PACKED bool
+           bool/string/struct/array *
+    ROS__EXTERNAL_DEF string * #TODO: 5 optional field
 
 
-#TODO: 4 struct should be real types... incremental parsing?
 class topic_of_struct
     STRUCT struct
 

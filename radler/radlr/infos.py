@@ -8,6 +8,11 @@ Especially useful to break circular dependencies since it depends on nothing.
 '''
 
 ast = None
-"The program ast. Actually set by the parser"
+"The program ast. Actually set by the parser."
 
 
+ros_type_of_struct = dict()
+"A mapping between type and ros type name."
+
+ros_msgs = dict()
+"A mapping between node names and ros type name."

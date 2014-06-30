@@ -97,11 +97,11 @@ with source.open() as f:
 # This allow cross referencing, etc.
 ########
 
-#Transparent alias to forget about them
-alias.make_transparent(infos.ast)
-
 # Checks
 arrays.typecheck(infos.ast)
+
+#Transparent alias to forget about them
+alias.make_transparent(infos.ast)
 
 # Embedding information in nodes to allow easier manipulation
 crossrefs.add(infos.ast)
