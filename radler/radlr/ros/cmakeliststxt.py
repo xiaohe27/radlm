@@ -15,7 +15,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   message_generation
 )
-add_definitions(-DIN__RADL__GENERATED__CONTEXT)
+add_definitions(-DIN_RADL_GENERATED_CONTEXT)
 add_message_files(
   FILES
   {msg_files}
