@@ -11,11 +11,13 @@ from radler.astutils.idents import Namespace
 from radler.astutils.tools import ensure_dir
 from radler.radlr import crossrefs, pwds, errors, arrays, infos
 from radler.radlr.errors import log_err
-from radler.radlr.examples import basic_1to1, thermostat, onetopic
 from radler.radlr import language
 from radler.radlr.parser import Semantics
 from radler.radlr.ros import msg, node, packagexml, cmakeliststxt
 
+########
+# Parse arguments
+########
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--file', help='the RADL description file')
@@ -40,19 +42,12 @@ errors.continue_when_errors = args.continue_when_errors
 errors.warning_as_errors = args.warning_as_errors
 errors.verbosity_level = args.verb
 
-#Bootstrap the semantics from the language definition
-radlr_semantics = Semantics(language)
-
-# t = radlr_semantics(onetopic.code)
-# basic_1to1 = radlr_semantics(basic_1to1.code)
-# tast = radlr_semantics(thermostat.code, 'toto')
-
 if not args.file:
     import tkinter.filedialog
     tkinter.Tk().withdraw() # Close the root window
     args.file = tkinter.filedialog.askopenfilename()
 
-source = Path(args.file).resolve() #TODO: 4 pathlib issue with '~'
+source = Path(args.file).resolve()
 if not source.is_file():
     log_err("The source file {} doesn't exists.".format(source))
     exit(-1)
@@ -66,11 +61,6 @@ if not dest_dir.is_dir():
 root_dir = Path(args.dest) / name
 ensure_dir(root_dir)
 
-
-global_namespace = Namespace()
-
-with source.open() as f:
-    infos.ast = radlr_semantics(f.read(), name, global_namespace)
 
 msg_dir = root_dir / 'msg'
 ensure_dir(msg_dir)
@@ -86,11 +76,26 @@ if not radllib_link.exists():
     radllib_link.symlink_to(lib_dir, True)
 
 
-#################
-# From here, the ast is "structurally frozen",
+########
+# Bootstrap the semantics from the language definition
+########
+radlr_semantics = Semantics(language)
+
+
+########
+# Parse
+########
+
+global_namespace = Namespace()
+with source.open() as f:
+    infos.ast = radlr_semantics(f.read(), name, global_namespace)
+
+
+########
+# From here on, the ast is "structurally frozen",
 # No new nodes/children are added and nodes keep their address.
 # This allow cross referencing, etc.
-#################
+########
 
 # Checks
 arrays.typecheck(infos.ast)

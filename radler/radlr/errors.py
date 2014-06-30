@@ -42,3 +42,7 @@ def error(message, location):
 
 def internal_error(message):
     raise Exception("\n=!= internal error =!=\n" + message)
+
+def internal_assert(v, message):
+    if not v:
+        raise Exception("\n=!= internal error =!=\n" + message)
