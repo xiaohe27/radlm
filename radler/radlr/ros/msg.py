@@ -39,7 +39,7 @@ def collect(ast):
                         " ros type {}".format(str(rt)), node._location)
         else:
             if not expect_rt:
-                rt = ast._namespace.gen_fresh('radl__struct')
+                rt = ast._namespace.gen_fresh('radl__msg')
             else:
                 rt = expect_rt
             s[t] = rt
