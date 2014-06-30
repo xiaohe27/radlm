@@ -9,7 +9,7 @@ from pathlib import Path
 
 from radler.astutils.idents import Namespace
 from radler.astutils.tools import ensure_dir
-from radler.radlr import crossrefs, pwds, errors, arrays, infos
+from radler.radlr import crossrefs, pwds, errors, arrays, infos, alias
 from radler.radlr.errors import log_err
 from radler.radlr import language
 from radler.radlr.parser import Semantics
@@ -96,6 +96,9 @@ with source.open() as f:
 # No new nodes/children are added and nodes keep their address.
 # This allow cross referencing, etc.
 ########
+
+#Transparent alias to forget about them
+alias.make_transparent(infos.ast)
 
 # Checks
 arrays.typecheck(infos.ast)

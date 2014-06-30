@@ -43,14 +43,14 @@ def gen_grammar(language_tree, params, env):
     # We can update in place kinds, since we do a depth first...
     # not pretty but python dict are easier as mutable variables
 
-    def _alias(visitor, node, env):
+    def _unalias(visitor, node, env):
         """ unalias : replace a node with its only child
         """
         (node, env) = visitor.mapred(node, env)
         return node.children[0], env
 
-    symbol = _alias
-    kind = _alias
+    symbol = _unalias
+    kind = _unalias
 
     def regex(visitor, node, env):
         """ Keep it as is.
@@ -82,8 +82,10 @@ def gen_grammar(language_tree, params, env):
         env.kinds[kind] = 'type' #register this type
         kind_annoted = '_'+kind+'_annoted'
         kind_def = '_'+kind+'_def'
+        kind_decl = '_'+kind+'_decl'
         g = """{kind} = {kind_def} / {kind_annoted} / _solo_ident
             {kind_def} = ({kind_annoted} / '{kind}' / _ident)? _ {reg} _
+            {kind_decl} = {kind_def} / _alias
             {kind_annoted} = _ident _ ':' _ '{kind}' _
             """.format(**locals())
         return g, env
@@ -126,8 +128,10 @@ def gen_grammar(language_tree, params, env):
         fields = "( {0} )".format(') / ('.join(gfield_list))
         name_annoted = "_"+kind+"_annoted"
         name_def = "_"+kind+"_def"
+        name_decl = "_"+kind+"_decl"
         g = """{kind} = {name_def} / {name_annoted} / _solo_ident
             {name_def} = ({name_annoted} / '{kind}' / _ident )? _ '{{' _ ({fields})* '}}' _
+            {name_decl} = {name_def} / _alias
             {name_annoted} = _ident _ ':' _ '{kind}' _
             """.format(**locals())
         return g, env
@@ -141,7 +145,8 @@ def gen_grammar(language_tree, params, env):
         rules = '\n'.join(node.children[0])
         g = r"""{rules}
             _ident = ~r"(?!({keywords})\b)(?!{forbidden_prefix})[a-zA-Z][a-zA-Z0-9_]*"
-            _solo_ident = _ident _ !(':' / '{{')
+            _solo_ident = _ident _ !(':' / '{{' / '=')
+            _alias = _ident _ '=' _ _solo_ident
             _ = ~r"\s*(#[^\r\n]*\s*)*\s*"
             _end = ~r"$"
             """.format(rules=rules, keywords=keywords,
@@ -151,7 +156,7 @@ def gen_grammar(language_tree, params, env):
     gen = ParseVisitor(locals(), params=params)
     g, env = gen.visit(language_tree, env)
     if env.kinds:
-        topleveldefs = '_' + '_def / _'.join(env.kinds) + '_def'
+        topleveldefs = '_' + '_decl / _'.join(env.kinds) + '_decl'
     else:
         topleveldefs = ''
     lang = """_lang = _ ({tops})* _""".format(tops=topleveldefs)
@@ -190,6 +195,8 @@ def gen_tree_to_ast(language_tree, env):
 
         #the kind rule is simply replaced by its child : returns the ident
         menv[kind] = ParseVisitor.left_mapacc
+        #the _name_decl rule is a simple choice
+        menv['_'+kind+'_decl'] = ParseVisitor.left_mapacc
         #the _kind_def rule records a def in the ast
         menv['_'+kind+'_def'] = m_kind_def
         #the _kind_annoted forget the useless annotation
@@ -233,6 +240,8 @@ def gen_tree_to_ast(language_tree, env):
 
         #the kind rule is simply replaced by its child : returns the ident
         menv[kind] = ParseVisitor.left_mapacc
+        #the _name_decl rule is a simple choice
+        menv['_'+kind+'_decl'] = ParseVisitor.left_mapacc
         #the _name_def rule records a def in the ast
         menv['_'+kind+'_def'] = m_name_def
         #the _name_annoted forget the now useless annotation
@@ -247,9 +256,19 @@ def gen_tree_to_ast(language_tree, env):
             defs, _ = visitor.mapacc(node.children, namespace)
             return (loc_of_parsimonious(node), defs), namespace
 
+        def _alias(visitor, node, namespace):
+            #depth first, return three childs, ident '=' ident
+            loc = loc_of_parsimonious(node)
+            ((alias, _, target), _) = visitor.mapacc(node.children, namespace)
+            name = alias.text
+            n = AstNode('_alias', name, [target], namespace, loc)
+            namespace.register(name, n)
+            return n, namespace
+
         #get the _ident from _solo_ident
         menv['_solo_ident'] = ParseVisitor.left_mapacc
         menv['_lang'] = _lang
+        menv['_alias'] = _alias
         gen = ParseVisitor(menv)
         return gen, menv
 
@@ -316,6 +335,7 @@ def gen_ast_checker(language_tree):
                 ensure + gives a list of at least one element.
                 ensure * exists (even if empty).
             Ensure nodes without modifier are present once and only once.
+
             Check type of identifiers.
 
             We want to catch first errors in the higher levels:
