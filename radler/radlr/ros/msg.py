@@ -5,7 +5,7 @@ Created on May, 2014
 
 
 Generate one ROS .msg file per topic and struct type.
-If a struct as a ROS__EXTERNAL_MSG field, it is used instead of generating
+If a struct as a EXTERNAL_ROS_DEF field, it is used instead of generating
 a new one.
 '''
 
@@ -23,7 +23,7 @@ def struct_of_topic(struct_t):
 
 def collect(ast):
     """ return a set of struct types to be generated.
-    It is not to be generated if it has a field ROS__EXTERNAL_DEF,
+    It is not to be generated if it has a field EXTERNAL_ROS_DEF,
     or if it is already in infos.ros_types.
     """
     def _st(visitor, node, s):
@@ -32,7 +32,7 @@ def collect(ast):
         else:
             t = types.of(node)
         rt = infos.ros_type_of_struct.get(t, None)
-        expect_rt = node['ROS__EXTERNAL_DEF']
+        expect_rt = node['EXTERNAL_ROS_DEF']
         if rt:
             if expect_rt and expect_rt != rt:
                 warning("This struct will use already defined"
@@ -44,7 +44,7 @@ def collect(ast):
                 rt = expect_rt
             s[t] = rt
             infos.ros_type_of_struct[t] = rt
-        infos.ros_msgs[node._name] = rt
+        node._ros_msg_typename = rt
         return visitor.node_mapacc(node, s) #recursive call
 
     visitor = AstVisitor({'topic': _st, 'struct' : _st})

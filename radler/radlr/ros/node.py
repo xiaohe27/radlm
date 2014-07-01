@@ -98,27 +98,27 @@ struct {flags_struct} {{
 
 }}
 """
-, 'msg_include'       : '#include "{namespace}/{topic}.h"'
-, 'out_struct_def'    : "{topic}* {name};"
+, 'msg_include'       : '#include "{namespace}/{topic_t}.h"'
+, 'out_struct_def'    : "{topic_t}* {name};"
 , 'out_fill'          :
-"""{topic} {initmsg};
+"""{topic_t} {initmsg};
   {init_msg_fill}
   _out.{name} = &{initmsg};"""
 , 'pub_call'          : "{actionname}(*_out.{name});"
 , 'set_pub'           :
-"""ros::Publisher {actionname}_ros = _h.advertise<{topic}>("{name}", 2);
-  {actionclass}<{topic}> {actionname}({actionname}_ros);"""
-, 'in_struct_def'     : "{topic}::ConstPtr {name};"
+"""ros::Publisher {actionname}_ros = _h.advertise<{topic_t}>("{name}", 2);
+  {actionclass}<{topic_t}> {actionname}({actionname}_ros);"""
+, 'in_struct_def'     : "{topic_t}::ConstPtr {name};"
 , 'in_fill'           : "_in.{name} = {actionname}.value();"
 , 'init_msg_fill'     : "{initmsg}.{fieldname} = {fieldval};"
 , 'set_sub'           :
-"""{topic} {initmsg};
+"""{topic_t} {initmsg};
   {init_msg_fill}
-  {topic}::ConstPtr _wrap{initmsg}(&{initmsg});
-  {actionclass}<{topic}> {actionname}(_wrap{initmsg}, {maxlatency}, {pubperiod});
-  boost::function<void (const {topic}::ConstPtr&)> {actionname}_func;   // boost still needed by ROS ?
+  {topic_t}::ConstPtr _wrap{initmsg}(&{initmsg});
+  {actionclass}<{topic_t}> {actionname}(_wrap{initmsg}, {maxlatency}, {pubperiod});
+  boost::function<void (const {topic_t}::ConstPtr&)> {actionname}_func;   // boost still needed by ROS ?
   {actionname}_func = boost::ref({actionname});
-  ros::Subscriber {actionname}_ros = _h.subscribe<{topic}>("{name}", 10, {actionname}_func);"""
+  ros::Subscriber {actionname}_ros = _h.subscribe<{topic_t}>("{name}", 10, {actionname}_func);"""
 , 'sub_flags_fill'    : "_flags.{name} = {actionname}.get_flags();"
 , 'pub_flags_fill'    : "_flags.{name} = _gathered_flags;"
 , 'flags_struct_def'  : "radl::flags_t {name};"
@@ -208,7 +208,7 @@ def gennode(visitor, node, acc):
         d.update({'name'        : pub._name,
                   'actionname'  : '_' + pub._name + '_pub',
                   'actionclass' : pub['PUBLISHER']['CXX']['CLASS']._val,
-                  'topic'       : infos.ros_msgs[pub['TOPIC']._name],
+                  'topic_t'     : pub['TOPIC']._ros_msg_typename,
                   'initmsg'     : '_init_' + pub._name})
         d['init_msg_fill'] = ''
         for field in pub['TOPIC']['FIELDS']:
@@ -225,7 +225,7 @@ def gennode(visitor, node, acc):
         d.update({'name'        : sub._name,
                   'actionname'  : '_' + sub._name + '_sub',
                   'actionclass' : sub['SUBSCRIBER']['CXX']['CLASS']._val,
-                  'topic'       : infos.ros_msgs[sub['TOPIC']._name],
+                  'topic_t'     : sub['TOPIC']._ros_msg_typename,
                   'initmsg'     : '_init_' + sub._name,
                   'maxlatency'  : to_ros_duration(sub['MAXLATENCY'])})
         try:
