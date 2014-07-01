@@ -28,7 +28,7 @@ def mapred(f, l, acc, inplace):
         nl[i], acc = f(nl[i], acc)
     return nl, acc
 
-def mapacc(f, l, acc, inplace=False):
+def mapacc(f, l, acc, inplace):
     """ map acc, same as mapred, but the same (the input one) accumulator is
     given to the mapped function f. During the mapping, the returned
     accumulators are dropped. The input accumulator is returned unchanged.
