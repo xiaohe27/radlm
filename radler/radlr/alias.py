@@ -33,5 +33,11 @@ def make_transparent(ast):
         internal_assert(isinstance(ident, Ident), "incorrect alias node")
         a = AliasLeaf(node._name, ident._generated, node._location, ident)
         return a, _
-    visitor = AstVisitor({'_alias': _alias}, inplace=True)
+    #TODO: 4 remove this awful hack (fix this with the idents).
+    def identleaf(visitor, leaf, _):
+        if isinstance(leaf, Ident):
+            if leaf._node._kind == '_alias':
+                leaf._node, _ = _alias(visitor, leaf._node, _)
+        return leaf, _
+    visitor = AstVisitor({'_alias': _alias}, onleaf=identleaf, inplace=True)
     visitor.visit(ast, ())

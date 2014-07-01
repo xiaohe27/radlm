@@ -1,0 +1,30 @@
+################ Pervasives
+
+default_sub : subscriber {
+    CXX { PATH "_radl_lib" HEADER "radl_roslib" CLASS "radl::Default_sub" }
+}
+default_pub : publisher {
+    CXX { PATH "_radl_lib" HEADER "radl_roslib" CLASS "radl::Default_pub" }
+}
+
+################
+
+t1 : topic { FIELDS
+    i : int32 0
+    f : float32 0
+    i8 : array { VALUES 0 1 0 2 0 3 0 4 }
+    s : struct { FIELDS a : int32 0  i2 : array { VALUES 42 42 }}
+}
+
+t2 = t1
+
+n : node {
+    SUBSCRIBES
+        s1 { TOPIC t1 SUBSCRIBER default_sub MAXLATENCY msec 1}
+    PUBLISHES
+        s2 { TOPIC t2 PUBLISHER default_pub}
+    PERIOD 50
+    CXX { HEADER   "alias.h"
+          FILENAME "alias.cpp"
+          CLASS "N" }
+}
