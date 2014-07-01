@@ -64,7 +64,7 @@ def ros_typename(t):
 
 
 def ros_msgdef(struct_t):
-    elems = ('{} {}'.format(fb, ros_typename(ft))
+    elems = ('{} {}'.format(ros_typename(ft), fb)
                         for (fb, ft) in struct_t.elems_t)
     return '\n'.join(elems)
 
