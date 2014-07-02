@@ -83,7 +83,7 @@ def gen_grammar(language_tree, params, env):
         kind_annoted = '_'+kind+'_annoted'
         kind_def = '_'+kind+'_def'
         kind_decl = '_'+kind+'_decl'
-        g = """{kind} = {kind_def} / {kind_annoted} / _solo_ident
+        g = """{kind} = {kind_decl} / {kind_annoted} / _solo_ident
             {kind_def} = ({kind_annoted} / '{kind}' / _ident)? _ {reg} _
             {kind_decl} = {kind_def} / _alias
             {kind_annoted} = _ident _ ':' _ '{kind}' _
@@ -129,7 +129,7 @@ def gen_grammar(language_tree, params, env):
         name_annoted = "_"+kind+"_annoted"
         name_def = "_"+kind+"_def"
         name_decl = "_"+kind+"_decl"
-        g = """{kind} = {name_def} / {name_annoted} / _solo_ident
+        g = """{kind} = {name_decl} / {name_annoted} / _solo_ident
             {name_def} = ({name_annoted} / '{kind}' / _ident )? _ '{{' _ ({fields})* '}}' _
             {name_decl} = {name_def} / _alias
             {name_annoted} = _ident _ ':' _ '{kind}' _
