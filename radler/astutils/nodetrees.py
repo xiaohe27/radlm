@@ -438,8 +438,6 @@ def Functor(node_class, attr_children, attr_name):
             if len(l)==0:
                 s = leftsep+rightsep
                 return s, subwidth(width, len(s))
-            elif len(l)==1:
-                return Around(leftsep, l[0], rightsep).visit(visitor, width)
             else:
                 nl = [Atom(leftsep)]
                 for x in l[0:-1]:
