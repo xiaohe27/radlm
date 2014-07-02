@@ -155,3 +155,10 @@ class node
     PERIOD msec
 
 """
+
+#######################################
+#TODO: 0 RADL
+# generate firewall rules
+# check connectivity
+# deploy and run scripts
+#######################################
