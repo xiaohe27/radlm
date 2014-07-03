@@ -31,11 +31,6 @@ house_data : topic {
         temp : float32 75.0
 }
 
-# flatten struct in topic
-# house_data2 : topic {
-#    STRUCT twist
-# }
-
 thermometer : node {
     PATH "house_thermo"
     SUBSCRIBES
