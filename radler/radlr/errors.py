@@ -4,6 +4,7 @@ Created on June, 2014
 @author: Léonard Gérard leonard.gerard@sri.com
 
 '''
+from collections import Callable
 
 warning_as_errors = False
 continue_when_errors = False
@@ -12,6 +13,8 @@ verbosity_level = 0
 def _logn(n):
     def __logn(message):
         if verbosity_level >= n:
+            if isinstance(message, Callable):
+                message = message()
             print(message)
     return __logn
 

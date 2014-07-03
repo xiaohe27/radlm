@@ -160,7 +160,7 @@ def gen_grammar(language_tree, params, env):
     else:
         topleveldefs = ''
     lang = """_lang = _ ({tops})* _""".format(tops=topleveldefs)
-    log3(g+lang)
+    log3(lambda:g+lang)
     return Grammar(g+lang, '_lang'), env
 
 def gen_tree_to_ast(language_tree, env):
@@ -388,10 +388,10 @@ class Semantics:
             log1(spprint_node(program_tree))
             log_err(str(e))
             exit(-3)
-        log3(spprint_node(program_tree))
+        log3(lambda: spprint_node(program_tree))
         ast = self.tree_to_ast(program_tree, program_name, namespace)
         ast = sanitize.update_idents(ast, namespace)
-        log1(str(ast))
+        log1(lambda: str(ast))
         #TODO: 5 enable ast checks
 #         self.ast_checker(ast)
         return ast
