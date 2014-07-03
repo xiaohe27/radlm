@@ -153,6 +153,15 @@ class node
     CXX cxx_class
     CXX_ANNEX cxx_file *
     PERIOD msec
+    DEVICES device *
+
+################
+# Physical description
+################
+
+class device
+    CXX cxx_file *
+
 
 """
 

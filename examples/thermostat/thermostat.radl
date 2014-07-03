@@ -1,0 +1,62 @@
+################ Pervasives
+
+default_sub : subscriber {
+    CXX { FILENAME "radl_roslib" CLASS "radl::Default_sub" }
+}
+default_pub : publisher {
+    CXX { FILENAME "radl_roslib" CLASS "radl::Default_pub" }
+}
+
+
+############# house_thermo
+
+basic_rate : msec 50
+
+thermometer : node {
+    PUBLISHES
+        temp { TOPIC thermometer_data
+               PUBLISHER default_pub }
+    CXX { HEADER "thermometer.h"
+          FILENAME "thermometer.cpp"
+          CLASS "Thermometer" }
+    DEVICES
+        thermometer_device
+    PERIOD
+        basic_rate
+}
+thermometer_device : device {}
+
+thermometer_data : topic { FIELDS temp : float32 75 }
+
+base : node {
+    PUBLISHES thermo { TOPIC thermostat_setting PUBLISHER default_pub }
+    CXX { HEADER "base.h" FILENAME "base.cpp" CLASS "Base" }
+    DEVICES temperature_setting_device
+    PERIOD basic_rate
+}
+temperature_setting_device : device {}
+
+thermostat_setting : topic { FIELDS temp : float32 75 }
+
+thermostat : node {
+    SUBSCRIBES
+        setting { TOPIC thermostat_setting
+                  SUBSCRIBER default_sub MAXLATENCY msec 1 }
+        thermom { TOPIC thermometer_data
+                  SUBSCRIBER default_sub MAXLATENCY msec 1 }
+    PUBLISHES control { TOPIC thermostat_control PUBLISHER default_pub}
+    CXX { HEADER "thermostat.h" FILENAME "thermostat.cpp" CLASS "Thermostat" }
+    PERIOD basic_rate
+}
+
+thermostat_control : topic { FIELDS switch_on : bool true }
+
+heater : node {
+    SUBSCRIBES
+        thermo { TOPIC thermostat_control
+                     SUBSCRIBER default_sub MAXLATENCY msec 1}
+    CXX { HEADER "heater.h" FILENAME "heater.cpp" CLASS "Heater" }
+    DEVICES heater_device
+    PERIOD basic_rate
+}
+heater_device : device {}
