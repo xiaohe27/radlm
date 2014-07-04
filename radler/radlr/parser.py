@@ -18,7 +18,8 @@ import parsimonious
 from parsimonious.exceptions import IncompleteParseError
 from parsimonious.grammar import Grammar
 from radler.radlr import sanitize
-from radler.radlr.errors import log1, log_err, log3, log2
+from radler.radlr.errors import log1, log_err, log3, log2, error,\
+    internal_error
 from radler.radlr.metaParser import meta_parser
 from radler.radlr.rast import AstNode, Ast, AstVisitor
 from radler.astutils.location import Location
@@ -106,7 +107,7 @@ def gen_grammar(language_tree, params, env):
 
     def field(visitor, node, env):
         """
-        A field node has three childs symbol some_kind ('*' / '+')?
+        A field node has three childs symbol some_kind ('*' / '+' / '?')?
         Return the grammar string to match it:
         'symbol kind'
         """
@@ -204,7 +205,7 @@ def gen_tree_to_ast(language_tree, env):
         return (), menv
 
     def field(mvisitor, mnode, menv):
-        """ A field node has three childs symbol some_kind ('*' / '+')?
+        """ A field node has three childs symbol some_kind ('*' / '+' / '?')?
         Return the tuple (symbol, mod)
         """
         (name, _, mod) = mnode.children
@@ -217,19 +218,42 @@ def gen_tree_to_ast(language_tree, env):
         """
 #         mnode, menv = mvisitor.node_mapacc(mnode, menv)
         kind = mnode.children[1].children[0]
-        default_fields = []
+        field_specs = []
         for field in mnode.children[2]:
-            if field.children[2]: #It has a modifier like * + ?
-                fname = field.children[0].text
-                default_fields.append((fname, []))
+            mod = field.children[2]
+            fname = field.children[0].text
+            field_specs.append((fname, mod))
         def m_name_def(visitor, node, namespace):
             """A _name_def node has four childs
                 ident? '{' (f_name f_val)* '}'
             """
             thisnamespace = namespace.push()
-            childs, _ = visitor.mapacc(node.children, thisnamespace)
-            fields = BucketDict(default_fields).append(childs[2])
             loc = loc_of_parsimonious(node)
+            childs, _ = visitor.mapacc(node.children, thisnamespace)
+            fields = BucketDict(childs[2])
+            for (fname, mod) in field_specs:
+                v = fields.get(fname, False)
+                err = lambda m: error(m.format(fname), loc)
+                if not mod:
+                    if v is False:
+                        err("field {} is mandatory.")
+                    elif isinstance(v, list):
+                        err("field {} requires one and only one value.")
+                elif mod == '?':
+                    if v is False:
+                        fields[fname] = None
+                    elif len(v) != 1:
+                        err("field {} may be given at most one value.")
+                    else:
+                        fields[fname] = v[0]
+                elif mod == '*':
+                    if v is False:
+                        fields[fname] = []
+                elif mod == '+':
+                    if v is False:
+                        err("field {} requires at least one value.")
+                else:
+                    internal_error("unknown modifier")
             if isinstance(childs[0], parsimonious.nodes.Node):
                 name = childs[0].text
             else: #generate a name since none is given
@@ -330,11 +354,6 @@ class DuplicateField(Exception):
 
 def gen_ast_checker(language_tree):
     """ The ast_checker has to:
-            Check field modifiers:
-                ensure * and + maps to lists.
-                ensure + gives a list of at least one element.
-                ensure * exists (even if empty).
-            Ensure nodes without modifier are present once and only once.
 
             Check type of identifiers.
 
@@ -348,12 +367,13 @@ def gen_ast_checker(language_tree):
         def m_name(visitor, node, expected_type):
             if kind != expected_type:
                 raise TypingError(expected_type, kind)
-            #Go over the fields...
             return visitor.mapacc(node, expected_type)
+        menv[kind] = m_name
+        return mnode, menv
     #generate the visitor and return it.
     metagen = ParseVisitor(locals())
-    menv = dict()
-    gen, menv = metagen.visit(language_tree, menv)
+    _, menv = metagen.visit(language_tree, dict())
+    gen = ParseVisitor(menv)
     def ast_checker(ast):
         ast, _ = gen.visit(ast, ())
         return ast
@@ -371,7 +391,7 @@ class Semantics:
         params = {'forbidden_prefix' : getattr(language, 'forbidden_prefix', '')}
         self.grammar, self.env = gen_grammar(language_tree, params, self.env)
         self.tree_to_ast = gen_tree_to_ast(language_tree, self.env)
-#         self.ast_checker = gen_ast_checker(language_tree, self.env)
+        self.ast_checker = gen_ast_checker(language_tree)
 
     def __call__(self, program, program_name, namespace):
         """ The parser
@@ -392,8 +412,7 @@ class Semantics:
         ast = self.tree_to_ast(program_tree, program_name, namespace)
         ast = sanitize.update_idents(ast, namespace)
         log1(lambda: str(ast))
-        #TODO: 5 enable ast checks
-#         self.ast_checker(ast)
+        self.ast_checker(ast)
         return ast
 
 

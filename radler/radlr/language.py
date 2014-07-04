@@ -85,7 +85,7 @@ type msec
 
 
 class cxx_class
-    PATH string *
+    PATH string ?
     HEADER string
     FILENAME string *
     CLASS string
@@ -95,7 +95,7 @@ class cxx_class
 #    CLASS string ? @ str.capitalize({this}['FILENAME']) @
 
 class cxx_file
-    PATH string *
+    PATH string ?
     FILENAME string *
 
 #TODO: 5 support libraries
@@ -113,7 +113,7 @@ class struct
     FIELDS int8/uint8/int16/uint16/int32/uint32/int64/uint64/
            float32/float64/
            bool/string/struct/array *
-    EXTERNAL_ROS_DEF string * #TODO: 5 optional field
+    EXTERNAL_ROS_DEF string ?
 
 
 class array
@@ -127,7 +127,7 @@ class topic
     FIELDS int8/uint8/int16/uint16/int32/uint32/int64/uint64/
            float32/float64/
            bool/string/struct/array *
-    EXTERNAL_ROS_DEF string * #TODO: 5 optional field
+    EXTERNAL_ROS_DEF string ?
 
 
 class publication
@@ -143,11 +143,10 @@ class publisher
 class subscription
     TOPIC topic
     SUBSCRIBER subscriber
-#TODO: 5 support '?' modifier in the meta grammar and default values.
-    MAXLATENCY msec
+    MAXLATENCY msec ?
 
 class node
-    PATH string *
+    PATH string ?
     PUBLISHES publication *
     SUBSCRIBES subscription *
     CXX cxx_class
@@ -168,6 +167,7 @@ class device
 #######################################
 #TODO: 0 RADL
 # generate firewall rules
+# generate alert messages to monitors
 # check connectivity
 # deploy and run scripts
 #######################################
