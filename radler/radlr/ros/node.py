@@ -221,6 +221,7 @@ def gennode(visitor, node, acc):
     sub_templates = ['in_fill', 'set_sub', 'in_struct_def',
                      'sub_flags_fill', 'gathered_flags']
     for st in sub_templates: d[st] = ''
+    d['gathered_flags'] = '0'
     for sub in node['SUBSCRIBES']:
         d.update({'name'        : sub._name,
                   'actionname'  : '_' + sub._name + '_sub',
