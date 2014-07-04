@@ -1,10 +1,10 @@
 ################ Pervasives
 
 default_sub : subscriber {
-    CXX { FILENAME "radl_roslib" CLASS "radl::Default_sub" }
+    CXX { HEADER "radl_roslib.h" CLASS "radl::Default_sub" }
 }
 default_pub : publisher {
-    CXX { FILENAME "radl_roslib" CLASS "radl::Default_pub" }
+    CXX { HEADER "radl_roslib.h" CLASS "radl::Default_pub" }
 }
 
 
@@ -14,8 +14,7 @@ basic_rate : msec 50
 
 thermometer : node {
     PUBLISHES
-        temp { TOPIC thermometer_data
-               PUBLISHER default_pub }
+        temp { TOPIC thermometer_data PUBLISHER default_pub }
     CXX { HEADER "thermometer.h"
           FILENAME "thermometer.cpp"
           CLASS "Thermometer" }
