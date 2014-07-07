@@ -1,10 +1,10 @@
 ################ Pervasives
 
 default_sub : subscriber {
-    CXX { PATH "house_thermo" FILENAME "radl_roslib" CLASS "radl::Default_sub" }
+    CXX { HEADER "radl_roslib.h" PATH "_radl_lib" CLASS "radl::Default_sub" }
 }
 default_pub : publisher {
-    CXX { PATH "house_thermo" FILENAME "radl_roslib" CLASS "radl::Default_pub" }
+    CXX { HEADER "radl_roslib.h" PATH "_radl_lib" CLASS "radl::Default_pub" }
 }
 
 
