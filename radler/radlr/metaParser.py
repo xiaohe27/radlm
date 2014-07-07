@@ -17,7 +17,6 @@ from parsimonious import Grammar
 from parsimonious.grammar import rule_syntax
 
 
-#TODO: 4 Allow to force type annotation
 meta_keywords = "class|type"
 
 meta_rules = (rule_syntax +
