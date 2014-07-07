@@ -268,3 +268,5 @@ def gen(dest_directory, ast):
     _, (cpps, _, _) = visitor.visit(ast, ({}, namespace, dest_directory))
     return cpps
 
+
+#TODO: 2 seperate in and out flags. it allows to make clear the difference (input flags will be const while output won’t).
