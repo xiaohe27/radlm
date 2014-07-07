@@ -285,26 +285,28 @@ def Functor(node_class, attr_children, attr_name):
         def lift_mapred(self, node, acc=None):
             return self.lift(*self.mapred(node, acc))
 
-        def left(self, node, acc=None):
+        def left(self, node, acc=None, el_num=0):
             """Replace a node with its first children, dicts, tuples and list
-            are replaced with their first element (container.[0]).
+            are replaced with their first element (container.[el_num]).
             No visitation is done, if wanted, see left_mapacc/left_mapred.
             """
             if is_node(node):
-                return self.left(children_of(node), acc)
+                return self.left(children_of(node), acc, el_num)
             elif isinstance(node, (list, tuple, dict)):
                 try:
-                    return node[0], acc
+                    return node[el_num], acc
                 except KeyError:
                     pass
                 self.error("Visitation error, no left element of empty.")
             else:
                 self.error("Visitation error, no left element of a leaf.")
-        def left_mapacc(self, node, acc=None):
-            return self.left(*self.mapacc(node, acc))
-        def left_mapred(self, node, acc=None):
-            return self.left(*self.mapred(node, acc))
-# 
+        def left_mapacc(self, node, acc=None, el_num=0):
+            node, acc = self.mapacc(node, acc)
+            return self.left(node, acc, el_num)
+        def left_mapred(self, node, acc=None, el_num=0):
+            node, acc = self.mapred(node, acc)
+            return self.left(node, acc, el_num)
+
 #         def left_leaf(self, node):
 #             """Recursively lift left until hitting a leaf.
 #             If the last node as no children, None is returned.
