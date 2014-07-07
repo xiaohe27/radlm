@@ -6,11 +6,10 @@ Created on May, 2014
 
 from radler.astutils.idents import Namespace
 from radler.astutils.nodetrees import Functor
-from radler.astutils.tools import str
-import types
+from collections import Mapping
 
 
-class AstNode:
+class AstNode(Mapping):
     """ Basically a named kind with children.
     Inherit its container behavior from its children container.
     """
@@ -38,8 +37,8 @@ class AstNode:
     def __getitem__(self, key):
         try:
             return self._children[key]
-        except KeyError:
-            pass
+        except (KeyError, TypeError):
+            pass #TypeError is useful in case _children is a list and key a str
         pa = list(iter(self._children))
         raise KeyError("{a} is not among the possibilities:"
                        "{pa}".format(a=key, pa=pa))

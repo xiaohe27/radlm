@@ -11,13 +11,8 @@ from radler.radlr.rast import AstVisitor
 
 
 def _pwd(visitor, node, pwd):
-    try:
-        #TODO 5: PATH should be a ? not a *
-        subdir = node['PATH'][0]._val
-    except (KeyError, #for nodes without 'PATH' field
-            TypeError, #needed since a list will throw it (str not int) Python coherence...
-            IndexError): #needed by the [0]
-        subdir = ''
+    p = node.get('PATH', None)
+    subdir = p._val if p else ''
     pwd = pwd / subdir
     node._pwd = pwd
     return visitor.node_mapacc(node, pwd)
