@@ -62,6 +62,18 @@ class Ident(Mapping):
         internal_error("Trying to deepcopy an Ident.")
 
 
+class Alias(Ident):
+    __slots__ = ['_qname', '_generated', '_location', '_is_alias_of']
+    #duplicate the Ident __slots__ for ease of use.
+    def __init__(self, qname, location, target_ident):
+        self._qname = qname
+        self._location = location
+        self._is_alias_of = target_ident
+    @property
+    def _node(self):
+        a = self._is_alias_of
+        return a._node
+
 class AstNode(Mapping):
     """ Basically a named kind with children.
     Inherit its container behavior from its children container.

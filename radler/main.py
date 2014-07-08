@@ -7,13 +7,11 @@ Created on May, 2014
 import argparse
 from pathlib import Path
 
-from radler.astutils.tools import ensure_dir
 from radler.radlr import crossrefs, pwds, errors, arrays, infos, alias,\
     language
 from radler.radlr.errors import log_err
-from radler.astutils.names import root_namespace
-from radler.radlr.ros import msg, node, packagexml, cmakeliststxt
 from radler.radlr.parser import Semantics
+from radler.radlr.ros import utils, msg, node, packagexml, cmakeliststxt
 
 ########
 # Parse arguments
@@ -51,47 +49,27 @@ source = Path(args.file).resolve()
 if not source.is_file():
     log_err("The source file {} doesn't exists.".format(source))
     exit(-1)
-source_dir = source.parent
-name = source.stem
+infos.source_file = source
 
 dest_dir = Path(args.dest)
 if not dest_dir.is_dir():
     log_err("The destination directory {} doesn't exists.".format(dest_dir))
     exit(-2)
-root_dir = Path(args.dest) / name
-ensure_dir(root_dir)
-
-
-msg_dir = root_dir / 'msg'
-ensure_dir(msg_dir)
-src_dir = root_dir / 'src'
-ensure_dir(src_dir)
-user_src_dir = src_dir / '_user_code'
-if not user_src_dir.exists():
-    user_src_dir.symlink_to(source_dir, True)
-radllib_link = src_dir / '_radl_lib'
-if not radllib_link.exists():
-    script_dir = Path(__file__).absolute().parent
-    lib_dir = script_dir / 'lib'
-    radllib_link.symlink_to(lib_dir, True)
-
+infos.dest_dir = dest_dir
 
 ########
 # Bootstrap the semantics from the language definition
 ########
 radlr_semantics = Semantics(language)
 
-
 ########
 # Parse
 ########
-
-qname = root_namespace.qualify(name)
+qname = infos.root_namespace.qualify(source.stem)  # @UndefinedVariable
 with source.open() as f:
-    infos.ast = radlr_semantics(f.read(), qname, root_namespace)
+    infos.ast = radlr_semantics(f.read(), qname, infos.root_namespace)
 
-
-##### Freeze #####
+######## Freeze #######
 # From here, the ast is "structurally frozen",
 # No new nodes/children are added and nodes keep their address.
 # This allow cross referencing, etc.
@@ -101,14 +79,15 @@ with source.open() as f:
 arrays.typecheck(infos.ast)
 
 #Transparent alias to forget about them
-alias.make_transparent(infos.ast)
+alias.make_transparent(infos.ast, infos.root_namespace)
 
 # Embedding information in nodes to allow easier manipulation
 crossrefs.add(infos.ast)
-pwds.add(infos.ast, user_src_dir)
+pwds.add(infos.ast)
 
 # ROS files generation
-msg_file_list = msg.gen(msg_dir, infos.ast)
-gened_cpp_files = node.gen(src_dir, infos.ast)
-packagexml.gen(source, root_dir, infos.ast)
-cmakeliststxt.gen(msg_file_list, gened_cpp_files, root_dir, infos.ast)
+utils.gen_dirs(infos.ast)
+msg_file_list = msg.gen(infos.ast)
+gened_cpp_files = node.gen(infos.ast)
+packagexml.gen(infos.ast)
+cmakeliststxt.gen(msg_file_list, gened_cpp_files, infos.ast)

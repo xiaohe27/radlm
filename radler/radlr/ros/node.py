@@ -10,7 +10,7 @@ Generate one ROS _node.cpp file per node declaration.
 from radler.astutils.tools import write_file
 from radler.radlr.errors import warning, internal_error
 from radler.radlr.rast import AstVisitor, Ident
-from radler.radlr.ros.utils import qn_cpp, qn_file, qn_topic
+from radler.radlr.ros.utils import qn_cpp, qn_file, qn_topic, filepath
 
 
 templates = {
@@ -24,8 +24,6 @@ templates = {
 #include "_radl_lib/radl_roslib.h"
 #include "{node_h_name}"
 {cxx_includes}
-
-using namespace {namespace};
 
 int main(int argc, const char* argv[]) {{
   int n = 0; //ros requires a reference
@@ -191,13 +189,10 @@ def to_ros_val(node):
         return node._val
 
 
-def gennode(visitor, node, acc):
+def gennode(visitor, node, cpps):
     """ Nodes are not recursive for now """
-    cpps, namespace, dest_directory = acc
-    name = node._qname.name()
 
-    d = {'namespace'       : namespace,
-         'in_struct'       : '_in_t',
+    d = {'in_struct'       : '_in_t',
          'out_struct'      : '_out_t',
          'in_flags_struct' : '_in_flags_t',
          'out_flags_struct': '_out_flags_t',
@@ -256,27 +251,25 @@ def gennode(visitor, node, acc):
         for f in sub_templates: app(d, f)
         for f in pubsub_templates: app(d, f)
     #generate the header file
-    d['name'] = name
-    node_h_name = name + '_node.h'
-    node_h_path = dest_directory / node_h_name
+    qname = node._qname
+    d['name'] = str(qname)
+    node_h_name = qn_file(node._qname) + '_node.h'
     node_h = templates['node_h'].format(**d)
-    write_file(node_h_path, node_h)
+    write_file(filepath(node_h_name), node_h)
     #generate the cpp file
-    node_cpp_name = name + '_node.cpp'
-    node_cpp_path = dest_directory / node_cpp_name
+    node_cpp_name = qn_file(node._qname) + '_node.cpp'
     node_cpp = templates['node_cpp'].format(node_h_name=node_h_name,
                                             rate=node['PERIOD']._val,
                                             node=node,
                                              **d)
-    write_file(node_cpp_path, node_cpp)
+    write_file(filepath(node_cpp_name), node_cpp)
     #register the cpp file
-    cpps[name] = node_cpp_name
-    return (), (cpps, namespace, dest_directory)
+    cpps[qname] = node_cpp_name
+    return (), cpps
 
 
 visitor = AstVisitor({'node' : gennode})
 
-def gen(dest_directory, ast):
-    namespace = ast._qname
-    _, (cpps, _, _) = visitor.visit(ast, ({}, namespace, dest_directory))
+def gen(ast):
+    _, cpps = visitor.visit(ast, {})
     return cpps

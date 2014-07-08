@@ -388,7 +388,7 @@ class Semantics:
         self.tree_to_ast = gen_tree_to_ast(language_tree, self.env)
         self.ast_checker = gen_ast_checker(language_tree)
 
-    def __call__(self, program, program_qname, namespace):
+    def __call__(self, program, program_qname, root_namespace):
         """ The parser
         #TODO: 6 allow to extend the ast
         """
@@ -404,8 +404,8 @@ class Semantics:
             log_err(str(e))
             exit(-3)
         log3(lambda: spprint_node(program_tree))
-        ast = self.tree_to_ast(program_tree, program_qname, namespace)
-        ast = sanitize.update_idents(ast, namespace)
+        ast = self.tree_to_ast(program_tree, program_qname, root_namespace)
+        ast = sanitize.update_idents(ast, root_namespace)
         log1(lambda: str(ast))
         self.ast_checker(ast)
         return ast

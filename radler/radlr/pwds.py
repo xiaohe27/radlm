@@ -8,6 +8,7 @@ When a relative path is used,
 '''
 
 from radler.radlr.rast import AstVisitor
+from radler.radlr.ros import utils
 
 
 def _pwd(visitor, node, pwd):
@@ -17,7 +18,8 @@ def _pwd(visitor, node, pwd):
     node._pwd = pwd
     return visitor.node_mapacc(node, pwd)
 
-def add(ast, root_dir):
-    """ root_dir needs to be a Path object. """
+def add(ast):
+    """ Add a _pwd attribute to nodes indicating current user path."""
     visitor = AstVisitor(default=_pwd, mapacc=True)
-    visitor.visit(ast, root_dir)
+    path = utils.user_filepath(ast._qname)
+    visitor.visit(ast, path)

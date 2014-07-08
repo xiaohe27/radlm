@@ -19,7 +19,6 @@ class QualifiedName(tuple):
         modname should be a Name,
         name a string,
         generated is True if this name is not extracted from the source."""
-        if not name: internal_error("Empty names are not allowed.")
         return tuple.__new__(cls, (modname, name, generated))
 #     @classmethod
 #     def namein(cls, name, generated, namespace):
@@ -58,6 +57,8 @@ class QualifiedName(tuple):
         return '/'.join(iter(p)) if p else self.qname()
     def __str__(self):
         return self.qname()
+    def __len__(self, acc=0):
+        return self.modname().__len__(acc+1)
 
 
 class _RootQName(QualifiedName):
@@ -72,6 +73,8 @@ class _RootQName(QualifiedName):
     asmodule = qname
     def generated(self): return True
     def pathwalk(self): return iter([])
+    def __len__(self, acc=0):
+        return acc
 
 
 class Namespace(MutableMapping):
@@ -190,5 +193,3 @@ class __RootNamespace(Namespace):
     @property
     def father(self): internal_error("A root namespace has no father.")
     def pop(self): internal_error("A root namespace can't be popped.")
-
-root_namespace = __RootNamespace('/')

@@ -6,6 +6,7 @@ Created on May, 2014
 
 from radler.astutils.tools import write_file
 from radler.radlr.rast import AstVisitor
+from radler.radlr.ros.utils import filepath
 
 
 _template_cmakeliststxt = """
@@ -58,7 +59,7 @@ _sources_visitor = AstVisitor({'cxx_class' : _sources_cxx,
 
 def get_sources(node, gened_cpp_files):
     _, sources = _sources_visitor.visit(node, [])
-    sources.append('src/' + str(gened_cpp_files[node._qname.name()]))
+    sources.append('src/' + str(gened_cpp_files[node._qname]))
     return ' '.join(sources)
 
 
@@ -99,13 +100,12 @@ def get_from_nodes(ast, d):
     d['link_libraries'] = '\n'.join(d['link_libraries'])
 
 
-def gen(msg_file_list, gened_cpp_files, dest_dir, ast):
+def gen(msg_file_list, gened_cpp_files, ast):
     d = {'namespace'       : ast._qname.name(),
          'msg_files'       : '\n  '.join(msg_file_list),
          'gened_cpp_files' : gened_cpp_files}
     get_from_nodes(ast, d)
     cmakeliststxt = _template_cmakeliststxt.format(**d)
-    cmakeliststxt_path = dest_dir / "CMakeLists.txt"
-    write_file(cmakeliststxt_path, cmakeliststxt)
+    write_file(filepath("CMakeLists.txt"), cmakeliststxt)
 
 

@@ -14,6 +14,7 @@ from radler.radlr import types, infos
 from radler.radlr.rast import AstVisitor
 from radler.radlr.errors import warning, internal_error
 from radler.radlr.types import StructType, ArrayType
+from radler.radlr.ros.utils import qn_msgfile, filepath
 
 
 def struct_of_topic(struct_t):
@@ -69,14 +70,13 @@ def ros_msgdef(struct_t):
     return '\n'.join(elems)
 
 
-def gen(msg_directory, ast):
+def gen(ast):
     msg_filenames = []
     msgtogen = collect(ast)
     #Generate the needed message files
     for (struct_t, rosname) in msgtogen.items():
-        filename = rosname.name() + '.msg'
+        filename = qn_msgfile(rosname) + '.msg'
         msg_filenames.append(filename)
-        filepath = msg_directory / filename
         filecontent = ros_msgdef(struct_t)
-        write_file(filepath, filecontent)
+        write_file(filepath(filename), filecontent)
     return msg_filenames
