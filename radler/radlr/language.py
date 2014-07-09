@@ -164,6 +164,8 @@ class device
 
 #######################################
 #TODO: 0 RADL
+# min and max period
+# optional wcet
 # generate firewall rules
 # generate alert messages to monitors
 # check connectivity
