@@ -1,3 +1,4 @@
+#pragma once
 #include "thermostat_node.h"
 
 class Thermostat {
