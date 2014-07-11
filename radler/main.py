@@ -87,7 +87,7 @@ pwds.add(infos.ast)
 
 # ROS files generation
 utils.gen_dirs(infos.ast)
-msg_file_list = msg.gen(infos.ast)
+msg_list = msg.gen(infos.ast)
 gened_cpp_files = node.gen(infos.ast)
 packagexml.gen(infos.ast)
-cmakeliststxt.gen(msg_file_list, gened_cpp_files, infos.ast)
+cmakeliststxt.gen(msg_list, gened_cpp_files, infos.ast)

@@ -5,7 +5,7 @@ Created on May, 2014
 '''
 from radler.astutils.tools import write_file
 from radler.radlr import infos
-from radler.radlr.ros.utils import filepath
+from radler.radlr.ros.utils import filepath_in_qn
 
 
 _template_package_xml = """<?xml version="1.0"?>
@@ -26,4 +26,4 @@ _template_package_xml = """<?xml version="1.0"?>
 def gen(ast):
     package_xml = _template_package_xml.format(namespace=ast._qname,
                                                source=str(infos.source_file))
-    write_file(filepath("package.xml"), package_xml)
+    write_file(filepath_in_qn("package.xml", ast._qname), package_xml)

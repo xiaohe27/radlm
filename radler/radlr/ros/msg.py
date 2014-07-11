@@ -71,12 +71,12 @@ def ros_msgdef(struct_t):
 
 
 def gen(ast):
-    msg_filenames = []
+    msgs= []
     msgtogen = collect(ast)
     #Generate the needed message files
     for (struct_t, rosname) in msgtogen.items():
-        filename = qn_msgfile(rosname) + '.msg'
-        msg_filenames.append(filename)
+        file = filepath(qn_msgfile(rosname) + '.msg')
+        msgs.append(file)
         filecontent = ros_msgdef(struct_t)
-        write_file(filepath(filename), filecontent)
-    return msg_filenames
+        write_file(file, filecontent)
+    return msgs

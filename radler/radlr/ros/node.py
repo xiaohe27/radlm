@@ -10,7 +10,8 @@ Generate one ROS _node.cpp file per node declaration.
 from radler.astutils.tools import write_file
 from radler.radlr.errors import warning, internal_error
 from radler.radlr.rast import AstVisitor, Ident
-from radler.radlr.ros.utils import qn_cpp, qn_file, qn_topic, filepath
+from radler.radlr.ros.utils import qn_cpp, qn_srcfile, qn_topic, filepath,\
+    qn_msgfile, qn_file
 
 
 templates = {
@@ -150,7 +151,8 @@ def join(storage):
 
 def _include_cxx_class(visitor, node, acc):
         _, acc = visitor.node_mapred(node, acc)
-        f = '_user_code/' / node._pwd / node['HEADER']._val
+        #f = node._pwd / node['HEADER']._val
+        f = node['HEADER']._val
         acc.append('#include "' + str(f) + '"')
         return _, acc
 _include_visitor = AstVisitor({'cxx_class' : _include_cxx_class})
@@ -253,16 +255,16 @@ def gennode(visitor, node, cpps):
     #generate the header file
     qname = node._qname
     d['name'] = str(qname)
-    node_h_name = qn_file(node._qname) + '_node.h'
+    node_h_name = filepath(qn_srcfile(node._qname) + '_node.h')
     node_h = templates['node_h'].format(**d)
-    write_file(filepath(node_h_name), node_h)
+    write_file(node_h_name, node_h)
     #generate the cpp file
-    node_cpp_name = qn_file(node._qname) + '_node.cpp'
-    node_cpp = templates['node_cpp'].format(node_h_name=node_h_name,
+    node_cpp_name = filepath(qn_srcfile(node._qname) + '_node.cpp')
+    node_cpp = templates['node_cpp'].format(node_h_name=node_h_name.name,
                                             rate=node['PERIOD']._val,
                                             node=node,
                                              **d)
-    write_file(filepath(node_cpp_name), node_cpp)
+    write_file(node_cpp_name, node_cpp)
     #register the cpp file
     cpps[qname] = node_cpp_name
     return (), cpps

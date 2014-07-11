@@ -6,7 +6,8 @@ Created on May, 2014
 
 from radler.astutils.tools import write_file
 from radler.radlr.rast import AstVisitor
-from radler.radlr.ros.utils import filepath
+from radler.radlr.ros.utils import filepath_in_qn, qn_msgfile, filepath
+from radler.astutils.names import QualifiedName
 
 
 _template_cmakeliststxt = """
@@ -50,7 +51,7 @@ _template_targetll = "target_link_libraries({name} ${{catkin_LIBRARIES}})"
 def _sources_cxx(visitor, node, sources):
     _, sources = visitor.node_mapred(node, sources)
     for c in node['FILENAME']:
-        f = 'src/_user_code' / node._pwd / c._val
+        f = node._pwd / c._val
         sources.append(str(f))
     return _, sources
 _sources_visitor = AstVisitor({'cxx_class' : _sources_cxx,
@@ -59,7 +60,7 @@ _sources_visitor = AstVisitor({'cxx_class' : _sources_cxx,
 
 def get_sources(node, gened_cpp_files):
     _, sources = _sources_visitor.visit(node, [])
-    sources.append('src/' + str(gened_cpp_files[node._qname]))
+    sources.append(str(gened_cpp_files[node._qname]))
     return ' '.join(sources)
 
 
@@ -100,12 +101,15 @@ def get_from_nodes(ast, d):
     d['link_libraries'] = '\n'.join(d['link_libraries'])
 
 
-def gen(msg_file_list, gened_cpp_files, ast):
+def gen(msg_list, gened_cpp_files, ast):
+    #The Cmakefile waits for msg files relative to the msg dir
+    msg_dir = filepath(qn_msgfile(QualifiedName(ast._qname, '', True)))
+    msg_files = (str(m.relative_to(msg_dir)) for m in msg_list)
     d = {'namespace'       : ast._qname.name(),
-         'msg_files'       : '\n  '.join(msg_file_list),
+         'msg_files'       : '\n  '.join(msg_files),
          'gened_cpp_files' : gened_cpp_files}
     get_from_nodes(ast, d)
     cmakeliststxt = _template_cmakeliststxt.format(**d)
-    write_file(filepath("CMakeLists.txt"), cmakeliststxt)
+    write_file(filepath_in_qn("CMakeLists.txt", ast._qname), cmakeliststxt)
 
 
