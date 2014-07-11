@@ -19,21 +19,21 @@ thermometer : node {
           FILENAME "thermometer.cpp"
           CLASS "Thermometer" }
     DEVICES
-        thermometer_device
+        temperature_sensor
     PERIOD
         basic_rate
 }
-thermometer_device : device {}
+temperature_sensor : device {}
 
 thermometer_data : topic { FIELDS temp : float32 75 }
 
 base : node {
     PUBLISHES thermo { TOPIC thermostat_setting PUBLISHER default_pub }
     CXX { HEADER "base.h" FILENAME "base.cpp" CLASS "Base" }
-    DEVICES temperature_setting_device
+    DEVICES temperature_setting_button
     PERIOD basic_rate
 }
-temperature_setting_device : device {}
+temperature_setting_button : device {}
 
 thermostat_setting : topic { FIELDS temp : float32 75 }
 
