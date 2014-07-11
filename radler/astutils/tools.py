@@ -98,4 +98,5 @@ def ensure_dir(path):
         if not path.is_dir():
             raise Exception("{} should be a directory".format(dir))
     else:
+        ensure_dir(path.parent)
         path.mkdir()
