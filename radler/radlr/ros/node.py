@@ -11,7 +11,7 @@ from radler.astutils.tools import write_file
 from radler.radlr.errors import warning, internal_error
 from radler.radlr.rast import AstVisitor, Ident
 from radler.radlr.ros.utils import qn_cpp, qn_srcfile, qn_topic, filepath,\
-    qn_msgfile, qn_file
+    qn_file
 
 
 templates = {
@@ -177,18 +177,21 @@ def to_ros_duration(node):
     nsec = to_nsec(node)
     return "ros::Duration().fromNSec({})".format(nsec)
 
-def to_ros_val(node):
+def ros_val_def(var, node, sep):
     if isinstance(node, Ident):
-        #TODO: 5 instead of inlining values, use variable declarations
+        #TODO: 5 instead of inlining values, use variable declarations (extern etc values)
         pass
-    if node._kind == 'struct':
-        return '{{{}}}'.format(', '.join(map(to_ros_val, node['FIELDS'])))
-    elif node._kind == 'field_struct':
-        return to_ros_val(node['STRUCT'])
+    if node._kind in ('struct', 'topic'):
+        defs = (ros_val_def(var+'.'+f._qname.name(), f, sep)
+                for f in node['FIELDS'])
+        return sep.join(defs)
     elif node._kind == 'array':
-        return '{{{}}}'.format(', '.join(map(to_ros_val, node['VALUES'])))
+        vs = node['VALUES']
+        defs = (ros_val_def(var+'['+str(i)+']', v, sep)
+                for i,v in enumerate(vs))
+        return sep.join(defs)
     else:
-        return node._val
+        return var + ' = ' + node._val + ';'
 
 
 def gennode(visitor, node, cpps):
@@ -216,11 +219,8 @@ def gennode(visitor, node, cpps):
                   'topic_file'  : qn_file(pub['TOPIC']._ros_msg_typename),
                   'topic_t'     : qn_cpp(pub['TOPIC']._ros_msg_typename),
                   'initmsg'     : '_init_' + pub._qname.name()})
-        d['init_msg_fill'] = ''
-        for field in pub['TOPIC']['FIELDS']:
-            d.update({'fieldname': field._qname.name(),
-                      'fieldval': to_ros_val(field)})
-            app(d, 'init_msg_fill')
+        d['init_msg_fill'] = ros_val_def(d['initmsg'], pub['TOPIC'],
+                                         separators['init_msg_fill'])
         for f in pub_templates: app(d, f)
         for f in pubsub_templates: app(d, f)
 
@@ -245,11 +245,8 @@ def gennode(visitor, node, cpps):
                     " publisher.".format(str(sub._qname)), sub._location)
             pubperiod = None
         d['pubperiod'] = to_ros_duration(pubperiod)
-        d['init_msg_fill'] = ''
-        for field in sub['TOPIC']['FIELDS']:
-            d.update({'fieldname': field._qname.name(),
-                      'fieldval': to_ros_val(field)})
-            app(d, 'init_msg_fill')
+        d['init_msg_fill'] = ros_val_def(d['initmsg'], sub['TOPIC'],
+                                         separators['init_msg_fill'])
         for f in sub_templates: app(d, f)
         for f in pubsub_templates: app(d, f)
     #generate the header file
