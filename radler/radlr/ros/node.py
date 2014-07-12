@@ -213,7 +213,7 @@ def gennode(visitor, node, cpps):
     for pt in pub_templates: d[pt] = ''
     for pub in node['PUBLISHES']:
         d.update({'pubname'     : pub._qname.name(),
-                  'topic_name'  : qn_topic(pub._qname),
+                  'topic_name'  : qn_topic(pub['TOPIC']._qname),
                   'actionname'  : '_' + pub._qname.name() + '_pub',
                   'actionclass' : pub['PUBLISHER']['CXX']['CLASS']._val,
                   'topic_file'  : qn_file(pub['TOPIC']._ros_msg_typename),
@@ -231,7 +231,7 @@ def gennode(visitor, node, cpps):
     d['gathered_flags'] = '0'
     for sub in node['SUBSCRIBES']:
         d.update({'subname'     : sub._qname.name(),
-                  'topic_name'  : qn_topic(sub._qname),
+                  'topic_name'  : qn_topic(sub['TOPIC']._qname),
                   'actionname'  : '_' + sub._qname.name() + '_sub',
                   'actionclass' : sub['SUBSCRIBER']['CXX']['CLASS']._val,
                   'topic_file'  : qn_file(sub['TOPIC']._ros_msg_typename),
