@@ -19,7 +19,8 @@ def _un_onnode(visitor, node, namespace):
     return node, namespace
 
 
-updater_namespace = AstVisitor(default=_un_onnode, inplace=True)
+updater_namespace = AstVisitor(default=_un_onnode, onleaf=_un_onleaf,
+                               inplace=True)
 """ Make sure namespace has correct name->node associations. """
 
 def _ui_onleaf(visitor, leaf, namespace):
@@ -36,7 +37,8 @@ def _ui_onnode(visitor, node, namespace):
     visitor.mapacc(node._children, node._namespace)
     return node, namespace
 
-updater_idents = AstVisitor(default=_ui_onnode, onleaf=_ui_onleaf, inplace=True)
+updater_idents = AstVisitor(default=_ui_onnode, onleaf=_ui_onleaf,
+                            inplace=True)
 """ Make sure Idents and Alias are correctly associated. """
 
 def update_idents(ast, namespace):
