@@ -85,7 +85,9 @@ type msec
 class cxx_class
     PATH string ?
     HEADER string
+    #TODO: 6 change FILENAME to SRC
     FILENAME string *
+    LIB cmake_library *
     CLASS string
 #TODO: 8 support string calling code (note the order has to be respected)
 #    PATH string ? 'src'
@@ -94,18 +96,14 @@ class cxx_class
 
 class cxx_file
     PATH string ?
+    #TODO: 6 change FILENAME to SRC
     FILENAME string *
+    LIB cmake_library *
 
-#TODO: 5 support libraries
-# class library
-#     CXX cxx_file *
-# ->
-# add_library(<name> [STATIC | SHARED | MODULE]
-#               [EXCLUDE_FROM_ALL]
-#               source1 source2 ... sourceN)
-#class external_library
-#     INCLUDE_PATH string
-#     FILENAME string
+class cmake_library
+    PATH string ?
+    CMAKE_MODULE string
+    COMPONENTS string *
 
 class struct
     FIELDS int8/uint8/int16/uint16/int32/uint32/int64/uint64/

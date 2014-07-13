@@ -9,6 +9,16 @@ default_pub : publisher {
 
 ################
 
+l1 : cmake_library {
+  PATH "/usr/lib/cmake"
+  CMAKE_MODULE "MN"
+}
+
+boost : cmake_library {
+  CMAKE_MODULE "Boost"
+  COMPONENTS "threads" "linux"
+}
+
 t1 : topic { FIELDS
     i : int32 0
     f : float32 0
@@ -26,5 +36,6 @@ n : node {
     PERIOD 50
     CXX { HEADER   "alias.h"
           FILENAME "alias.cpp"
+          LIB l1 boost
           CLASS "N" }
 }

@@ -197,17 +197,17 @@ def Functor(node_class, attr_children, attr_name):
             self.inplace = inplace
             self.params = params
 
-#         def change(self, definitions={}, default=None, onlist=None,
-#                    ontuple=None, ondict=None, onleaf=None):
-#             """ return a new visitor equal to self but updated. """
-#             d = copy(self)
-#             d.definitions.update(definitions)
-#             if default: d.default = default
-#             if onlist: d.onlist = onlist
-#             if ontuple: d.ontuple = ontuple
-#             if ondict: d.ondict = ondict
-#             if onleaf: d.onleaf = onleaf
-#             return d
+        def update(self, definitions={}, default=None, onlist=None,
+                   ontuple=None, ondict=None, onleaf=None):
+            """ return a new visitor equal to self but updated. """
+            d = copy(self)
+            d.definitions.update(definitions)
+            if default: d.default = default
+            if onlist: d.onlist = onlist
+            if ontuple: d.ontuple = ontuple
+            if ondict: d.ondict = ondict
+            if onleaf: d.onleaf = onleaf
+            return d
 
         def __getitem__(self, key):
             if self.params: return self.params[key]

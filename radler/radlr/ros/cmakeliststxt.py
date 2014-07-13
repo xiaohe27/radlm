@@ -9,22 +9,23 @@ from radler.radlr.rast import AstVisitor
 from radler.radlr.ros.utils import filepath_in_qn, qn_msgfile, filepath
 from radler.astutils.names import QualifiedName
 
-
-_template_cmakeliststxt = """
+templates = {
+'cmakeliststxt': """
 cmake_minimum_required(VERSION 2.8.3)
 project({namespace})
-find_package(catkin REQUIRED COMPONENTS
-  roscpp
-  message_generation
+set(CMAKE_MODULE_PATH ${{CMAKE_MODULE_PATH}}
+  {package_dirs}
 )
+{packages}
+find_package(catkin REQUIRED roscpp message_generation)
+
 add_definitions(-DIN_RADL_GENERATED_CONTEXT)
-add_message_files(
-  FILES
+
+add_message_files(FILES
   {msg_files}
 )
-generate_messages(
-  DEPENDENCIES
-)
+generate_messages(DEPENDENCIES)
+
 catkin_package(
  LIBRARIES {namespace}
  CATKIN_DEPENDS roscpp message_runtime
@@ -38,67 +39,86 @@ include_directories(
 {link_libraries}
 
 """
+,'packages': "find_package({name} REQUIRED {components})"
+,'executables': "add_executable({name} {sources})"
+,'targetincludes': """
+target_include_directories({name}
+  PUBLIC
+  {dirs}
+  {libdirs}
+)"""
+,'dependencies': "add_dependencies({name} {namespace}_generate_messages_cpp)"
+,'link_libraries': """
+target_link_libraries({name}
+  ${{catkin_LIBRARIES}}
+  {libs}
+)"""
+,'package_dirs': "{dir}"
+,'libs': '${{{libname}_LIBRARIES}}'
+,'libdirs': '${{{libname}_INCLUDE_DIRS}}'
+}
 
-_template_addexec = "add_executable({name} {sources})"
-
-_template_targetinclude = "target_include_directories({name} PUBLIC {dirs})"
-
-_template_adddep = "add_dependencies({name} {namespace}_generate_messages_cpp)"
-
-_template_targetll = "target_link_libraries({name} ${{catkin_LIBRARIES}})"
-
-
-def _sources_cxx(visitor, node, sources):
-    _, sources = visitor.node_mapred(node, sources)
-    for c in node['FILENAME']:
-        f = node._pwd / c._val
-        sources.append(str(f))
-    return _, sources
-_sources_visitor = AstVisitor({'cxx_class' : _sources_cxx,
-                               'cxx_file'  : _sources_cxx})
-
-
-def get_sources(node, gened_cpp_files):
-    _, sources = _sources_visitor.visit(node, [])
-    sources.append(str(gened_cpp_files[node._qname]))
-    return ' '.join(sources)
-
-
-def _dirs_cxx(visitor, node, dirs):
-    _, dirs = visitor.node_mapred(node, dirs)
-    dirs.add(str(node._pwd))
-    return _, dirs
-_dirs_visitor = AstVisitor({'cxx_class' : _dirs_cxx,
-                            'cxx_file'  : _dirs_cxx})
+separators = {
+'packages': '\n'
+,'addexec': '\n'
+,'targetinclude': '\n'
+,'adddep': '\n'
+,'targetll': '\n'
+,'package_dirs': '\n  '
+,'libs': ' '
+,'libdirs': ' '
+}
 
 
-def get_dirs(node):
-    _, dirs = _dirs_visitor.visit(node, set())
-    return '"{}"'.format('" "'.join(dirs))
+def app(d, s):
+    v = templates[s].format(**d)
+    if s not in d or not d[s]: d[s] = v
+    else: d[s] = separators[s].join((d[s], v))
 
+lib_templates = ['libs', 'libdirs']
 
-def _from_node(visitor, node, d):
-    """ Nodes are not recursives """
-    d['name'] = node._qname.name()
-    d['sources'] = get_sources(node, d['gened_cpp_files'])
-    d['dirs'] = get_dirs(node)
-    d['executables'].append(_template_addexec.format(**d))
-    d['targetincludes'].append(_template_targetinclude.format(**d))
-    d['dependencies'].append(_template_adddep.format(**d))
-    d['link_libraries'].append(_template_targetll.format(**d))
+def _from_cxx(visitor, cxx, d):
+    _, d = visitor.node_mapred(cxx, d)
+    for c in cxx['FILENAME']:
+        f = cxx._pwd / c._val
+        d['sources'].add(str(f))
+    d['dirs'].add(str(cxx._pwd))
+    for l in cxx['LIB']:
+        d['libname'] = l['CMAKE_MODULE']._val
+        for t in lib_templates: app(d, t)
     return (), d
 
-_visitor = AstVisitor({'node' : _from_node})
 
+nt = ['executables', 'targetincludes', 'dependencies', 'link_libraries']
 
-def get_from_nodes(ast, d):
-    (d['executables'], d['targetincludes'],
-     d['dependencies'], d['link_libraries']) = ([], [], [], [])
-    _visitor.visit(ast, d)
-    d['executables'] = '\n'.join(d['executables'])
-    d['targetincludes'] = '\n'.join(d['targetincludes'])
-    d['dependencies'] = '\n'.join(d['dependencies'])
-    d['link_libraries'] = '\n'.join(d['link_libraries'])
+def _from_node(visitor, node, d):
+    d['name'] = node._qname.name()
+    #this node generated file
+    d['sources'] = {str(d['gened_cpp_files'][node._qname])}
+
+    #gather needed data
+    d['dirs'] = set()
+    for t in lib_templates: d[t] = ''
+    visitor = visitor.update({'cxx_file': _from_cxx,
+                              'cxx_class': _from_cxx})
+    _, d = visitor.node_mapred(node, d)
+    d['dirs'] = '"{}"'.format('" "'.join(d['dirs']))
+    d['sources'] = ' '.join(d['sources'])
+
+    for t in nt: app(d, t)
+    return (), d
+
+lt = ['packages', 'package_dirs']
+
+def _from_catkinlib(visitor, lib, d):
+    d['name'] = lib['CMAKE_MODULE']._val
+    d['components'] = ' '.join(c._val for c in lib['COMPONENTS'])
+    d['dir'] = str(lib._pwd)
+    for t in lt: app(d, t)
+    return (), d
+
+_visitor = AstVisitor({'node' : _from_node,
+                       'cmake_library': _from_catkinlib})
 
 
 def gen(msg_list, gened_cpp_files, ast):
@@ -108,8 +128,10 @@ def gen(msg_list, gened_cpp_files, ast):
     d = {'namespace'       : ast._qname.name(),
          'msg_files'       : '\n  '.join(msg_files),
          'gened_cpp_files' : gened_cpp_files}
-    get_from_nodes(ast, d)
-    cmakeliststxt = _template_cmakeliststxt.format(**d)
-    write_file(filepath_in_qn("CMakeLists.txt", ast._qname), cmakeliststxt)
+    for t in nt: d[t] = ''
+    for t in lt: d[t] = ''
+    _visitor.visit(ast, d)
+    app(d, 'cmakeliststxt')
+    write_file(filepath_in_qn("CMakeLists.txt", ast._qname), d['cmakeliststxt'])
 
 
