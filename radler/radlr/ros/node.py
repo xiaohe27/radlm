@@ -143,10 +143,7 @@ def app(d, s):
     if s not in d or not d[s]: d[s] = v
     else: d[s] = separators[s].join((d[s], v))
 
-def join(storage):
-    for s in storage:
-        if isinstance(storage[s], list):
-            storage[s] = separators[s].join(storage[s])
+
 
 
 def _include_cxx_class(visitor, node, acc):
@@ -160,7 +157,6 @@ _include_visitor = AstVisitor({'cxx_class' : _include_cxx_class})
 def getincludes(node):
     _, paths = _include_visitor.visit(node, [])
     return '\n'.join(paths)
-
 
 
 def to_nsec(node):
@@ -257,10 +253,8 @@ def gennode(visitor, node, cpps):
     write_file(node_h_name, node_h)
     #generate the cpp file
     node_cpp_name = filepath(qn_srcfile(node._qname) + '_node.cpp')
-    node_cpp = templates['node_cpp'].format(node_h_name=node_h_name.name,
-                                            rate=node['PERIOD']._val,
-                                            node=node,
-                                             **d)
+    node_cpp = templates['node_cpp'].format(
+        node_h_name=node_h_name.name, rate=node['PERIOD']._val, node=node, **d)
     write_file(node_cpp_name, node_cpp)
     #register the cpp file
     cpps[qname] = node_cpp_name
