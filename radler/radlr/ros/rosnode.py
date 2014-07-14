@@ -12,6 +12,7 @@ from radler.radlr.errors import warning, internal_error
 from radler.radlr.rast import AstVisitor, Ident
 from radler.radlr.ros.rosutils import qn_cpp, qn_srcfile, qn_topic, filepath,\
     qn_file
+from pathlib import Path
 
 
 templates = {
@@ -248,14 +249,14 @@ def gennode(visitor, node, cpps):
     #generate the header file
     qname = node._qname
     d['name'] = str(qname)
-    node_h_name = filepath(qn_srcfile(node._qname) + '_node.h')
+    node_h_name = Path(qn_srcfile(node._qname) + '_node.h')
     node_h = templates['node_h'].format(**d)
-    write_file(node_h_name, node_h)
+    write_file(filepath(node_h_name), node_h)
     #generate the cpp file
-    node_cpp_name = filepath(qn_srcfile(node._qname) + '_node.cpp')
+    node_cpp_name = Path(qn_srcfile(node._qname) + '_node.cpp')
     node_cpp = templates['node_cpp'].format(
         node_h_name=node_h_name.name, rate=node['PERIOD']._val, node=node, **d)
-    write_file(node_cpp_name, node_cpp)
+    write_file(filepath(node_cpp_name), node_cpp)
     #register the cpp file
     cpps[qname] = node_cpp_name
     return (), cpps

@@ -6,8 +6,10 @@ Created on May, 2014
 
 from radler.astutils.tools import write_file
 from radler.radlr.rast import AstVisitor
-from radler.radlr.ros.rosutils import filepath_in_qn, qn_msgfile, filepath
+from radler.radlr.ros.rosutils import qn_dir, qn_msgfile, filepath,\
+    qn_dir
 from radler.astutils.names import QualifiedName
+from radler.radlr.ros import rosutils
 
 templates = {
 'cmakeliststxt': """
@@ -60,10 +62,10 @@ target_link_libraries({name}
 
 separators = {
 'packages': '\n'
-,'addexec': '\n'
-,'targetinclude': '\n'
-,'adddep': '\n'
-,'targetll': '\n'
+,'executables' : '\n'
+,'targetincludes': '\n'
+,'dependencies': '\n'
+,'link_libraries': '\n'
 ,'package_dirs': '\n  '
 ,'libs': ' '
 ,'libdirs': ' '
@@ -79,10 +81,11 @@ lib_templates = ['libs', 'libdirs']
 
 def _from_cxx(visitor, cxx, d):
     _, d = visitor.node_mapred(cxx, d)
+    #give the correct root to relative paths
+    pwd = rosutils.user_file_relativepath / cxx._pwd
+    d['dirs'].add(pwd)
     for c in cxx['FILENAME']:
-        f = cxx._pwd / c._val
-        d['sources'].add(str(f))
-    d['dirs'].add(str(cxx._pwd))
+        d['sources'].add(pwd / c._val)
     for l in cxx['LIB']:
         d['libname'] = l['CMAKE_MODULE']._val
         for t in lib_templates: app(d, t)
@@ -93,8 +96,9 @@ nt = ['executables', 'targetincludes', 'dependencies', 'link_libraries']
 
 def _from_node(visitor, node, d):
     d['name'] = node._qname.name()
-    #this node generated file
-    d['sources'] = {str(d['gened_cpp_files'][node._qname])}
+    #this node generated file, makes it corretly relative to the cmakefile
+    srcfile = d['gened_cpp_files'][node._qname].relative_to(d['localroot'])
+    d['sources'] = {str(srcfile)}
 
     #gather needed data
     d['dirs'] = set()
@@ -102,8 +106,8 @@ def _from_node(visitor, node, d):
     visitor = visitor.update({'cxx_file': _from_cxx,
                               'cxx_class': _from_cxx})
     _, d = visitor.node_mapred(node, d)
-    d['dirs'] = '"{}"'.format('" "'.join(d['dirs']))
-    d['sources'] = ' '.join(d['sources'])
+    d['dirs'] = '"{}"'.format('" "'.join(map(str,d['dirs'])))
+    d['sources'] = ' '.join(map(str,d['sources']))
 
     for t in nt: app(d, t)
     return (), d
@@ -113,7 +117,7 @@ lt = ['packages', 'package_dirs']
 def _from_catkinlib(visitor, lib, d):
     d['name'] = lib['CMAKE_MODULE']._val
     d['components'] = ' '.join(c._val for c in lib['COMPONENTS'])
-    d['dir'] = str(lib._pwd)
+    d['dir'] = str(rosutils.user_file_relativepath /lib._pwd)
     for t in lt: app(d, t)
     return (), d
 
@@ -125,13 +129,15 @@ def gen(msg_list, gened_cpp_files, ast):
     #The Cmakefile waits for msg files relative to the msg dir
     msg_dir = filepath(qn_msgfile(QualifiedName(ast._qname, '', True)))
     msg_files = (str(m.relative_to(msg_dir)) for m in msg_list)
+    localroot = qn_dir(ast._qname)
     d = {'namespace'       : ast._qname.name(),
          'msg_files'       : '\n  '.join(msg_files),
-         'gened_cpp_files' : gened_cpp_files}
+         'gened_cpp_files' : gened_cpp_files,
+         'localroot'       : localroot}
     for t in nt: d[t] = ''
     for t in lt: d[t] = ''
     _visitor.visit(ast, d)
     app(d, 'cmakeliststxt')
-    write_file(filepath_in_qn("CMakeLists.txt", ast._qname), d['cmakeliststxt'])
+    write_file(filepath(localroot / "CMakeLists.txt"), d['cmakeliststxt'])
 
 
