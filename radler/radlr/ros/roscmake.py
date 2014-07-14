@@ -117,7 +117,9 @@ lt = ['packages', 'package_dirs']
 def _from_catkinlib(visitor, lib, d):
     d['name'] = lib['CMAKE_MODULE']._val
     d['components'] = ' '.join(c._val for c in lib['COMPONENTS'])
-    d['dir'] = str(rosutils.user_file_relativepath /lib._pwd)
+    d['dir'] = str('${CMAKE_CURRENT_SOURCE_DIR}'
+                   / rosutils.user_file_relativepath
+                   /lib._pwd)
     for t in lt: app(d, t)
     return (), d
 

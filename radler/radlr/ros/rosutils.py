@@ -38,9 +38,9 @@ def qn_msgfile(qname):
 def filepath(name):
     return infos.dest_dir / name
 
-user_file_relativepath = 'src/_user_code'
+user_file_relativepath = Path('src/_user_code')
 
-radllib_relativepath = 'src/_radl_lib'
+radllib_relativepath = Path('src/_radl_lib')
 
 def gen_dirs(ast):
     prog_qname = ast._qname
