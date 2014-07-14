@@ -6,7 +6,7 @@ Created on May, 2014
 
 from radler.astutils.tools import write_file
 from radler.radlr.rast import AstVisitor
-from radler.radlr.ros.utils import filepath_in_qn, qn_msgfile, filepath
+from radler.radlr.ros.rosutils import filepath_in_qn, qn_msgfile, filepath
 from radler.astutils.names import QualifiedName
 
 templates = {

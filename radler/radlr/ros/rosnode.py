@@ -10,7 +10,7 @@ Generate one ROS _node.cpp file per node declaration.
 from radler.astutils.tools import write_file
 from radler.radlr.errors import warning, internal_error
 from radler.radlr.rast import AstVisitor, Ident
-from radler.radlr.ros.utils import qn_cpp, qn_srcfile, qn_topic, filepath,\
+from radler.radlr.ros.rosutils import qn_cpp, qn_srcfile, qn_topic, filepath,\
     qn_file
 
 

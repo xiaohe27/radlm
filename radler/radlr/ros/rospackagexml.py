@@ -5,7 +5,7 @@ Created on May, 2014
 '''
 from radler.astutils.tools import write_file
 from radler.radlr import infos
-from radler.radlr.ros.utils import filepath_in_qn
+from radler.radlr.ros.rosutils import filepath_in_qn
 
 
 _template_package_xml = """<?xml version="1.0"?>

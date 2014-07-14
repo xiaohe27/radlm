@@ -1,7 +1,8 @@
 '''
 Created on Jun, 2014
-
 @author: Léonard Gérard leonard.gerard@sri.com
+
+    Utilities to handle file paths, filenames, etc.
 '''
 from radler.radlr.errors import error, internal_error
 from radler.radlr import infos

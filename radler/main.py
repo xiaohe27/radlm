@@ -11,7 +11,7 @@ from radler.radlr import crossrefs, pwds, errors, arrays, infos, alias,\
     language
 from radler.radlr.errors import log_err
 from radler.radlr.parser import Semantics
-from radler.radlr.ros import utils, msg, node, packagexml, cmakeliststxt
+from radler.radlr.ros import *
 
 ########
 # Parse arguments
@@ -34,6 +34,7 @@ parser.add_argument('--warning_as_errors', action='store_true')
 parser.add_argument('--continue_when_errors', action='store_true')
 #TODO: 8 flags to decide the generation
 #parser.add_argument('--gen', action='accumulate', default='ROS')
+
 args = parser.parse_args()
 
 errors.continue_when_errors = args.continue_when_errors
@@ -86,8 +87,8 @@ crossrefs.add(infos.ast)
 pwds.add(infos.ast)
 
 # ROS files generation
-utils.gen_dirs(infos.ast)
-msg_list = msg.gen(infos.ast)
-gened_cpp_files = node.gen(infos.ast)
-packagexml.gen(infos.ast)
-cmakeliststxt.gen(msg_list, gened_cpp_files, infos.ast)
+rosutils.gen_dirs(infos.ast)
+msg_list = rosmsg.gen(infos.ast)
+gened_cpp_files = rosnode.gen(infos.ast)
+rospackagexml.gen(infos.ast)
+roscmake.gen(msg_list, gened_cpp_files, infos.ast)

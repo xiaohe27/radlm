@@ -14,7 +14,7 @@ from radler.radlr import types, infos
 from radler.radlr.rast import AstVisitor
 from radler.radlr.errors import warning, internal_error
 from radler.radlr.types import StructType, ArrayType
-from radler.radlr.ros.utils import qn_msgfile, filepath
+from radler.radlr.ros.rosutils import qn_msgfile, filepath
 
 
 def struct_of_topic(struct_t):
