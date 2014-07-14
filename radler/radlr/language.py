@@ -148,6 +148,7 @@ class node
     CXX cxx_class
     CXX_ANNEX cxx_file *
     PERIOD msec
+    WCET msec ?
     DEVICES device *
 
 ################
@@ -157,6 +158,16 @@ class node
 class device
     CXX cxx_file *
 
+class processor
+    HYPERVISOR string
+    PARTITIONS partition *
+
+class partition
+    OS string ?
+    NODES node *
+
+class bus
+    ENDPOINTS partition *
 
 """
 
