@@ -81,6 +81,10 @@ type msec
     REGEX ~r"\b(?P<value>\d+)"
     CXX "std::int32_t"
 
+type ip
+    REGEX ~r"\b(?P<value>\d\d\d\.\d\d\d\.\d\d\d\.\d\d\d)\b"
+    CXX "internal"
+
 
 class cxx_class
     PATH string ?
@@ -89,10 +93,6 @@ class cxx_class
     FILENAME string *
     LIB cmake_library *
     CLASS string
-#TODO: 8 support string calling code (note the order has to be respected)
-#    PATH string ? 'src'
-#    FILENAME string ? @ {this}._name @
-#    CLASS string ? @ str.capitalize({this}['FILENAME']) @
 
 class cxx_file
     PATH string ?
@@ -164,7 +164,12 @@ class processor
 
 class partition
     OS string ?
-    NODES node *
+    IP ip ?
+    RUNS part_node *
+
+class part_node
+    NODE node
+    PORT uint16
 
 class bus
     ENDPOINTS partition *
@@ -174,9 +179,17 @@ class bus
 #######################################
 #TODO: 0 RADL
 # min and max period
-# optional wcet
 # generate firewall rules
 # generate alert messages to monitors
 # check connectivity
 # deploy and run scripts
 #######################################
+#TODO: 8 support string calling code (note the order has to be respected)
+#    PATH string ? 'src'
+#    FILENAME string ? @ {this}._name @
+#    CLASS string ? @ str.capitalize({this}['FILENAME']) @
+#######################################
+# TODO: 5 big issue in the publishers (ROS require data not to be overwriten)
+# We should abstract and require a two step publishing:
+# 1) msg* get_slot() 2) void publish()
+# Or use C++11 move semantics publish(msg&&), but it is probably not wanted.
