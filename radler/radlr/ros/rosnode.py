@@ -248,7 +248,8 @@ def gennode(visitor, node, cpps):
         for f in pubsub_templates: app(d, f)
     #generate the header file
     qname = node._qname
-    d['name'] = str(qname)
+    #TODO: 4 namespace nodes... use the nodehandler? or the remaping args?
+    d['name'] = qname.name()
     node_h_name = Path(qn_srcfile(node._qname) + '_node.h')
     node_h = templates['node_h'].format(**d)
     write_file(filepath(node_h_name), node_h)
