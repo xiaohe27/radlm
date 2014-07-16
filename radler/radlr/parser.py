@@ -145,7 +145,8 @@ def gen_grammar(language_tree, params, env):
         rules = '\n'.join(node.children[0])
         g = r"""{rules}
             _ident = ~r"(?!({keywords})\b)(?!{forbidden_prefix})[a-zA-Z][a-zA-Z0-9_]*"
-            _solo_ident = _ident _ !(':' / '{{' / '=')
+            _qname = ~r"(?!({keywords})\b)[a-zA-Z][a-zA-Z0-9_.]*"
+            _solo_ident = _qname _ !(':' / '{{' / '=')
             _alias_def = _ident _ '=' _ _solo_ident
             _ = ~r"\s*(#[^\r\n]*\s*)*\s*"
             _end = ~r"$"
@@ -301,15 +302,15 @@ def gen_tree_to_ast(language_tree, env):
     # We are working on an ast with some leafs being parse nodes (_ident).
     def onleaf(visitor, leaf, namespace):
         if isinstance(leaf, parsimonious.nodes.Node):
-            if leaf.expr_name != '_ident':
+            if leaf.expr_name != '_qname':
                 raise Exception("The Ast have parsing node "
                                 "{} left over".format(leaf.expr_name))
             try:
-                qname = namespace.resolve(leaf.text)
+                node = namespace.resolve(leaf.text)
             except NonExistingIdent:
                 raise Exception("{l}Undefined identifier {t}"
-                    "".format(l=str(loc_of_parsimonious(leaf)), t=qname))
-            return Ident(qname, loc_of_parsimonious(leaf)), namespace
+                    "".format(l=str(loc_of_parsimonious(leaf)), t=leaf.text))
+            return Ident(node._qname, loc_of_parsimonious(leaf)), namespace
         else:
             return leaf, namespace
     def onnode(visitor, node, namespace):

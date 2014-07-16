@@ -30,9 +30,9 @@ t2 = t1
 
 n : node {
     SUBSCRIBES
-        s1 { TOPIC t1 SUBSCRIBER default_sub MAXLATENCY msec 1}
+        t1 { TOPIC test_alias.t2 SUBSCRIBER default_sub MAXLATENCY msec 1}
     PUBLISHES
-        s2 { TOPIC t2 PUBLISHER default_pub}
+        t2 { TOPIC test_alias.t1 PUBLISHER default_pub}
     PERIOD 50
     CXX { HEADER   "alias.h"
           FILENAME "alias.cpp"

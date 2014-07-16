@@ -112,17 +112,25 @@ class Namespace(MutableMapping):
                 self.idents[name] = None #Book it
                 return QualifiedName(self.qname, iname, True)
 
-    def resolve(self, source_qname, generated=False):
-        """ Tries to qualify source_qname to the nearest definition.
-        Contrary to internal ast qname, source_qname may be partially qualified
+    def resolve(self, source_qname):
+        """ Tries to find the nearest definition of source_qname.
+        The source_qname may be partially qualified in which case we resolve
+        the root first then lookdown from there.
         """
-        #TODO: 4 for now we don't have source access to qualifiers (no syntax)
+        qn_l = source_qname.split('.')
+        rootnamespace, _ = self._resolve(qn_l[0])
+        n = rootnamespace.lookdown_node(iter(qn_l))
+        return n
+
+    def _resolve(self, name):
+        """ Tries to qualify a simple name to the nearest definition:
+        goes up to the first definition, while checking opened namespaces.
+        """
         try:
-            self[source_qname]
-            return QualifiedName(self.qname, source_qname, generated)
+            return self, self[name]
         except NonExistingIdent: pass
-        # Only a root namespace stop the recursion.
-        return self.father.resolve(source_qname, generated)
+        #TODO: 5 checked in opened namespaces (keep opening order)
+        return self.father._resolve(name) #the root namespace stop the recursion
 
     def associate(self, qname, node):
         assert(qname.modname() == self.qname)
@@ -136,16 +144,18 @@ class Namespace(MutableMapping):
         self.associate(qname, node)
 
     def lookup_node(self, qname):
-        """ Get the node from the namespace, if not defined, tries to get it
-        from its father, if not found, raise NonExistingIdent(name)
+        """ The qname has to be fully qualified.
+        If not found, raise NonExistingIdent(name)
         """
         if qname.modname() == self.qname: #shortcut for fast local name lookups
             return self[qname.name()]
+        return self.root.lookdown_node(qname.pathwalk())
+
+    def lookdown_node(self, path):
         try:
-            p = qname.pathwalk()
-            return self.root._lookdown_node(next(p), p)
+            return self._lookdown_node(next(path), path)
         except (KeyError, AttributeError): pass
-        raise NonExistingIdent(qname)
+        raise NonExistingIdent
 
     def _lookdown_node(self, name, pathwalkleft):
         nextname = next(pathwalkleft, False)
@@ -185,9 +195,8 @@ class __RootNamespace(Namespace):
         self.qname = _RootQName(rootname)
         self.idents = dict()
         self.gen_last_num = dict()
-    def resolve(self, source_qname, generated=False):
-        self[source_qname]
-        return QualifiedName(self.qname, source_qname, generated)
+    def _resolve(self, name):
+        return self, self[name]
     @property
     def root(self): return self
     @property

@@ -189,7 +189,7 @@ class bus
 #    FILENAME string ? @ {this}._name @
 #    CLASS string ? @ str.capitalize({this}['FILENAME']) @
 #######################################
-# TODO: 5 big issue in the publishers (ROS require data not to be overwriten)
+# TODO: 3 big issue in the publishers (ROS require data not to be overwriten)
 # We should abstract and require a two step publishing:
 # 1) msg* get_slot() 2) void publish()
 # Or use C++11 move semantics publish(msg&&), but it is probably not wanted.
