@@ -89,8 +89,8 @@ class AstNode(Mapping):
     def _val(self):
         """ Used for nodes holding one value as their unique child."""
         if len(self._children) != 1:
-            raise Exception("tried to get the _val of a node with {} childs"
-                            "".format(len(self._children)))
+            internal_error("Tried to get _val of a node with {} childs"
+                           "".format(len(self._children)))
         return self._children[0]
     #container convention, behave like _children
     def __len__(self):

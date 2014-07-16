@@ -29,7 +29,10 @@ log3  = _logn(3)
 #TODO: 8 use the inflect package to get plurals, etc correctly.
 
 def _txt_format(message, location):
-    return "{}{}".format(location, message)
+    if location:
+        return "{}{}".format(location, message)
+    else:
+        return message
 
 #verbosity level = 0
 def warning(message, location):
@@ -47,5 +50,4 @@ def internal_error(message):
     raise Exception("\n=!= internal error =!=\n" + message)
 
 def internal_assert(v, message):
-    if not v:
-        raise Exception("\n=!= internal error =!=\n" + message)
+    if not v: internal_error(message)

@@ -3,7 +3,7 @@ Created on May, 2014
 
 @author: Léonard Gérard leonard.gerard@sri.com
 '''
-from radler.radlr.errors import warning
+from radler.radlr.errors import warning, error
 from radler.radlr.rast import AstVisitor, Ident
 
 
@@ -15,7 +15,7 @@ def _check_and_map_topics_publisher(ast):
         node, maping = acc
         top = pub['TOPIC']
         if top._qname in maping:
-            raise Exception("Topic {top} has multiple publisher.".format(top=top))
+            error("Topic {} has multiple publisher.".format(top), top._location)
         maping[top._qname] = Ident.of(node)
         return pub, (node, maping)
     def node(visitor, node, acc):

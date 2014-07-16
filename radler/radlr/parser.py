@@ -303,13 +303,13 @@ def gen_tree_to_ast(language_tree, env):
     def onleaf(visitor, leaf, namespace):
         if isinstance(leaf, parsimonious.nodes.Node):
             if leaf.expr_name != '_qname':
-                raise Exception("The Ast have parsing node "
-                                "{} left over".format(leaf.expr_name))
+                internal_error("The Ast have parsing node "
+                               "{} left over".format(leaf.expr_name))
             try:
                 node = namespace.resolve(leaf.text)
             except NonExistingIdent:
-                raise Exception("{l}Undefined identifier {t}"
-                    "".format(l=str(loc_of_parsimonious(leaf)), t=leaf.text))
+                msg = "Undefined identifier {}".format(leaf.text)
+                error(msg, loc_of_parsimonious(leaf))
             return Ident(node._qname, loc_of_parsimonious(leaf)), namespace
         else:
             return leaf, namespace
