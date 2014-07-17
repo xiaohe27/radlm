@@ -158,6 +158,9 @@ class node
 class device
     CXX cxx_file *
 
+class system
+    PROCESSORS processor *
+
 class processor
     HYPERVISOR string
     PARTITIONS partition *
