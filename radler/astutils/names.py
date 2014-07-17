@@ -20,6 +20,9 @@ class QualifiedName(tuple):
         name a string,
         generated is True if this name is not extracted from the source."""
         return tuple.__new__(cls, (modname, name, generated))
+    def __getnewargs__(self):
+        """Allows pickling."""
+        return self
 #     @classmethod
 #     def namein(cls, name, generated, namespace):
 #         """Create a qualified name using its enclosing namespace."""
@@ -66,6 +69,9 @@ class _RootQName(QualifiedName):
     def __new__(cls, rootname):
         if not rootname: internal_error("Empty names are not allowed.")
         return tuple.__new__(cls, [rootname])
+    def __getnewargs__(self):
+        """Allows pickling."""
+        return self
     def name(self): return self[0]
     modname = name
     def qname(self, sep='/', root=None):

@@ -24,6 +24,13 @@ class Ident(Mapping):
             self._location = location if location else dummy_loc
         self._node = node
 
+    def __getstate__(self):
+        """ Allows pickling: necessary because of __getattr__"""
+        return tuple(getattr(self, a) for a in Ident.__slots__)
+    def __setstate__(self, state):
+        """ Allows pickling: necessary because of __getattr__"""
+        for a,v in zip(Ident.__slots__, state): setattr(self, a, v)
+
     @classmethod
     def of(cls, node_or_ident):
         if isinstance(node_or_ident, Ident):
@@ -69,6 +76,12 @@ class Alias(Ident):
         self._qname = qname
         self._location = location
         self._is_alias_of = target_ident
+    def __getstate__(self):
+        """ Allows pickling: necessary because of __getattr__"""
+        return tuple(getattr(self, a) for a in Alias.__slots__)
+    def __setstate__(self, state):
+        """ Allows pickling: necessary because of __getattr__"""
+        for a,v in zip(Alias.__slots__, state): setattr(self, a, v)
     @property
     def _node(self):
         a = self._is_alias_of
