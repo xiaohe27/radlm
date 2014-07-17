@@ -70,7 +70,7 @@ class Ident(Mapping):
 
 
 class Alias(Ident):
-    __slots__ = ['_qname', '_generated', '_location', '_is_alias_of']
+    __slots__ = ['_qname', '_location', '_is_alias_of']
     #duplicate the Ident __slots__ for ease of use.
     def __init__(self, qname, location, target_ident):
         self._qname = qname
@@ -84,8 +84,7 @@ class Alias(Ident):
         for a,v in zip(Alias.__slots__, state): setattr(self, a, v)
     @property
     def _node(self):
-        a = self._is_alias_of
-        return a._node
+        return self._is_alias_of._node
 
 class AstNode(Mapping):
     """ Basically a named kind with children.
