@@ -7,6 +7,7 @@ Created on May, 2014
 
 #TODO: 6 Where do the error message is updated (it seems it is not with _end)
 
+version = 'RADL 0.9'
 
 extra_keywords = {
 #C++ keywords

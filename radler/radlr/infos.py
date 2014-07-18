@@ -22,10 +22,14 @@ lib_dir = script_dir / 'lib'
 ##########
 
 root_namespace = __RootNamespace('/')
-"The global root namespace"
+"The global root namespace."
 
 ros_type_of_struct = dict()
 "Mapping from types to ROS type names, used to minimize ROS msg creation."
+
+semantics = None
+"Semantics object for the language. It is created during bootstrapping."
+
 
 ##########
 # Global properties concerning the current source file.

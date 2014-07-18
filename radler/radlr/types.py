@@ -34,7 +34,7 @@ def of(node):
     try: #first check if it already has a _type field
         return node._type
     except AttributeError: pass
-    mk = infos.ast._metakind_of_kind(node._kind)  # @UndefinedVariable
+    mk = infos.semantics.metakinds[node._kind]  # @UndefinedVariable
     if mk == 'type':
         t = node._kind
     elif node._kind == 'array':

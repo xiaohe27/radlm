@@ -21,7 +21,7 @@ from radler.radlr import sanitize
 from radler.radlr.errors import log1, log_err, log3, log2, error,\
     internal_error
 from radler.radlr.metaParser import meta_parser
-from radler.radlr.rast import AstNode, Ast, AstVisitor, Ident
+from radler.radlr.rast import AstNode, AstVisitor, Ident
 from radler.astutils.location import Location
 from collections import OrderedDict
 from functools import partial
@@ -31,17 +31,8 @@ def loc_of_parsimonious(parsimonious_node):
                         parsimonious_node.start,
                         parsimonious_node.end)
 
-class Env:
-    """ Environment associated to a language:
-    env.kinds maps kind_name -> 'clas' | 'typ' | 'enum' | 'struct'
-    env.keywords is a set of keywords
-    """
-    def __init__(self, keywords):
-        self.kinds = OrderedDict()
-        self.keywords = set(keywords)
 
-
-def gen_grammar(language_tree, params, env):
+def gen_grammar(language_tree, env):
     # We can update in place kinds, since we do a depth first...
     # not pretty but python dict are easier as mutable variables
 
@@ -71,7 +62,7 @@ def gen_grammar(language_tree, params, env):
         A defKind node has on child the leaf basic_word
         """
         k = node.children[0]
-        if k in env.kinds:
+        if k in env.metakinds:
             visitor.error("The kind {k} is already defined.".format(k=k))
         return k, env
 
@@ -81,7 +72,7 @@ def gen_grammar(language_tree, params, env):
         """
         (node, env) = visitor.mapred(node, env) #depth first
         (_, kind, _, reg, _, _) = node.children
-        env.kinds[kind] = 'type' #register this type
+        env.metakinds[kind] = 'type' #register this type
         env.keywords.add(kind) #add the type name to the keywords
         g = """{kind} = {kind}_def / _solo_ident
     {kind}_def = _alias_def / {kind}_annoted / {kind}_not_annoted
@@ -125,7 +116,7 @@ def gen_grammar(language_tree, params, env):
         """
         (node, env) = visitor.mapred(node, env) #depth first
         kind = node.children[1]
-        env.kinds[kind] = 'class' #register this class
+        env.metakinds[kind] = 'class' #register this class
         gfield_list = node.children[2]
         fields = "( {0} )".format(') / ('.join(gfield_list))
         g = """{kind} = {kind}_def / _solo_ident
@@ -151,13 +142,13 @@ def gen_grammar(language_tree, params, env):
             _ = ~r"\s*(#[^\r\n]*\s*)*\s*"
             _end = ~r"$"
             """.format(rules=rules, keywords=keywords,
-                       forbidden_prefix=visitor['forbidden_prefix'])
+                       forbidden_prefix=env.forbidden_prefix)
         return g, env
 
-    gen = ParseVisitor(locals(), params=params)
+    gen = ParseVisitor(locals())
     g, env = gen.visit(language_tree, env)
-    if env.kinds:
-        topleveldefs = '_def / '.join(env.kinds) + '_def'
+    if env.metakinds:
+        topleveldefs = '_def / '.join(env.metakinds) + '_def'
     else:
         topleveldefs = ''
     lang = """_lang = _ ({tops})* _""".format(tops=topleveldefs)
@@ -321,8 +312,7 @@ def gen_tree_to_ast(language_tree, env):
     def tree_to_ast(program_tree, program_qname, namespace):
         thisnamespace = namespace.push(program_qname)
         (location, defs), _ = gen.visit(program_tree, thisnamespace)
-        ast = Ast(program_qname, location, env.kinds,
-                  env.keywords, thisnamespace, defs)
+        ast = AstNode('_ast', program_qname, defs, thisnamespace, location)
         namespace.associate(program_qname, ast)
         ast, _ = resolver.visit(ast, namespace)
         return ast
@@ -378,21 +368,26 @@ def gen_ast_checker(language_tree):
 
 
 class Semantics:
+    """Once initialized the semantics has five main attributes,
+    -metakinds maps kind_name -> 'clas' | 'typ' | 'enum' | 'struct'
+    -keywords is a set of keywords
+    -forbidden_prefix is a reserved prefix
+    -lang_version the language version
+    -grammar is the parsimonious grammar
+    Moreover, the initialization bootsrap the parser and checker.
+    """
     def __init__(self, language):
-        """
-        #TODO: 7 allow to extend a semantics by providing it to another one
-        """
+        self.metakinds = OrderedDict()
+        self.keywords = set(language.extra_keywords)
+        self.forbidden_prefix = getattr(language, 'forbidden_prefix', '')
+        self.lang_version = language.version
         language_tree = meta_parser(language.defs)
-        self.env = Env(language.extra_keywords)
-        params = {'forbidden_prefix' : getattr(language, 'forbidden_prefix', '')}
-        self.grammar, self.env = gen_grammar(language_tree, params, self.env)
-        self.tree_to_ast = gen_tree_to_ast(language_tree, self.env)
+        self.grammar, _ = gen_grammar(language_tree, self)
+        self.tree_to_ast = gen_tree_to_ast(language_tree, self)
         self.ast_checker = gen_ast_checker(language_tree)
 
     def __call__(self, program, program_qname, root_namespace):
-        """ The parser
-        #TODO: 6 allow to extend the ast
-        """
+        """ The parser """
         try:
             program_tree = self.grammar.parse(program)
             program_tree = clean_node(program_tree, to_prune=['_', '_end'],

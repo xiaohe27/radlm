@@ -61,14 +61,33 @@ infos.dest_dir = dest_dir
 ########
 # Bootstrap the semantics from the language definition
 ########
-radlr_semantics = Semantics(language)
+
+infos.semantics = Semantics(language)
+
+# #saving the bootsrap is not possible since pickle doesn't pickle functions.
+# #maybe by mixing pickling and marshaling of __code__ of the functions
+# #is possible, but for now....
+# sem_file = infos.script_dir / 'semantics.pickle'
+# try:
+#     with sem_file.open('rb') as f:
+#         infos.semantics = pickle.load(f)
+# except Exception:
+#     args.force_bootstrap = True
+# 
+# if args.force_bootstrap or infos.semantics.lang_version != language.version:
+#     infos.semantics = Semantics(language)
+#     log3('Bootstrapping')
+#     with sem_file.open('wb') as f:
+#         pickle.dump(infos.semantics, f)
 
 ########
 # Parse
 ########
 qname = infos.root_namespace.qualify(source.stem)  # @UndefinedVariable
 with source.open() as f:
-    infos.ast = radlr_semantics(f.read(), qname, infos.root_namespace)
+    infos.ast = infos.semantics(f.read(), qname, infos.root_namespace)
+
+
 
 ######## Freeze #######
 # From here, the ast is "structurally frozen",

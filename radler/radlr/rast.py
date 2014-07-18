@@ -146,18 +146,3 @@ AstVisitor = Functor(AstNode, '_children', '_kind').Visitor
 AstNode.__str__ = Functor(AstNode, '_children', '_typed_name').spprint_node
 """Pretty printer for AstNodes register in the class"""
 
-
-class Ast(AstNode):
-    """ An ast object stores the toplevel definitions in the mappings
-    ast.kinds maps kind_name -> 'clas' | 'typ' | 'enum' | 'struct'
-    ast.keywords is a set of keywords
-    """
-    def __init__(self, qname, location, kinds, keywords, namespace, children):
-        self._kinds = kinds
-        self._keywords = keywords
-        AstNode.__init__(self, '_ast', qname, children, namespace, location)
-
-    def _metakind_of_kind(self, k):
-        return self._kinds[k]
-#     def __str__(self):
-#         return "{defs}".format(defs=str(self._children))
