@@ -36,7 +36,7 @@ def qn_msgfile(qname):
     return qn_file(qname, '/msg/')
 
 def filepath(name):
-    return infos.dest_dir / name
+    return infos.roscppdest_dir / name
 
 user_file_relativepath = Path('src/_user_code')
 

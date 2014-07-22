@@ -1,13 +1,3 @@
-################ Pervasives
-
-default_sub : subscriber {
-    CXX { HEADER "radl_roslib.h" PATH "_radl_lib" CLASS "radl::Default_sub" }
-}
-default_pub : publisher {
-    CXX { HEADER "radl_roslib.h" PATH "_radl_lib" CLASS "radl::Default_pub" }
-}
-
-################
 
 l1 : cmake_library {
   PATH "/usr/lib/cmake"
@@ -30,9 +20,9 @@ t2 = t1
 
 n : node {
     SUBSCRIBES
-        t1 { TOPIC test_alias.t2 SUBSCRIBER default_sub MAXLATENCY msec 1}
+        t1 { TOPIC test_alias.t2 SUBSCRIBER pervasives.default_sub MAXLATENCY msec 1}
     PUBLISHES
-        t2 { TOPIC test_alias.t1 PUBLISHER default_pub}
+        t2 { TOPIC test_alias.t1 PUBLISHER pervasives.default_pub}
     PERIOD 50
     CXX { HEADER   "alias.h"
           FILENAME "alias.cpp"

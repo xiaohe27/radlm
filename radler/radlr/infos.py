@@ -38,7 +38,7 @@ semantics = None
 ast = None
 "The program ast. Actually set by the parser."
 
-dest_dir = None
+roscppdest_dir = None
 "The destination Path directory"
 
 source_file = None
