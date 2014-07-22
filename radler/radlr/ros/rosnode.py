@@ -170,6 +170,9 @@ def to_nsec(node):
         internal_error("can't compute time from {}".format(str(node._qname)))
     return str(nsec)
 
+def to_rate(node):
+    return "1000000000/{}".format(to_nsec(node))
+
 def to_ros_duration(node):
     nsec = to_nsec(node)
     return "ros::Duration().fromNSec({})".format(nsec)
@@ -199,7 +202,7 @@ def gennode(visitor, node, cpps):
          'in_flags_struct' : '_in_flags_t',
          'out_flags_struct': '_out_flags_t',
          'cxx_includes'    : getincludes(node),
-         'period'          : to_ros_duration(node['PERIOD'])}
+         'period'          : to_rate(node['PERIOD'])} #TODO: 5 correct when ros is fixed and allow a duration as rate constructor argument
 
     #Over publications and subscriptions
     pubsub_templates = ['msg_include']
