@@ -1,14 +1,6 @@
-################ Pervasives
 
-default_sub : subscriber {
-    CXX { HEADER "radl_roslib.h" PATH "_radl_lib" CLASS "radl::Default_sub" }
-}
-default_pub : publisher {
-    CXX { HEADER "radl_roslib.h" PATH "_radl_lib" CLASS "radl::Default_pub" }
-}
-
-
-############# house_thermo
+default_sub = pervasives.default_sub
+default_pub = pervasives.default_pub
 
 basic_rate : msec 50
 

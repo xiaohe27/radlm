@@ -9,7 +9,7 @@ compile(){
 perv_obj="$SCRIPT_DIR/radler/lib/pervasives.radlo"
 if [ ! -f $perv_obj ]
 then
-	compile -c ${perv_obj/.radlo/.radl}
+	compile -c --roscpp_dest . ${perv_obj/.radlo/.radl}
 	echo "compiled pervasives.radlo"
 fi
 

@@ -4,7 +4,7 @@ Created on Jul, 2014
 @author: Léonard Gérard leonard.gerard@sri.com
 '''
 from radler.radlr import infos, language
-from radler.radlr.errors import warning
+from radler.radlr.errors import warning, log_err
 import pickle
 
 version = "0.1"
@@ -17,12 +17,12 @@ class Objectfile:
         self.obj_version = version
     def check_compat(self, filepath):
         if self.lang_version != language.version:
-            warning(lambda:
+            log_err(lambda:
                 "Object file {} has been created with language version {}"
                 " (current version is {})."
                 "".format(str(filepath), language.version, self.lang_version))
         if self.obj_version != version:
-            warning(lambda:
+            log_err(lambda:
                 "Object file {} is version {} (current version is {})."
                 "".format(str(filepath), self.obj_version, version))
     def load_in_namespace(self, namespace, filepath):
