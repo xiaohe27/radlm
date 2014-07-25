@@ -58,7 +58,7 @@ int main(int argc, const char* argv[]) {{
     ros::spinOnce();
     {in_fill}
 
-    //get and set the flags
+    //get input flags and set the default output flags
     {sub_flags_fill}
     radl::flags_t _gathered_flags = {gathered_flags};
     {pub_flags_fill}
@@ -109,7 +109,7 @@ struct {out_flags_struct} {{
 """{topic_t} {initmsg};
   {init_msg_fill}
   _out.{pubname} = &{initmsg};"""
-, 'pub_call'          : "{actionname}(*_out.{pubname});"
+, 'pub_call'          : "{actionname}(*_out.{pubname}, _out_flags.{pubname});"
 , 'set_pub'           :
 """ros::Publisher {actionname}_ros = _h.advertise<{topic_t}>("{topic_name}", 2);
   {actionclass}<{topic_t}> {actionname}({actionname}_ros);"""

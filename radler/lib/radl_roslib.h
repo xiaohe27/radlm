@@ -65,7 +65,8 @@ public:
   Default_pub(ros::Publisher& pub) {
     this->pub = &pub; 
   }
-  void operator()(const msg_type& msg) {
+  void operator()(const msg_type& msg, flags_t f) {
+    msg.radl__flags = f;
     this->pub->publish(msg);
   }
 };
