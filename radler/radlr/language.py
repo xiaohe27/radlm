@@ -109,21 +109,21 @@ class cmake_library
 class struct
     FIELDS int8/uint8/int16/uint16/int32/uint32/int64/uint64/
            float32/float64/
-           bool/string/struct/array *
+           bool/struct/array *
     EXTERNAL_ROS_DEF string ?
 
 
 class array
     VALUES int8/uint8/int16/uint16/int32/uint32/int64/uint64/
            float32/float64/
-           bool/string/struct/array *
+           bool/struct/array *
 
 
 class topic
 #Pay attention to the order of the types, parsing higher priority first
     FIELDS int8/uint8/int16/uint16/int32/uint32/int64/uint64/
            float32/float64/
-           bool/string/struct/array *
+           bool/struct/array *
     EXTERNAL_ROS_DEF string ?
 
 class publication
