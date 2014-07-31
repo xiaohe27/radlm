@@ -86,7 +86,6 @@ type ip
     REGEX ~r"\b(?P<value>\d\d\d\.\d\d\d\.\d\d\d\.\d\d\d)\b"
     CXX "internal"
 
-
 class cxx_class
     PATH string ?
     HEADER string
@@ -112,15 +111,13 @@ class struct
            bool/struct/array *
     EXTERNAL_ROS_DEF string ?
 
-
 class array
     VALUES int8/uint8/int16/uint16/int32/uint32/int64/uint64/
            float32/float64/
            bool/struct/array *
 
-
 class topic
-#Pay attention to the order of the types, parsing higher priority first
+    #Pay attention to the order of the types, parsing higher priority first
     FIELDS int8/uint8/int16/uint16/int32/uint32/int64/uint64/
            float32/float64/
            bool/struct/array *
@@ -149,33 +146,51 @@ class node
     CXX_ANNEX cxx_file *
     PERIOD msec
     WCET msec ?
-    DEVICES device *
+    DEVICES device_interface *
+
+class device_interface
+    HEADER cxx_file ?
 
 ################
 # Physical description
 ################
 
+class processor
+    NAME string
+    #TODO: 5 what is needed to decide if marshalling is necessary?
+    BITS int8
+    ENDIANESS string
+
 class device
+    IMPLEMENTS device_interface
+    REQUIRES_LINUX bool
     CXX cxx_file *
 
-class system
-    PROCESSORS processor *
+class bus
+    ENDPOINTS processor/device *
 
-class processor
-    HYPERVISOR string
+
+################
+# Mapping
+################
+
+class hypervisor
     PARTITIONS partition *
 
+class os
+    LINUX bool
+    REALTIME bool
+
 class partition
-    OS string ?
+    OS os ?
+    PROC processor
     IP ip ?
-    RUNS part_node *
+    RUNS mapped_node *
 
-class part_node
+class mapped_node
     NODE node
-    PORT uint16
-
-class bus
-    ENDPOINTS partition *
+    IP ip ?
+    PORT uint16 ?
 
 """
 
