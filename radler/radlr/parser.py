@@ -15,7 +15,7 @@ from radler.astutils.names import NonExistingIdent, QualifiedName
 from radler.astutils.nodeutils import clean_node, ParseVisitor, spprint_node
 from radler.astutils.tools import BucketDict, str
 import parsimonious
-from parsimonious.exceptions import IncompleteParseError
+from parsimonious.exceptions import ParseError
 from parsimonious.grammar import Grammar
 from radler.radlr import sanitize
 from radler.radlr.errors import log1, log_err, log3, log2, error,\
@@ -151,7 +151,7 @@ def gen_grammar(language_tree, env):
         topleveldefs = '_def / '.join(env.metakinds) + '_def'
     else:
         topleveldefs = ''
-    lang = """_lang = _ ({tops})* _""".format(tops=topleveldefs)
+    lang = """_lang = _ ({tops})* _ _end""".format(tops=topleveldefs)
     log3(lambda:g+lang)
     return Grammar(g+lang, '_lang'), env
 
@@ -392,13 +392,11 @@ class Semantics:
             program_tree = self.grammar.parse(program)
             program_tree = clean_node(program_tree, to_prune=['_', '_end'],
                                       keep_regex=True)
-        except IncompleteParseError as e:
-            log1("Incomplete parsed tree is:")
-            program_tree = clean_node(e.node, to_prune=['_', '_end'],
-                                      keep_regex=True)
-            log1(spprint_node(program_tree))
-            log_err(str(e))
-            exit(-3)
+        except ParseError as e:
+            loc = Location('', e.text, e.pos, e.pos+1)
+            msg = ("Could not match rule named '{r}' defined by\n{rhs}"
+                   "".format(r=e.expr.name, rhs=e.expr._as_rhs()))
+            error(msg, loc)
         log3(lambda: spprint_node(program_tree))
         ast = self.tree_to_ast(program_tree, program_qname, root_namespace)
         ast = sanitize.update_idents(ast, root_namespace)
