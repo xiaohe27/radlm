@@ -75,7 +75,7 @@ def gen_grammar(language_tree, env):
         env.metakinds[kind] = 'type' #register this type
         env.keywords.add(kind) #add the type name to the keywords
         g = """{kind} = {kind}_def / _solo_ident
-    {kind}_def = _alias_def / {kind}_annoted / {kind}_not_annoted
+    {kind}_def = {kind}_not_annoted / {kind}_annoted / _alias_def
     {kind}_annoted = (_ident _ ':' _)? '{kind}' _ {kind}_value
     {kind}_not_annoted = (_ident _)? _ {kind}_value
     {kind}_value = {reg} _
@@ -120,7 +120,7 @@ def gen_grammar(language_tree, env):
         gfield_list = node.children[2]
         fields = "( {0} )".format(') / ('.join(gfield_list))
         g = """{kind} = {kind}_def / _solo_ident
-    {kind}_def = _alias_def / {kind}_annoted / {kind}_not_annoted
+    {kind}_def = {kind}_not_annoted / {kind}_annoted / _alias_def
     {kind}_annoted = (_ident _ ':' _)? '{kind}' _ {kind}_value
     {kind}_not_annoted = (_ident _)? _ {kind}_value
     {kind}_value = '{{' _ ({fields})* '}}' _

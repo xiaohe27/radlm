@@ -24,8 +24,6 @@ log1  = _logn(1)
 log2  = _logn(2)
 log3  = _logn(3)
 
-#TODO: 5 base class for user errors, internal errors, etc to be able to catch them
-
 #TODO: 8 use the inflect package to get plurals, etc correctly.
 
 def _txt_format(message, location):

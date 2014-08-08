@@ -135,7 +135,6 @@ class Namespace(MutableMapping):
         try:
             return self, self[name]
         except NonExistingIdent: pass
-        #TODO: 5 checked in opened namespaces (keep opening order)
         return self.father._resolve(name) #the root namespace stop the recursion
 
     def associate(self, qname, node):
