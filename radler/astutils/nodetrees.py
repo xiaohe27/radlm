@@ -43,14 +43,16 @@ def imapred(f, t, acc):
     NB, create a new instance of t.__class__  from the mapred list result.
     """
     l = list(iter(t))
-    l, acc = mapred(f, l, acc, inplace=True)
+    for i in range(len(l)):
+        l[i], acc = f(l[i], acc)
     return t.__class__(l), acc
 
 def imapacc(f, t, acc):
     """ same as imapred but with mapacc.
     """
     l = list(iter(t))
-    l, acc = mapacc(f, l, acc, inplace=True)
+    for i in range(len(l)):
+        l[i], _ = f(l[i], acc)
     return t.__class__(l), acc
 
 def dmapred(f, d, acc, inplace=False):
