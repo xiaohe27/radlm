@@ -6,7 +6,7 @@ Created on May, 2014
 import builtins
 from collections import OrderedDict
 
-from radler.radlr.errors import log2, error
+from radler.radlr.errors import log2, error, error_noloc
 
 
 class Bunch(object):
@@ -96,7 +96,7 @@ def ensure_dir(path):
     """{path} is expected to be a libpath.Path object"""
     if path.exists():
         if not path.is_dir():
-            error("{} should be a directory".format(dir), None)
+            error_noloc("{} should be a directory".format(dir))
     else:
         ensure_dir(path.parent)
         path.mkdir()

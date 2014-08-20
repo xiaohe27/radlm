@@ -5,6 +5,7 @@ Created on June, 2014
 
 '''
 from collections import Callable
+from radler.astutils.location import no_loc
 
 warning_as_errors = False
 continue_when_errors = False
@@ -32,19 +33,29 @@ def _txt_format(message, location):
     else:
         return message
 
-#verbosity level = 0
 def warning(message, location):
+    """ Output a user warning (verbosity level of 0),
+    then exit(-1) if warning_as_errors is set.)
+    """
     log_warn('\nWARNING ' + _txt_format(message, location))
     if warning_as_errors:
         exit(-1)
 
-#verbosity level = -1
 def error(message, location):
+    """Output a user error (verbosity level of -1),
+    then exit(-1) unless continue_when_errors is set.
+    """
     log_err('\nERROR ' + _txt_format(message, location))
     if not continue_when_errors:
         exit(-1)
 
+def error_noloc(message):
+    """Same as error but without any provided location."""
+    error(message, no_loc)
+
 def internal_error(message):
+    """ Error message for internal errors, ideally this should never happens.
+    """
     raise Exception("\n=!= internal error =!=\n" + message)
 
 def internal_assert(v, message):

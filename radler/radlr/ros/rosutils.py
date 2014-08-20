@@ -4,7 +4,7 @@ Created on Jun, 2014
 
     Utilities to handle file paths, filenames, etc.
 '''
-from radler.radlr.errors import error, internal_error
+from radler.radlr.errors import error, internal_error, error_noloc
 from radler.radlr import infos
 from radler.astutils.names import QualifiedName
 from radler.astutils.tools import ensure_dir
@@ -19,13 +19,13 @@ def qn_cpp(qname):
 
 def qn_file(qname, sep='/'):
     if len(qname) != 2:
-        error("In ros, paths should have exactly one of depth. "
+        error_noloc("In ROS, paths should have exactly one of depth. "
               "Issues with {}.".format(str(qname)))
     return qname.qname(sep)
 
 def qn_dir(qname):
     if len(qname) != 1:
-        error("In ros, paths should have exactly one of depth. "
+        error_noloc("In ROS, paths should have exactly one of depth. "
               "Issues with {}.".format(str(qname)))
     return Path(qname.name())
 
@@ -45,8 +45,8 @@ radllib_relativepath = Path('src/_radl_lib')
 def gen_dirs(ast):
     prog_qname = ast._qname
     if len(prog_qname) != 1:
-        error("In ros, namespace are top level. "
-              "Issues with {}.".format(str(prog_qname)), None)
+        error_noloc("In ros, namespace are top level. "
+              "Issues with {}.".format(str(prog_qname)))
     f = QualifiedName(prog_qname, '', True)
     ensure_dir(filepath(qn_file(f)))
     ensure_dir(filepath(qn_srcfile(f)))

@@ -6,7 +6,7 @@ Created on May, 2014
 
 from radler.astutils.nodetrees import Functor
 from collections import Mapping
-from radler.astutils.location import dummy_loc
+from radler.astutils.location import no_loc
 from radler.radlr.errors import internal_error
 from radler.astutils.names import NonExistingIdent
 
@@ -21,7 +21,7 @@ class Ident(Mapping):
         if node and not location:
             self._location = node._location
         else:
-            self._location = location if location else dummy_loc
+            self._location = location if location else no_loc
         self._node = node
 
     def __getstate__(self):

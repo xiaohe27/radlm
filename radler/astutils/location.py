@@ -48,4 +48,4 @@ class Location:
                  "{line}\n{uline}\n".format(**locals()))
         return s
 
-dummy_loc = Location()
+no_loc = Location()
