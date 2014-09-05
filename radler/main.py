@@ -19,9 +19,6 @@ from radler.radlr.ros import *
 
 p = argparse.ArgumentParser()
 
-p.add_argument('object_files', nargs='*', help='compiled object files to load')
-p.add_argument('radl_file', help='the RADL source file')
-p.add_argument('-c', action='store_true', help='generate an object file')
 p.add_argument('--roscpp_dest', default=None, metavar='DIR', help='generate roscpp files in the DIR')
 p.add_argument('--warning_as_errors', action='store_true', help='warnings are treated as errors')
 vgrp = p.add_mutually_exclusive_group()
@@ -31,11 +28,19 @@ vgrp.add_argument('--verbosity', type=int, dest='verb', default=0, help='verbosi
 p.add_argument('--continue_kamikaze', action='store_true', help='tries to recover from errors')
 #p.add_argument('--force_bootstrap', action='store_true', help='force regeneration of the p')
 
+p.add_argument('-c', action='store_true', help='generate an object file for default to F.radlo')
+p.add_argument('-o', '--object_dest', help='specify a path for the generated object file')
+p.add_argument('-O', '--object_files', action='append', help='compiled object files to load')
+p.add_argument('radl_file', metavar='F.radl', help='the RADL source file defining a module named F')
+
 args = p.parse_args()
 
 errors.continue_when_errors = args.continue_kamikaze
 errors.warning_as_errors = args.warning_as_errors
 errors.verbosity_level = args.verb
+
+
+script_calling_dir = Path.cwd()
 
 
 source = Path(args.radl_file).resolve()
@@ -49,7 +54,11 @@ if not source.is_file():
     exit(-1)
 infos.source_file = source
 
-object_files = [Path(f).resolve() for f in args.object_files]
+if args.object_files:
+    object_files = [Path(f).resolve() for f in args.object_files]
+else:
+    object_files = []
+
 for f in object_files:
     if f.suffix != '.radlo':
         log_err("Object files need to have .radlo suffix, {} given."
@@ -132,8 +141,12 @@ if roscpp_dest:
     rospackagexml.gen(infos.ast)
     roscmake.gen(msg_list, gened_cpp_files, infos.ast)
 
+#Object file generation
+destobjf = None
+if args.object_dest: #Use user given path
+    destobjf = script_calling_dir / args.object_dest
+elif args.c: #Use default path
+    destobjf = script_calling_dir / (source.stem + '.radlo')
 
-#Write the object file
-if args.c:
-    destobjf = source.parent / (source.stem + '.radlo')
+if destobjf: #Write the object file
     objectfile.save(infos.ast, destobjf)
