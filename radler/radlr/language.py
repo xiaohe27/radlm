@@ -103,11 +103,16 @@ class cmake_library
     CMAKE_MODULE string
     COMPONENTS string *
 
+class external_rosdef
+    PATH string ?
+    FULLNAME string
+    HEADER string ?
+
 class struct
     FIELDS int8/uint8/int16/uint16/int32/uint32/int64/uint64/
            float32/float64/
            bool/struct/array *
-    EXTERNAL_ROS_DEF string ?
+    EXTERNAL_ROS_DEF external_rosdef ?
 
 class array
     VALUES int8/uint8/int16/uint16/int32/uint32/int64/uint64/
@@ -119,7 +124,7 @@ class topic
     FIELDS int8/uint8/int16/uint16/int32/uint32/int64/uint64/
            float32/float64/
            bool/struct/array *
-    EXTERNAL_ROS_DEF string ?
+    EXTERNAL_ROS_DEF external_rosdef ?
 
 class publication
     TOPIC topic
@@ -148,6 +153,7 @@ class node
 
 class device_interface
     HEADER cxx_file ?
+    NAME string
 
 ################
 # Physical description
@@ -199,6 +205,10 @@ class mapped_node
 # generate alert messages to monitors
 # check connectivity
 # deploy and run scripts
+# time type to provide and put in messages (useful for users to timestamp) Issue with the ROS time is that seconds are uint32, how does one get a full date?
+# char type? string? how to have fixed size, platform independant? uint8 array ?
+# maybe allow ident to begin with _
+# array issue with repeating the type.... subtyping... (cast in generated code?)
 #######################################
 #TODO: 8 support string calling code (note the order has to be respected)
 #    PATH string ? 'src'
@@ -209,3 +219,4 @@ class mapped_node
 # We should abstract and require a two step publishing:
 # 1) msg* get_slot() 2) void publish()
 # Or use C++11 move semantics publish(msg&&), but it is probably not wanted.
+#######################################

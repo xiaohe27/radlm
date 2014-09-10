@@ -9,7 +9,7 @@ but also to break circular dependencies since it depends on nothing.
 '''
 
 from pathlib import Path
-from radler.astutils.names import __RootNamespace
+from radler.astutils.names import RootNamespace
 
 script_dir = Path(__file__).absolute().parent.parent
 "The radler Path directory."
@@ -21,7 +21,7 @@ lib_dir = script_dir / 'lib'
 # Global properties concerning everything which is loaded
 ##########
 
-root_namespace = __RootNamespace('/')
+root_namespace = RootNamespace()
 "The global root namespace."
 
 ros_type_of_struct = dict()

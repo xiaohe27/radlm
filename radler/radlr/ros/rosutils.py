@@ -4,7 +4,7 @@ Created on Jun, 2014
 
     Utilities to handle file paths, filenames, etc.
 '''
-from radler.radlr.errors import error, internal_error, error_noloc
+from radler.radlr.errors import error_noloc
 from radler.radlr import infos
 from radler.astutils.names import QualifiedName
 from radler.astutils.tools import ensure_dir
@@ -14,14 +14,17 @@ from pathlib import Path
 def qn_topic(qname):
     return qname.qname('/', root='/')
 
+def qn_msgtype(qname):
+    return qname.qname('/')
+
 def qn_cpp(qname):
     return qname.qname('::')
 
-def qn_file(qname, sep='/'):
+def qn_file(qname, sep='/', prefix='', suffix=''):
     if len(qname) != 2:
         error_noloc("In ROS, paths should have exactly one of depth. "
               "Issues with {}.".format(str(qname)))
-    return qname.qname(sep)
+    return qname.qname(sep, prefix=prefix, suffix=suffix)
 
 def qn_dir(qname):
     if len(qname) != 1:
@@ -29,18 +32,18 @@ def qn_dir(qname):
               "Issues with {}.".format(str(qname)))
     return Path(qname.name())
 
-def qn_srcfile(qname, sep='/src/'):
-    return qn_file(qname, '/src/')
+def qn_srcfile(qname, prefix='', suffix=''):
+    return qn_file(qname, '/src/', prefix, suffix)
 
-def qn_msgfile(qname):
-    return qn_file(qname, '/msg/')
+def qn_msgfile(qname, prefix='', suffix=''):
+    return qn_file(qname, '/msg/', prefix, suffix)
 
 def filepath(name):
     return infos.roscppdest_dir / name
 
-user_file_relativepath = Path('src/_user_code')
+user_file_relativepath = Path('src/user_src')
 
-radllib_relativepath = Path('src/_radl_lib')
+radllib_relativepath = Path('src/radllib')
 
 def gen_dirs(ast):
     prog_qname = ast._qname

@@ -7,7 +7,7 @@ from radler.radlr import infos, language
 from radler.radlr.errors import warning, log_err
 import pickle
 
-version = "0.1"
+version = "0.2"
 
 class Objectfile:
     def __init__(self, root_node):

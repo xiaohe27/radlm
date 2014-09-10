@@ -23,7 +23,7 @@ templates = {
 **/
 
 #include "ros/ros.h"
-#include "_radl_lib/radl_roslib.h"
+#include "radllib/radl__roslib.h"
 #include "{node_h_name}"
 {cxx_includes}
 
@@ -82,7 +82,7 @@ int main(int argc, const char* argv[]) {{
 
 #pragma once
 
-#include "_radl_lib/radl_flags.h"
+#include "radllib/radl__flags.h"
 
 {msg_include}
 
@@ -103,7 +103,7 @@ struct {out_flags_struct} {{
 }};
 
 """
-, 'msg_include'       : '#include "{topic_file}.h"'
+, 'msg_include'       : '#include "{topic_file}"'
 , 'out_struct_def'    : "{topic_t}* {pubname};"
 , 'out_fill'          :
 """{topic_t} {initmsg};
@@ -216,8 +216,8 @@ def gennode(visitor, node, cpps):
                   'topic_name'  : qn_topic(pub['TOPIC']._qname),
                   'actionname'  : '_' + pub._qname.name() + '_pub',
                   'actionclass' : pub['PUBLISHER']['CXX']['CLASS']._val,
-                  'topic_file'  : qn_file(pub['TOPIC']._ros_msg_typename),
-                  'topic_t'     : qn_cpp(pub['TOPIC']._ros_msg_typename),
+                  'topic_file'  : pub['TOPIC']._ros_msgtype_header,
+                  'topic_t'     : pub['TOPIC']._ros_msgtype_name,
                   'initmsg'     : '_init_' + pub._qname.name()})
         d['init_msg_fill'] = ros_val_def(d['initmsg'], pub['TOPIC'],
                                          separators['init_msg_fill'])
@@ -234,8 +234,8 @@ def gennode(visitor, node, cpps):
                   'topic_name'  : qn_topic(sub['TOPIC']._qname),
                   'actionname'  : '_' + sub._qname.name() + '_sub',
                   'actionclass' : sub['SUBSCRIBER']['CXX']['CLASS']._val,
-                  'topic_file'  : qn_file(sub['TOPIC']._ros_msg_typename),
-                  'topic_t'     : qn_cpp(sub['TOPIC']._ros_msg_typename),
+                  'topic_file'  : sub['TOPIC']._ros_msgtype_header,
+                  'topic_t'     : sub['TOPIC']._ros_msgtype_name,
                   'initmsg'     : '_init_' + sub._qname.name(),
                   'maxlatency'  : to_ros_duration(sub['MAXLATENCY'])})
         try:
@@ -253,11 +253,11 @@ def gennode(visitor, node, cpps):
     qname = node._qname
     #TODO: 4 namespace nodes... use the nodehandler? or the remaping args?
     d['name'] = qname.name()
-    node_h_name = Path(qn_srcfile(node._qname) + '_node.h')
+    node_h_name = Path(qn_srcfile(node._qname, 'radl__', '.h'))
     node_h = templates['node_h'].format(**d)
     write_file(filepath(node_h_name), node_h)
     #generate the cpp file
-    node_cpp_name = Path(qn_srcfile(node._qname) + '_node.cpp')
+    node_cpp_name = Path(qn_srcfile(node._qname, 'radl__', '.cpp'))
     node_cpp = templates['node_cpp'].format(
         node_h_name=node_h_name.name, rate=node['PERIOD']._val, node=node, **d)
     write_file(filepath(node_cpp_name), node_cpp)

@@ -31,9 +31,8 @@ def are_eq(t1, t2):
 
 def of(node):
     """Return the type of a node, memoize it in node._type"""
-    try: #first check if it already has a _type field
+    if hasattr(node, '_type'): #first check if it already has a _type field
         return node._type
-    except AttributeError: pass
     mk = infos.semantics.metakinds[node._kind]  # @UndefinedVariable
     if mk == 'type':
         t = node._kind

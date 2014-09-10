@@ -35,9 +35,28 @@ class QualifiedName(tuple):
         return self[0]
     def asmodule(self, sep='/', root=None):
         return self.qname(sep, root) + sep
-    def qname(self, sep='/', root=None):
+    def qname(self, sep, root=None, prefix='', suffix=''):
         """Qualified name"""
-        return self[0].asmodule(sep, root) + self[1]
+        return self[0].asmodule(sep, root) + prefix + self[1] + suffix
+    def mangle(self, reserved_prefix='radl__', root=None, prefix='',suffix=''):
+        """ Generate a string unique to this qualname,
+        thanks to the reserved_prefix forbidden to names.
+        root, prefix and suffix are identical to the qname method.
+        """
+        n = prefix + self[1] + suffix
+        nn = len(n)
+        return self[0].mangle(reserved_prefix, root) + str(nn) + n
+
+#     def smangle(self, root=None, prefix='', suffix=''):
+#         """ Short version of mangling, to have user friendly names.
+#         It only works for names of depth 1 (module.name).
+#         It is compatible with the names generated from the mangle function.
+#         It'll fail for names containing '_radl__' as a substring.
+#         """
+#         if len(self) != 1 or '_radl__' in str(self):
+#             internal_error("The name {n} cannot be smangled.".format(str(self)))
+#         return self.qname(sep='_radl__', root, prefix, suffix)
+
     def generated(self):
         return self[2]
     def pathwalk(self):
@@ -57,30 +76,31 @@ class QualifiedName(tuple):
         """ return the representation relative to modname.
         If it is not included in modname, print qualified name."""
         p = self.pathwalk_relativeto(qname)
-        return '/'.join(iter(p)) if p else self.qname()
+        return '/'.join(iter(p)) if p else self.qname('.')
     def __str__(self):
-        return self.qname()
+        return self.qname('.')
     def __len__(self, acc=0):
         return self.modname().__len__(acc+1)
 
 
 class _RootQName(QualifiedName):
-    """Names need a root since they are left recursive."""
-    def __new__(cls, rootname):
-        if not rootname: internal_error("Empty names are not allowed.")
-        return tuple.__new__(cls, [rootname])
-    def __getnewargs__(self):
-        """Allows pickling."""
-        return self
-    def name(self): return self[0]
-    modname = name
-    def qname(self, sep='/', root=None):
-        return root if root else ''
+    """Names need a root since they are left recursive.
+    This class has an unexpected behavior since the 'global root' is usually
+    unnamed and implicit. That is why, its representation is usually ''
+    except when some specific root is required (like '/' for filepath),
+    in which case the root param needs to be set.
+    That is also why its length is 0.
+    """
+    def __new__(cls): return tuple.__new__(cls,())
+    def name(self): return ''
+    def modname(self): internal_error("rootname doesn't have modname")
+    def qname(self, sep='', root=None): return root if root else ''
     asmodule = qname
+    def mangle(self, forbidden_prefix, root=None):
+        return forbidden_prefix + (root if root else '')
     def generated(self): return True
     def pathwalk(self): return iter([])
-    def __len__(self, acc=0):
-        return acc
+    def __len__(self, acc=0): return acc
 
 
 class Namespace(MutableMapping):
@@ -195,9 +215,9 @@ class Namespace(MutableMapping):
     def __copy__(self): internal_error("Trying to copy an Ident.")
     def __deepcopy__(self, d): internal_error("Trying to deepcopy an Ident.")
 
-class __RootNamespace(Namespace):
-    def __init__(self, rootname):
-        self.qname = _RootQName(rootname)
+class RootNamespace(Namespace):
+    def __init__(self):
+        self.qname = _RootQName()
         self.idents = dict()
         self.gen_last_num = dict()
     def _resolve(self, name):
