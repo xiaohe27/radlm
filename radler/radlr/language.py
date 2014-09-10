@@ -29,7 +29,7 @@ defs = r"""
 
 #TODO: 6 size checks
 type int8
-    REGEX ~r"\b(?P<value>[+-]?\d+)\b(?!\.)"
+    REGEX ~r"(?P<value>(\b|[+-])\d+)\b(?!\.)"
     CXX "std::int8_t"
 
 type uint8
@@ -37,7 +37,7 @@ type uint8
     CXX "std::uint8_t"
 
 type int16
-    REGEX ~r"\b(?P<value>[+-]?\d+)\b(?!\.)"
+    REGEX ~r"(?P<value>(\b|[+-])\d+)\b(?!\.)"
     CXX "std::int16_t"
 
 type uint16
@@ -45,7 +45,7 @@ type uint16
     CXX "std::uint16_t"
 
 type int32
-    REGEX ~r"\b(?P<value>[+-]?\d+)\b(?!\.)"
+    REGEX ~r"(?P<value>(\b|[+-])\d+)\b(?!\.)"
     CXX "std::int32_t"
 
 type uint32
@@ -53,7 +53,7 @@ type uint32
     CXX "std::uint32_t"
 
 type int64
-    REGEX ~r"\b(?P<value>[+-]?\d+)\b(?!\.)"
+    REGEX ~r"(?P<value>(\b|[+-])\d+)\b(?!\.)"
     CXX "std::int64_t"
 
 type uint64
@@ -61,11 +61,11 @@ type uint64
     CXX "std::uint64_t"
 
 type float32
-    REGEX ~r"\b(?P<value>[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?)\b(?!\.)"
+    REGEX ~r"(?P<value>(\b|[+-])(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?)\b(?!\.)"
     CXX "std::float32_t"
 
 type float64
-    REGEX ~r"\b(?P<value>[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?)\b(?!\.)"
+    REGEX ~r"(?P<value>(\b|[+-])(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?)\b(?!\.)"
     CXX "std::float64_t"
 
 type bool
