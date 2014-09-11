@@ -89,19 +89,24 @@ class cxx_class
     HEADER string
     #TODO: 6 change FILENAME to SRC
     FILENAME string *
-    LIB cmake_library *
+    LIB cmake_library/static_library *
     CLASS string
 
 class cxx_file
     PATH string ?
     #TODO: 6 change FILENAME to SRC
     FILENAME string *
-    LIB cmake_library *
+    LIB cmake_library/static_library *
 
 class cmake_library
     PATH string ?
     CMAKE_MODULE string
     COMPONENTS string *
+
+class static_library
+    PATH string ?
+    HEADER_PATHS string *
+    CXX cxx_file *
 
 class external_rosdef
     PATH string ?

@@ -10,6 +10,7 @@ from radler.radlr.ros.rosutils import qn_dir, qn_msgfile, filepath,\
     qn_dir
 from radler.astutils.names import QualifiedName
 from radler.radlr.ros import rosutils
+from radler.radlr.errors import internal_error
 
 templates = {
 'cmakeliststxt': """
@@ -20,6 +21,8 @@ set(CMAKE_MODULE_PATH ${{CMAKE_MODULE_PATH}}
 )
 {packages}
 find_package(catkin REQUIRED roscpp message_generation)
+{static_libs}
+
 
 add_definitions(-DIN_RADL_GENERATED_CONTEXT)
 
@@ -58,6 +61,12 @@ target_link_libraries({name}
 ,'package_dirs': "{dir}"
 ,'libs': '${{{libname}_LIBRARIES}}'
 ,'libdirs': '${{{libname}_INCLUDE_DIRS}}'
+,'static_libs': """
+add_library({name} STATIC
+  {sources})
+set({name}_LIBRARIES {name})
+set({name}_INCLUDE_DIRS {headers})
+"""
 }
 
 separators = {
@@ -69,6 +78,8 @@ separators = {
 ,'package_dirs': '\n  '
 ,'libs': ' '
 ,'libdirs': ' '
+,'static_libs': '\n'
+,'sources': '\n  '
 }
 
 
@@ -87,7 +98,12 @@ def _from_cxx(visitor, cxx, d):
     for c in cxx['FILENAME']:
         d['sources'].add(pwd / c._val)
     for l in cxx['LIB']:
-        d['libname'] = l['CMAKE_MODULE']._val
+        if l._kind == 'cmake_library':
+            d['libname'] = l['CMAKE_MODULE']._val
+        elif l._kind == 'static_library':
+            d['libname'] = l._qname.name()
+        else:
+            internal_error("unknown library type")
         for t in lib_templates: app(d, t)
     return (), d
 
@@ -96,7 +112,7 @@ nt = ['executables', 'targetincludes', 'dependencies', 'link_libraries']
 
 def _from_node(visitor, node, d):
     d['name'] = node._qname.name()
-    #this node generated file, makes it corretly relative to the cmakefile
+    #this node generated file, makes it correctly relative to the cmakefile
     srcfile = d['gened_cpp_files'][node._qname].relative_to(d['localroot'])
     d['sources'] = {str(srcfile)}
 
@@ -112,6 +128,7 @@ def _from_node(visitor, node, d):
     for t in nt: app(d, t)
     return (), d
 
+
 lt = ['packages', 'package_dirs']
 
 def _from_catkinlib(visitor, lib, d):
@@ -123,8 +140,27 @@ def _from_catkinlib(visitor, lib, d):
     for t in lt: app(d, t)
     return (), d
 
+
+sl = ['static_libs', 'targetincludes', 'dependencies', 'link_libraries']
+
+def _from_staticlib(visitor, lib, d):
+    d['name'] = lib._qname.name()
+    d['sources'] = set()
+    d['dirs'] = set()
+    for t in lib_templates: d[t] = ''
+    _, d = visitor.update({'cxx_file': _from_cxx}).node_mapred(lib, d)
+    d['dirs'] = '"{}"'.format('" "'.join(map(str,d['dirs'])))
+    d['sources'] = ' '.join(map(str, d['sources']))
+    cwd = rosutils.user_file_relativepath / lib._pwd
+    d['headers'] = ' '.join(str(cwd / h._val) for h in lib['HEADER_PATHS'])
+
+    for t in sl: app(d, t)
+    return (), d
+
+
 _visitor = AstVisitor({'node' : _from_node,
-                       'cmake_library': _from_catkinlib})
+                       'cmake_library': _from_catkinlib,
+                       'static_library': _from_staticlib})
 
 
 def gen(msg_list, gened_cpp_files, ast):

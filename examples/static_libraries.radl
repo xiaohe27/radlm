@@ -1,0 +1,12 @@
+lib1 :static_library {
+	PATH "lib/lib1"
+	HEADER_PATHS "include" "include2"
+	CXX { PATH "src" FILENAME "lib.c" }
+}
+
+n : node {
+	PERIOD msec 10
+	CXX { CLASS "C" HEADER "node.h" FILENAME "node.c" LIB lib1 }
+}
+
+
