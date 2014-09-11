@@ -174,6 +174,7 @@ def gen(msg_list, gened_cpp_files, ast):
          'localroot'       : localroot}
     for t in nt: d[t] = ''
     for t in lt: d[t] = ''
+    for t in sl: d[t] = ''
     _visitor.visit(ast, d)
     app(d, 'cmakeliststxt')
     write_file(filepath(localroot / "CMakeLists.txt"), d['cmakeliststxt'])
