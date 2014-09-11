@@ -6,7 +6,7 @@
 #pragma once
 
 #include "ros/ros.h"
-#include "radl_flags.h"
+#include "radl__flags.h"
 #include <stdint.h> //TODO use cstdint when c++11 is used
 
 namespace radl {
@@ -65,7 +65,7 @@ public:
   Default_pub(ros::Publisher& pub) {
     this->pub = &pub; 
   }
-  void operator()(const msg_type& msg, flags_t f) {
+  void operator()(msg_type& msg, flags_t f) {
     msg.radl__flags = f;
     this->pub->publish(msg);
   }
