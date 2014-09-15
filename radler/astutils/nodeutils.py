@@ -19,7 +19,6 @@ spprint_node = nodetreesutils.spprint_node
 def prune(node, to_prune=[]):
     """Remove to_prune subnodes in a parsimonious.Node.
         Nodes boundaries are updated according to pruned subnodes.
-        (Tries to be smart, but may be quadratic...)
         If the root is pruned, return None.
     """
     if node.expr_name in to_prune:
@@ -37,25 +36,17 @@ def prune(node, to_prune=[]):
         return visitor.list_mapred(l, _)
 
     def default(visitor, n, _):
-        #store the current positions
-        nb = [n.start, n.end]
-        cb = [visitor.left_node(n).start,
-              visitor.right_node(n).end]
         children, _ = visitor.visit(n.children) #depth first
-        if n.children and nb[0] == cb[0]:
-            #we believe the boundary comes from the left children: update it.
-            if children and n.children[0] != children[0]: #update only when necessary
-                nb[0] = visitor.left_node(n).start
-        if n.children and nb[1] == cb[1]:
-            if children:
-                if n.children[-1] != children[-1]:
-                    nb[1] = visitor.right_node(n).start
-            else: # lost children giving position, empty the node:
-                nb[1] = nb[0]
         node = copy(n)
-        node.start = nb[0]
-        node.end = nb[1]
         node.children = children
+        if n.children: # We had children so our width come from them.
+            if children:
+                node.start = children[0].start
+                node.end = children[-1].end
+            else: # We lost all children, so we are empty
+                node.end = node.start
+        else: # We are a leaf kind of node (like __Literal__)
+            pass
         return node, _
 
     node, _ = ParseVisitor(default=default, onlist=prune).visit(node)
