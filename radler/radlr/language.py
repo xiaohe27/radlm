@@ -5,7 +5,7 @@ Created on May, 2014
 '''
 
 
-version = 'RADL 0.91'
+version = 'RADL 0.92'
 
 extra_keywords = {
 #C++ keywords
@@ -30,59 +30,45 @@ defs = r"""
 #TODO: 6 size checks
 type int8
     REGEX ~r"(?P<value>(\b|[+-])\d+)\b(?!\.)"
-    CXX "std::int8_t"
 
 type uint8
     REGEX ~r"\b(?P<value>\d+)\b(?!\.)"
-    CXX "std::uint8_t"
 
 type int16
     REGEX ~r"(?P<value>(\b|[+-])\d+)\b(?!\.)"
-    CXX "std::int16_t"
 
 type uint16
     REGEX ~r"\b(?P<value>\d+)\b(?!\.)"
-    CXX "std::uint16_t"
 
 type int32
     REGEX ~r"(?P<value>(\b|[+-])\d+)\b(?!\.)"
-    CXX "std::int32_t"
 
 type uint32
     REGEX ~r"\b(?P<value>\d+)\b(?!\.)"
-    CXX "std::uint32_t"
 
 type int64
     REGEX ~r"(?P<value>(\b|[+-])\d+)\b(?!\.)"
-    CXX "std::int64_t"
 
 type uint64
     REGEX ~r"\b(?P<value>\d+)\b(?!\.)"
-    CXX "std::uint64_t"
 
 type float32
     REGEX ~r"(?P<value>(\b|[+-])(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?)\b(?!\.)"
-    CXX "std::float32_t"
 
 type float64
     REGEX ~r"(?P<value>(\b|[+-])(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?)\b(?!\.)"
-    CXX "std::float64_t"
 
 type bool
     REGEX ~r"\b(?P<value>true|false)"
-    CXX "std::bool"
 
 type string
     REGEX ~r'"(?P<value>[^"]*)"'
-    CXX "std::string"
 
 type msec
     REGEX ~r"\b(?P<value>\d+)"
-    CXX "std::int32_t"
 
 type ip
     REGEX ~r"\b(?P<value>\d\d\d\.\d\d\d\.\d\d\d\.\d\d\d)\b"
-    CXX "internal"
 
 class cxx_class
     PATH string ?

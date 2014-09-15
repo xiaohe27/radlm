@@ -25,7 +25,7 @@ meta_rules = (rule_syntax +
 
     clas = 'class' _ defKind field*
     field = symbol some_kind ('*' / '+' / '?' )? _
-    typ = 'type' _ defKind 'REGEX' _ regex 'CXX' _ quoted _
+    typ = 'type' _ defKind 'REGEX' _ regex _
     #TODO: 5 add 'CHECK' to types to verify values.
 
     ### Utils

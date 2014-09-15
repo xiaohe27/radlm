@@ -68,10 +68,10 @@ def gen_grammar(language_tree, env):
 
     def typ(visitor, node, env):
         """ define a kind and construct the grammar.
-        A typ node has six childs 'type' defKind 'REGEX' regex 'CXX' quoted
+        A typ node has six childs 'type' defKind 'REGEX' regex
         """
         (node, env) = visitor.mapred(node, env) #depth first
-        (_, kind, _, reg, _, _) = node.children
+        (_, kind, _, reg) = node.children
         env.metakinds[kind] = 'type' #register this type
         env.keywords.add(kind) #add the type name to the keywords
         g = """{kind} = {kind}_def / _solo_ident
@@ -163,7 +163,7 @@ def gen_tree_to_ast(language_tree, env):
 
     def typ(mvisitor, mnode, menv):
         """ A typ node has six childs
-            'type' defKind 'REGEX' regex 'CXX' quoted
+            'type' defKind 'REGEX' regex
         It generates one rule named kind from defkind
         """
         #No need to do recursive traversal (no rules are generated lower),
