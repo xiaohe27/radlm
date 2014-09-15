@@ -113,7 +113,10 @@ def Functor(node_class, attr_children, attr_name):
         """
 
         def error(self, s, node=None):
-            raise E("{node.std_pos}"+s, node)
+            """{node} in the error string s will be ultimately replaced
+            by the actual node in issue.
+            """
+            raise E(s, node)
 
         def node_mapred(self, n, acc):
             """ shallow copy n and mapred self.visit on its children
