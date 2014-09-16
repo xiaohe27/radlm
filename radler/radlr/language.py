@@ -64,8 +64,11 @@ type bool
 type string
     REGEX ~r'"(?P<value>[^"]*)"'
 
-type msec
-    REGEX ~r"\b(?P<value>\d+)"
+type duration
+    REGEX ~r"(?P<value>(\b|[+-])\d+)(?P<unit>sec|msec|usec|nsec)"
+
+type date
+    REGEX ~r"(?P<value>\b\d+)(?P<unit>sec|msec|usec|nsec)"
 
 type ip
     REGEX ~r"\b(?P<value>\d\d\d\.\d\d\d\.\d\d\d\.\d\d\d)\b"
@@ -102,19 +105,19 @@ class external_rosdef
 class struct
     FIELDS int8/uint8/int16/uint16/int32/uint32/int64/uint64/
            float32/float64/
-           bool/struct/array *
+           bool/struct/array/duration/date *
     EXTERNAL_ROS_DEF external_rosdef ?
 
 class array
     VALUES int8/uint8/int16/uint16/int32/uint32/int64/uint64/
            float32/float64/
-           bool/struct/array *
+           bool/struct/array/duration/date*
 
 class topic
     #Pay attention to the order of the types, parsing higher priority first
     FIELDS int8/uint8/int16/uint16/int32/uint32/int64/uint64/
            float32/float64/
-           bool/struct/array *
+           bool/struct/array/duration/date *
     EXTERNAL_ROS_DEF external_rosdef ?
 
 class publication
@@ -130,7 +133,7 @@ class publisher
 class subscription
     TOPIC topic
     SUBSCRIBER subscriber
-    MAXLATENCY msec ?
+    MAXLATENCY duration ?
 
 class node
     PATH string ?
@@ -138,8 +141,8 @@ class node
     SUBSCRIBES subscription *
     CXX cxx_class
     CXX_ANNEX cxx_file *
-    PERIOD msec
-    WCET msec ?
+    PERIOD duration
+    WCET duration ?
     DEVICES device_interface *
 
 class device_interface
@@ -188,6 +191,36 @@ class mapped_node
     PORT uint16 ?
 
 """
+
+
+type_mapping = {
+    'int8'    : {'cxx': 'std::int8_t'     , 'ROS': 'int8'   },
+    'int16'   : {'cxx': 'std:int16_t'     , 'ROS': 'int16'  },
+    'int32'   : {'cxx': 'std::int32_t'    , 'ROS': 'int32'  },
+    'int64'   : {'cxx': 'std::int64_t'    , 'ROS': 'int64'  },
+    'uint8'   : {'cxx': 'std::uint8_t'    , 'ROS': 'uint8'  },
+    'uint16'  : {'cxx': 'std::uint16_t'   , 'ROS': 'uint16' },
+    'uint32'  : {'cxx': 'std::uint32_t'   , 'ROS': 'uint32' },
+    'uint64'  : {'cxx': 'std::uint64_t'   , 'ROS': 'uint64' },
+    'float32' : {'cxx': 'std::float32_t'  , 'ROS': 'float32'},
+    'float64' : {'cxx': 'std::float64_t'  , 'ROS': 'float64'},
+    'bool'    : {'cxx': 'std::bool'       , 'ROS': 'bool'   },
+    'duration': {'cxx': 'radl::duration_t', 'ROS': 'int64'  },
+    'date'    : {'cxx': 'radl::duration_t', 'ROS': 'int64'  },
+}
+
+def main_unit(v): return v
+def sec2nsec(sec):   return str(int(sec) *1000000000)
+def msec2nsec(msec): return str(int(msec)*1000000)
+def usec2nsec(usec): return str(int(usec)*1000)
+
+unit_normalize = {
+    'duration': {'nsec': main_unit, 'sec' : sec2nsec,
+                 'msec': msec2nsec, 'usec': usec2nsec},
+    'date'    : {'nsec': main_unit, 'sec' : sec2nsec,
+                 'msec': msec2nsec, 'usec': usec2nsec},
+    }
+
 
 #######################################
 #TODO: 0 RADL

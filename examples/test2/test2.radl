@@ -1,6 +1,6 @@
 n1 : node {
   PUBLISHES o1 {TOPIC t PUBLISHER pervasives.default_pub}
-  PERIOD msec 10
+  PERIOD 10msec
   CXX {HEADER "f1.h" CLASS "N1"}
 }
 
@@ -9,7 +9,7 @@ t : topic { FIELDS
 }
 
 n2 : node {
-  SUBSCRIBES i2 {TOPIC t MAXLATENCY msec 1 SUBSCRIBER pervasives.default_sub}
-  PERIOD msec 5
+  SUBSCRIBES i2 {TOPIC t MAXLATENCY 1msec SUBSCRIBER pervasives.default_sub}
+  PERIOD 5msec
   CXX {HEADER "f2.h" CLASS "N2"}
 }

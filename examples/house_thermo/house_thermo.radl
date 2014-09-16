@@ -2,12 +2,12 @@
 default_sub = pervasives.default_sub
 default_pub = pervasives.default_pub
 
-basic_rate : msec 50
+basic_rate : duration 50msec
 
 house : node {
     SUBSCRIBES
         heater_rate { TOPIC heater_data
-                      SUBSCRIBER default_sub MAXLATENCY msec 1}
+                      SUBSCRIBER default_sub MAXLATENCY 1msec}
     PUBLISHES
         house_temp : publication { TOPIC house_data
                                    PUBLISHER default_pub}
@@ -27,11 +27,11 @@ thermometer : node {
     PATH "house_thermo"
     SUBSCRIBES
         house_temp { TOPIC house_data
-                     SUBSCRIBER default_sub MAXLATENCY msec 1}
+                     SUBSCRIBER default_sub MAXLATENCY 1msec}
     PUBLISHES
         thermometer_temp { TOPIC thermometer_data
                            PUBLISHER default_pub}
-    PERIOD 10
+    PERIOD 10msec
     CXX { HEADER "thermometer.h" FILENAME "thermometer.cpp" CLASS "Thermometer" }
 }
 
@@ -55,11 +55,11 @@ thermostat : node {
     PATH "house_thermo"
     SUBSCRIBES
         thermostat_switch { TOPIC thermostat_button
-                            SUBSCRIBER default_sub MAXLATENCY msec 1}
+                            SUBSCRIBER default_sub MAXLATENCY 1msec}
         thermometer_temp { TOPIC thermometer_data
-                           SUBSCRIBER default_sub MAXLATENCY msec 1}
+                           SUBSCRIBER default_sub MAXLATENCY 1msec}
         thermostat_set_temp { TOPIC thermostat_set
-                              SUBSCRIBER default_sub MAXLATENCY msec 1}
+                              SUBSCRIBER default_sub MAXLATENCY 1msec}
     PUBLISHES
         heater_switch { TOPIC thermostat_data
                         PUBLISHER default_pub}
@@ -77,7 +77,7 @@ heater : node {
     PATH "house_thermo"
     SUBSCRIBES
         heater_switch { TOPIC thermostat_data
-                        SUBSCRIBER default_sub MAXLATENCY msec 1}
+                        SUBSCRIBER default_sub MAXLATENCY 1msec}
     PUBLISHES
         heater_rate { TOPIC heater_data
                       PUBLISHER default_pub}

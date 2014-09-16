@@ -159,27 +159,18 @@ def getincludes(node):
     _, paths = _include_visitor.visit(node, [])
     return '\n'.join(paths)
 
-
-def to_nsec(node):
-    if node == None:
-        nsec = -1
-    elif node._kind == 'msec':
-        msec = int(node._val)
-        nsec = msec * 1000000
-    else:
-        internal_error("can't compute time from {}".format(str(node._qname)))
-    return str(nsec)
-
 def to_rate(node):
-    return "1000000000/{}".format(to_nsec(node))
+    if node == None:
+        return "-1"
+    else:
+        return "1000000000.0d/{}".format(node._val)
 
 def to_ros_duration(node):
-    nsec = to_nsec(node)
-    return "ros::Duration().fromNSec({})".format(nsec)
+    return "ros::Duration().fromNSec({})".format(node._val)
 
 def ros_val_def(var, node, sep):
     if isinstance(node, Ident):
-        #TODO: 5 instead of inlining values, use variable declarations (extern etc values)
+        #TODO: 4 instead of inlining values, use variable declarations (extern etc values)
         pass
     if node._kind in ('struct', 'topic'):
         defs = (ros_val_def(var+'.'+f._qname.name(), f, sep)
@@ -239,12 +230,12 @@ def gennode(visitor, node, cpps):
                   'initmsg'     : '_init_' + sub._qname.name(),
                   'maxlatency'  : to_ros_duration(sub['MAXLATENCY'])})
         try:
-            pubperiod = sub['TOPIC']._publisher['PERIOD']
+            d['pubperiod'] = to_ros_duration(sub['TOPIC']._publisher['PERIOD'])
         except AttributeError: #no publisher
-            warning("Subscription {} won't compute timeout by lack of declared"
-                    " publisher.".format(str(sub._qname)), sub._location)
-            pubperiod = None
-        d['pubperiod'] = to_ros_duration(pubperiod)
+            warning("By lack of known publisher, subscription {} will "
+                    "compute timeout assuming the publisher period is 10s."
+                    "".format(str(sub._qname)), sub._location)
+            d['pubperiod'] = "10000000000"
         d['init_msg_fill'] = ros_val_def(d['initmsg'], sub['TOPIC'],
                                          separators['init_msg_fill'])
         for f in sub_templates: app(d, f)

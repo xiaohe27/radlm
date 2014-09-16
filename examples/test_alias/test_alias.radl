@@ -20,10 +20,10 @@ t2 = t1
 
 n : node {
     SUBSCRIBES
-        t1 { TOPIC test_alias.t2 SUBSCRIBER pervasives.default_sub MAXLATENCY msec 1}
+        t1 { TOPIC test_alias.t2 SUBSCRIBER pervasives.default_sub MAXLATENCY 1msec}
     PUBLISHES
         t2 { TOPIC test_alias.t1 PUBLISHER pervasives.default_pub}
-    PERIOD 50
+    PERIOD 50msec
     CXX { HEADER   "alias.h"
           FILENAME "alias.cpp"
           LIB l1 boost

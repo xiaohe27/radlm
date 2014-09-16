@@ -1,5 +1,5 @@
 n : node {
-  SUBSCRIBES s { TOPIC test_alias.t2 SUBSCRIBER pervasives.default_sub MAXLATENCY msec 10 }
-  PERIOD msec 5
+  SUBSCRIBES s { TOPIC test_alias.t2 SUBSCRIBER pervasives.default_sub MAXLATENCY 10msec }
+  PERIOD 5msec
   CXX {HEADER "toto.h" CLASS "Toti"}
 }

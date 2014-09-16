@@ -5,7 +5,7 @@ lib1 :static_library {
 }
 
 n : node {
-	PERIOD msec 10
+	PERIOD 10msec
 	CXX { CLASS "C" HEADER "node.h" FILENAME "node.c" LIB lib1 }
 }
 

@@ -17,7 +17,7 @@ from radler.astutils.tools import BucketDict, str
 import parsimonious
 from parsimonious.exceptions import ParseError
 from parsimonious.grammar import Grammar
-from radler.radlr import sanitize
+from radler.radlr import sanitize, language
 from radler.radlr.errors import log1, log_err, log3, log2, error,\
     internal_error
 from radler.radlr.metaParser import meta_parser
@@ -179,7 +179,11 @@ def gen_tree_to_ast(language_tree, env):
                     qname = namespace.qualify(ident.text)
                 else:
                     qname = namespace.generate("_"+kind)
-                value = childs[value_child_nb].match.group('value')
+                match_dct = childs[value_child_nb].match.groupdict()
+                value = match_dct['value'] if 'value' in match_dct else ''
+                if 'unit' in match_dct:
+                    normalize = language.unit_normalize[kind][match_dct['unit']]
+                    value = normalize(value)
                 n = AstNode(kind, qname, [value], namespace, loc)
                 namespace.associate(qname, n)
                 return n, namespace
