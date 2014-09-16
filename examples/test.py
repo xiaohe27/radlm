@@ -22,6 +22,13 @@ import sys
 from random import randint
 
 
+def call(*args, **kargs):
+    """Call a subprocess with subprocess.call but setup the pwd env var first.
+    """
+    os.putenv('PWD', os.getcwd())
+    subprocess.call(*args, **kargs)
+
+
 class atest:
     """ Class used to describe a test with its file, folder, dependencies, etc.
     """
@@ -95,7 +102,7 @@ for t in tests.values():
         cmd.append('../' + str(t.filepath))
         #Run it
         #print("\nRun {}".format(' '.join(cmd)))
-        r = subprocess.call(cmd)
+        r = call(cmd)
         if r: #We have an error
             radler_errors.append(t.name)
             report += "Failed to compile {}\n".format(t.name)
@@ -119,7 +126,7 @@ print(report)
 
 os.chdir('catkin')
 try:
-    r = subprocess.call(['catkin_make'])
+    r = call(['catkin_make'])
     cat_st = 'failed' if r else 'succeeded'
     print("Catkin {} to compile the {} generated ROS module.".format(
             cat_st, len(radler_compiled)))
