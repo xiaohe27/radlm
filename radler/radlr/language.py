@@ -109,6 +109,8 @@ class struct
     EXTERNAL_ROS_DEF external_rosdef ?
 
 class array
+    TYPE string ?
+    SIZE int16 ?
     VALUES int8/uint8/int16/uint16/int32/uint32/int64/uint64/
            float32/float64/
            bool/struct/array/duration/date*
