@@ -122,13 +122,7 @@ def Functor(node_class, attr_children, attr_name):
             """ shallow copy n and mapred self.visit on its children
             returns the accumulated acc
             """
-            children = children_of(n)
-            try:
-                v = self.mapred(children, acc)
-                children, acc = v
-            except E as e:
-                e.attach_to_first_node(n)
-                raise e
+            children, acc = self.children_mapred(n, acc)
             nn = n if self.inplace else copy(n)
             set_children(nn, children)
             return nn, acc
@@ -137,15 +131,32 @@ def Functor(node_class, attr_children, attr_name):
             """ shallow copy n and mapacc self.visit on its children
             returns acc untouched
             """
+            children, acc = self.children_mapacc(n, acc)
+            nn = n if self.inplace else copy(n)
+            set_children(nn, children)
+            return nn, acc
+
+        def children_mapred(self, n, acc):
+            """ mapred the children of a node and return them.
+            """
+            children = children_of(n)
+            try:
+                children, acc = self.mapred(children, acc)
+            except E as e:
+                e.attach_to_first_node(n)
+                raise e
+            return children, acc
+
+        def children_mapacc(self, n, acc):
+            """ mapacc the children of a node and return them.
+            """
             children = children_of(n)
             try:
                 children, acc = self.mapacc(children, acc)
             except E as e:
                 e.attach_to_first_node(n)
                 raise e
-            nn = n if self.inplace else copy(n)
-            set_children(nn, children)
-            return nn, acc
+            return children, acc
 
         def list_mapred(self, l, acc):
             """ mapred self.visit on l"""
