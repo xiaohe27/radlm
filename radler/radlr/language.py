@@ -148,7 +148,8 @@ class node
     DEVICES device_interface *
 
 class device_interface
-    HEADER cxx_file ?
+    HEADER string ?
+    CXX cxx_file *
     NAME string
 
 ################
