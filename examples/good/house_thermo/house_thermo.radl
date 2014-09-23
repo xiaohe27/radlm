@@ -12,7 +12,7 @@ house : node {
         house_temp : publication { TOPIC house_data
                                    PUBLISHER default_pub}
     PERIOD basic_rate
-    CXX { PATH "house_thermo"
+    CXX { PATH "src"
           HEADER   "house.h"
           FILENAME "house.cpp"
           CLASS "House" }
@@ -24,7 +24,7 @@ house_data : topic {
 }
 
 thermometer : node {
-    PATH "house_thermo"
+    PATH "src"
     SUBSCRIBES
         house_temp { TOPIC house_data
                      SUBSCRIBER default_sub MAXLATENCY 1msec}
@@ -52,7 +52,7 @@ thermostat_set : topic {
 
 
 thermostat : node {
-    PATH "house_thermo"
+    PATH "src"
     SUBSCRIBES
         thermostat_switch { TOPIC thermostat_button
                             SUBSCRIBER default_sub MAXLATENCY 1msec}
@@ -74,7 +74,7 @@ thermostat_data : topic {
 }
 
 heater : node {
-    PATH "house_thermo"
+    PATH "src"
     SUBSCRIBES
         heater_switch { TOPIC thermostat_data
                         SUBSCRIBER default_sub MAXLATENCY 1msec}

@@ -2,57 +2,123 @@
 '''
 Created on Aug, 2014
 
-@author: lgerard
+@author: Léonard Gérard leonard.gerard@sri.com
 
 This script tries to test as much as possible the examples.
 
 As a bare minimum, it tries to compile the examples.
 
-All tests need to be documented in the 'tests' list below.
+All tests need to be documented in the tests section below.
 '''
 
 
 
-import subprocess
 from collections import OrderedDict
-from pathlib import Path
 import os
-import shutil
-import sys
+from pathlib import Path
 from random import randint
+import shutil
+import subprocess
+import sys
+
+from tarjan import tarjan
 
 
 def call(*args, **kargs):
     """Call a subprocess with subprocess.call but setup the pwd env var first.
     """
     os.putenv('PWD', os.getcwd())
-    subprocess.call(*args, **kargs)
+    return subprocess.call(*args, **kargs)
 
 
-class atest:
+class Atest:
     """ Class used to describe a test with its file, folder, dependencies, etc.
     """
-    def __init__(self, name, folder='', deps=None):
-        self.name = name
+    def __init__(self, file, failing, folder='.', deps=None):
+        if file[0:1].isnumeric():
+            print("ERROR, tests can't begin with a num (for mangling)")
+            exit(-1)
+        self.file = file
+        self.failing = failing
         self.folder = Path(folder)
         self.deps = deps if deps != None else []
-    @classmethod
-    def of_name(cls, name, deps=None):
-        return cls(name, folder=name, deps=deps)
-    @property
-    def file(self):
-        return self.name + '.radl'
     @property
     def filepath(self):
         return self.folder / self.file
+    @property
+    def objfile(self):
+        p = '_'.join(self.folder.parts)
+        # Mangling is correct because names don't begin with numbers.
+        return str(len(p)) + p + str(len(self.file)) + self.file + '.radlo'
+
+class Good(Atest):
+    """ Atest with failing set to False,
+    file computed from name with radl extension
+    folder appended with 'good/'
+    """
+    def __init__(self, name, folder='', deps=None):
+        Atest.__init__(self, name+'.radl', False, 'good/'+folder, deps)
+
+class GoodAlone(Good):
+    """ Good test in its own folder with the same name. """
+    def __init__(self, name, deps=None):
+        Good.__init__(self, name, name, deps)
+
+class Bad(Atest):
+    """ Atest with failing set to True """
+    def __init__(self, name, folder='', deps=None):
+        Atest.__init__(self, name+'.radl', True, 'bad/'+folder, deps)
 
 
-tests = OrderedDict((
-    ('test1', atest.of_name('test1')),
-    ('test2' , atest.of_name('test2', deps=['test1'])),
-    ('test_alias' , atest.of_name('test_alias')),
-    ('house_thermo' , atest.of_name('house_thermo'))
-))
+
+#-------------------------
+# Declare tests here
+#-------------------------
+
+
+test1 = Good('test1')
+test2 = Good('test2', deps=[test1])
+test_alias = Good('test_alias')
+test3 = Good('test3', deps=[test_alias])
+topic_dec = Good('topic_dec')
+topic_struct = Good('topic_struct')
+topic_struct1 = Good('topic_struct1')
+type_sizes = Good('type_sizes')
+static_libraries = Good('static_libraries')
+house_thermo = GoodAlone('house_thermo')
+thermostat = GoodAlone('thermostat')
+
+
+b_int8 = Bad('int8')
+b_int8__129 = Bad('int8_-129')
+b_int8_128 = Bad('int8_128')
+b_uint8__1 = Bad('uint8_-1')
+b_uint8_257 = Bad('uint8_256')
+
+
+#-------------------------
+# End of test declarations
+#-------------------------
+
+
+
+# Tarjan the tests, the result is an ordering of the cliques.
+
+tests = dict((t, t.deps) for t in locals().values() if isinstance(t, Atest))
+tj_tests = tarjan(tests)
+
+# Flatten and error when circular dep of tests (a clique of more than one elt).
+
+tests = []
+for i in range(len(tj_tests)):
+    if len(tj_tests[i]) != 1:
+        print("ERROR, the tests {} have a circular dependency."
+              "".format(str(tj_tests[i])))
+        exit(-1)
+    else:
+        tests.append(tj_tests[i][0])
+
+# Now tests is correctly sorted and ready to be used.
 
 nb_tests = len(tests)
 nd = len(str(nb_tests))
@@ -87,30 +153,53 @@ radler_compiled = []
 
 class Toskip(Exception): pass
 
+log_file = Path()
+i = 0
+while log_file.exists():
+    log_file = Path('../test' + str(i) + '.log')
+    i += 1
+
+log_file_d = log_file.open('w')
+def log(msg):
+    print("\n@@@@\n@@@@ "+msg+"\n@@@@", file=log_file_d, flush=True)
+
 cpt = 0
-report = "\nReport:\n"
-for t in tests.values():
+report = ""
+for t in tests:
     try:
         #Do not try to compile if some deps aren't met
         for d in t.deps:
             if not d in radler_compiled:
                 raise Toskip
         #Deps are met
-        cmd = ["../../radler.sh", "--silent", "-c", "--roscpp_dest", "catkin/src"]
+        cmd = ["../../radler.sh",
+               "-o", t.objfile,
+               "--roscpp_dest", "catkin/src"]
         for d in t.deps:
-            cmd.append('-O' + d + '.radlo')
+            cmd.append('-O' + d.objfile)
         cmd.append('../' + str(t.filepath))
         #Run it
-        #print("\nRun {}".format(' '.join(cmd)))
-        r = call(cmd)
-        if r: #We have an error
-            radler_errors.append(t.name)
-            report += "Failed to compile {}\n".format(t.name)
+        log("Test {} ({})".format(t.filepath, ' '.join(cmd)))
+        r = call(cmd, stdout=log_file_d)
+        if r and not t.failing: #We have an error
+            radler_errors.append(t)
+            msg = "\nFailed to compile {}".format(t.filepath)
+            report += msg
+            log(msg)
+        elif not r and t.failing: #We should have failed
+            radler_errors.append(t)
+            msg = "\n{} Should have failed to compile".format(t.filepath)
+            report += msg
+            log(msg)
         else:
-            radler_compiled.append(t.name)
+            if t.failing:
+                log("Successfully failed.")
+            else:
+                log("Successfully compiled.")
+            radler_compiled.append(t)
     except Toskip:
-        radler_skipped.append(t.name)
-        report += "Skipped {} because of {}\n".format(t.name, d)
+        radler_skipped.append(t)
+        report += "\nSkipped {} because of {}".format(t.filepath, d.filepath)
     #Sum up to the user
     cpt +=1
     e = len(radler_errors)
@@ -118,7 +207,10 @@ for t in tests.values():
     c = len(radler_compiled)
     sys.stdout.write('\r{{:>{nd}}}/{{}} compiled with {{:>{nd}}} errors and ({{:>{nd}}} skipped)'.format(nd=nd).format(
                     cpt, nb_tests, e, s))
-print(report)
+print()
+if report:
+    print("Report (see {} for full log):".format(log_file.name)+report)
+
 
 
 #####

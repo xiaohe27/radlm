@@ -12,7 +12,7 @@ boost : cmake_library {
 t1 : topic { FIELDS
     i : int32 0
     f : float32 0
-    i8 : array { TYPE "int64" VALUES 0 1 0 2 0 3 0 4 }
+    i8 : array { TYPE "int8" VALUES 0 1 0 2 0 3 0 6 }
     s : struct { FIELDS a : int32 0  i2 : array { VALUES 42 42 }}
 }
 
