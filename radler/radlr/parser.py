@@ -11,20 +11,21 @@ The output is composed of
     - 'types': a mapping between type names and 
 '''
 
-from radler.astutils.names import NonExistingIdent, QualifiedName
-from radler.astutils.nodeutils import clean_node, ParseVisitor, spprint_node
-from radler.astutils.tools import BucketDict, str
+from collections import OrderedDict
+from functools import partial
+
 import parsimonious
 from parsimonious.exceptions import ParseError
 from parsimonious.grammar import Grammar
+from radler.astutils.location import Location
+from radler.astutils.names import NonExistingIdent
+from radler.astutils.nodeutils import clean_node, ParseVisitor, spprint_node
+from radler.astutils.tools import BucketDict, str
 from radler.radlr import sanitize, language
-from radler.radlr.errors import log1, log_err, log3, log2, error,\
-    internal_error
+from radler.radlr.errors import log1, log3, error, internal_error
 from radler.radlr.metaParser import meta_parser
 from radler.radlr.rast import AstNode, AstVisitor, Ident
-from radler.astutils.location import Location
-from collections import OrderedDict
-from functools import partial
+
 
 def loc_of_parsimonious(parsimonious_node):
     return Location('', parsimonious_node.full_text,
@@ -170,7 +171,7 @@ def gen_tree_to_ast(language_tree, env):
         #    but go fetch the kind in defKind.
         kind = mnode.children[1].children[0]
 
-        def m_def_gen(value_child_nb):
+        def m_def_gen(annoted):
             def m_def(visitor, node, namespace):
                 childs, _ = visitor.mapacc(node.children, namespace)
                 loc = loc_of_parsimonious(node)
@@ -179,12 +180,13 @@ def gen_tree_to_ast(language_tree, env):
                     qname = namespace.qualify(ident.text)
                 else:
                     qname = namespace.generate("_"+kind)
-                match_dct = childs[value_child_nb].match.groupdict()
+                match_dct = childs[2 if annoted else 1].match.groupdict()
                 value = match_dct['value'] if 'value' in match_dct else ''
                 if 'unit' in match_dct:
                     normalize = language.unit_normalize[kind][match_dct['unit']]
                     value = normalize(value)
                 n = AstNode(kind, qname, [value], namespace, loc)
+                n._user_type_annoted = annoted
                 namespace.associate(qname, n)
                 return n, namespace
             return m_def
@@ -193,8 +195,8 @@ def gen_tree_to_ast(language_tree, env):
         menv[kind] = ParseVisitor.left_mapacc
         menv[kind+'_def'] = ParseVisitor.left_mapacc
         menv[kind+'_value'] = ParseVisitor.left_mapacc
-        menv[kind+'_annoted'] = m_def_gen(2)
-        menv[kind+'_not_annoted'] = m_def_gen(1)
+        menv[kind+'_annoted'] = m_def_gen(True)
+        menv[kind+'_not_annoted'] = m_def_gen(False)
         return (), menv
 
     def field(mvisitor, mnode, menv):
@@ -217,7 +219,7 @@ def gen_tree_to_ast(language_tree, env):
             fname = field.children[0].text
             field_specs.append((fname, mod))
 
-        def m_def_gen(fields_child_nb):
+        def m_def_gen(annoted):
             def m_def(visitor, node, namespace):
                 ident = node.children[0][0] if node.children[0] else None
                 if isinstance(ident, parsimonious.nodes.Node):
@@ -227,7 +229,7 @@ def gen_tree_to_ast(language_tree, env):
                 thisnamespace = namespace.push(qname)
                 childs, _ = visitor.mapacc(node.children, thisnamespace)
                 loc = loc_of_parsimonious(node)
-                fields = BucketDict(childs[fields_child_nb])
+                fields = BucketDict(childs[2 if annoted else 1])
                 for (fname, mod) in field_specs:
                     v = fields.get(fname, False)
                     err = lambda m: error(m.format(fname), loc)
@@ -252,6 +254,7 @@ def gen_tree_to_ast(language_tree, env):
                     else:
                         internal_error("unknown modifier")
                 n = AstNode(kind, qname, fields, thisnamespace, loc)
+                n._user_type_annoted = annoted
                 namespace.associate(qname, n)
                 return n, namespace
             return m_def
@@ -260,8 +263,8 @@ def gen_tree_to_ast(language_tree, env):
         menv[kind] = ParseVisitor.left_mapacc
         menv[kind+'_def'] = ParseVisitor.left_mapacc
         menv[kind+'_value'] = partial(ParseVisitor.left_mapacc, el_num=1)
-        menv[kind+'_annoted'] = m_def_gen(2)
-        menv[kind+'_not_annoted'] = m_def_gen(1)
+        menv[kind+'_annoted'] = m_def_gen(True)
+        menv[kind+'_not_annoted'] = m_def_gen(False)
         return (), menv
 
     def meta(mvisitor, mnode, menv):
