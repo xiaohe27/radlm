@@ -4,14 +4,16 @@ Created on May, 2014
 @author: Léonard Gérard leonard.gerard@sri.com
 '''
 
-import argparse
 from pathlib import Path
 
-from radler.radlr import crossrefs, pwds, errors, arrays, infos, alias,\
-    language, objectfile
-from radler.radlr.errors import log_err, log3
+import argparse
+
+from radler.radlr import crossrefs, pwds, errors, infos, alias, \
+    language, objectfile, types
+from radler.radlr.errors import log_err
 from radler.radlr.parser import Semantics
 from radler.radlr.ros import *
+
 
 ########
 # Parse arguments
@@ -123,11 +125,11 @@ with source.open() as f:
 # This allow cross referencing, etc.
 ########
 
-# Checks
-arrays.typecheck(infos.ast)
-
 #Transparent alias to forget about them
 alias.make_transparent(infos.ast, infos.root_namespace)
+
+# Checks
+types.typecheck(infos.ast)
 
 # Embedding information in nodes to allow easier manipulation
 crossrefs.add(infos.ast)

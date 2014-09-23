@@ -1,8 +1,11 @@
+
 '''
 Created on May, 2014
 
 @author: Léonard Gérard leonard.gerard@sri.com
 '''
+import decimal
+from radler.radlr.errors import internal_error, error
 
 
 version = 'RADL 0.92'
@@ -26,8 +29,6 @@ extra_keywords = {
 forbidden_prefix = "radl__"
 
 defs = r"""
-
-#TODO: 6 size checks
 type int8
     REGEX ~r"(?P<value>(\b|[+-])\d+)\b(?!\.)"
 
@@ -76,14 +77,12 @@ type ip
 class cxx_class
     PATH string ?
     HEADER string
-    #TODO: 6 change FILENAME to SRC
     FILENAME string *
     LIB cmake_library/static_library *
     CLASS string
 
 class cxx_file
     PATH string ?
-    #TODO: 6 change FILENAME to SRC
     FILENAME string *
     LIB cmake_library/static_library *
 
@@ -158,7 +157,6 @@ class device_interface
 
 class processor
     NAME string
-    #TODO: 5 what is needed to decide if marshalling is necessary?
     BITS int8
     ENDIANESS string
 
@@ -196,6 +194,88 @@ class mapped_node
 """
 
 
+sized_types = {
+    # sizes are expected to be increasing.
+    'int'  : [8, 16, 32, 64],
+    'uint' : [8, 16, 32, 64],
+    'float': [32, 64],
+}
+
+def int_fits(value, size):
+    #Python ints are arbitrary precision, so we can simply do this.
+    return -2**(size-1) <= int(value) < 2**(size-1)
+
+def uint_fits(value, size):
+    #Python ints are arbitrary precision, so we can simply do this.
+    return 0 <= int(value) < 2**size
+
+# The decimal module doesn't seem to conform exactly to IEEE 754, but anyway,
+# the conversion from a string isn't well specified in IEEE 754.
+context_IEEE_754_float32 = decimal.Context(
+    prec=24,
+    rounding=decimal.ROUND_HALF_EVEN,
+    Emin=-126,
+    Emax=127,
+    capitals=1, clamp=0, flags=[], traps=[]
+)
+context_IEEE_754_float64 = decimal.Context(
+    prec=53,
+    rounding=decimal.ROUND_HALF_EVEN,
+    Emin=-1022,
+    Emax=1023,
+    capitals=1, clamp=0, flags=[], traps=[]
+)
+
+context_IEEE_754_float128 = decimal.Context(
+    prec=113,
+    rounding=decimal.ROUND_HALF_EVEN,
+    Emin=-16382,
+    Emax=16383,
+    capitals=1, clamp=0, flags=[], traps=[]
+)
+
+def float_fits(value, size):
+    d = decimal.Decimal(value)
+    if size == 32:
+        return d.normalize() == d.normalize(context=context_IEEE_754_float32)
+    if size == 64:
+        return d.normalize() == d.normalize(context=context_IEEE_754_float64)
+    if size == 128:
+        return d.normalize() == d.normalize(context=context_IEEE_754_float128)
+    raise internal_error("Trying to fit a float of size {}".format(size))
+
+check_type_size = {
+    'int'   : int_fits,
+    'uint'  : uint_fits,
+    'float' : float_fits,
+}
+
+def wrap_fit_to_check(fun, t, size):
+    def f(value, loc):
+        try:
+            if not fun(value, size):
+                error("The value {} doesn't fit in the {}bits of {}."
+                      "".format(str(value), size, t), loc)
+        except ValueError:
+            error("A value of type {} is expected."
+                  "".format(t), loc)
+    return f
+
+check_type = {
+    'int8'    : wrap_fit_to_check(int_fits, 'int8', 8),
+    'int16'   : wrap_fit_to_check(int_fits, 'int16', 16),
+    'int32'   : wrap_fit_to_check(int_fits, 'int32', 32),
+    'int64'   : wrap_fit_to_check(int_fits, 'int64', 64),
+    'uint8'   : wrap_fit_to_check(uint_fits, 'uint8', 8),
+    'uint16'  : wrap_fit_to_check(uint_fits, 'uint16', 16),
+    'uint32'  : wrap_fit_to_check(uint_fits, 'uint32', 32),
+    'uint64'  : wrap_fit_to_check(uint_fits, 'uint64', 64),
+    'float32' : wrap_fit_to_check(float_fits, 'float32', 32),
+    'float64' : wrap_fit_to_check(float_fits, 'float64', 64),
+    #TODO: 5 complete for the other types in need of checking.
+}
+
+
 type_mapping = {
     'int8'    : {'cxx': 'std::int8_t'     , 'ROS': 'int8'   },
     'int16'   : {'cxx': 'std:int16_t'     , 'ROS': 'int16'  },
@@ -224,7 +304,9 @@ unit_normalize = {
                  'msec': msec2nsec, 'usec': usec2nsec},
     }
 
-
+#TODO: 5 what is needed to decide if marshalling is necessary? see processor
+#TODO: 6 change FILENAME to SRC
+#TODO: 7 allow subtyping with alias x : int8 0  y : int16 = x
 #######################################
 #TODO: 0 RADL
 # min and max period
@@ -232,17 +314,15 @@ unit_normalize = {
 # generate alert messages to monitors
 # check connectivity
 # deploy and run scripts
-# time type to provide and put in messages (useful for users to timestamp) Issue with the ROS time is that seconds are uint32, how does one get a full date?
 # char type? string? how to have fixed size, platform independant? uint8 array ?
 # maybe allow ident to begin with _
-# array issue with repeating the type.... subtyping... (cast in generated code?)
 #######################################
 #TODO: 8 support string calling code (note the order has to be respected)
 #    PATH string ? 'src'
 #    FILENAME string ? @ {this}._name @
 #    CLASS string ? @ str.capitalize({this}['FILENAME']) @
 #######################################
-# TODO: 3 big issue in the publishers (ROS require data not to be overwriten)
+#TODO: 3 big issue in the publishers (ROS require data not to be overwriten), spinonce flush outputs?
 # We should abstract and require a two step publishing:
 # 1) msg* get_slot() 2) void publish()
 # Or use C++11 move semantics publish(msg&&), but it is probably not wanted.
