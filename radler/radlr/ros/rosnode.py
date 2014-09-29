@@ -7,12 +7,13 @@ Generate one ROS _node.cpp file per node declaration.
 
 '''
 
+from pathlib import Path
+
 from radler.astutils.tools import write_file
 from radler.radlr.errors import warning, internal_error
 from radler.radlr.rast import AstVisitor, Ident
-from radler.radlr.ros.rosutils import qn_cpp, qn_srcfile, qn_topic, filepath,\
+from radler.radlr.ros.rosutils import qn_cpp, qn_srcfile, qn_topic, filepath, \
     qn_file
-from pathlib import Path
 
 
 templates = {
@@ -235,7 +236,7 @@ def gennode(visitor, node, cpps):
             warning("By lack of known publisher, subscription {} will "
                     "compute timeout assuming the publisher period is 10s."
                     "".format(str(sub._qname)), sub._location)
-            d['pubperiod'] = "10000000000"
+            d['pubperiod'] = "ros::Duration().fromNSec(10000000000)"
         d['init_msg_fill'] = ros_val_def(d['initmsg'], sub['TOPIC'],
                                          separators['init_msg_fill'])
         for f in sub_templates: app(d, f)
