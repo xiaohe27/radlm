@@ -4,13 +4,14 @@ Created on May, 2014
 @author: Léonard Gérard leonard.gerard@sri.com
 '''
 
-from radler.astutils.tools import write_file
-from radler.radlr.rast import AstVisitor
-from radler.radlr.ros.rosutils import qn_dir, qn_msgfile, filepath,\
-    qn_dir
 from radler.astutils.names import QualifiedName
-from radler.radlr.ros import rosutils
+from radler.astutils.tools import write_file
 from radler.radlr.errors import internal_error
+from radler.radlr.rast import AstVisitor
+from radler.radlr.ros import rosutils
+from radler.radlr.ros.rosutils import qn_dir, qn_msgfile, filepath, \
+    qn_dir
+
 
 templates = {
 'cmakeliststxt': """
@@ -43,9 +44,18 @@ include_directories(
 {dependencies}
 {link_libraries}
 
+install(TARGETS
+  {node_to_install}
+  {lib_to_install}
+  ARCHIVE DESTINATION ${{CATKIN_PACKAGE_LIB_DESTINATION}}
+  LIBRARY DESTINATION ${{CATKIN_PACKAGE_LIB_DESTINATION}}
+  RUNTIME DESTINATION ${{CATKIN_PACKAGE_BIN_DESTINATION}}
+)
+
 """
 ,'packages': "find_package({name} REQUIRED {components})"
 ,'executables': "add_executable({name} {sources})"
+,'node_to_install':"{name}"
 ,'targetincludes': """
 target_include_directories({name}
   PUBLIC
@@ -61,6 +71,7 @@ target_link_libraries({name}
 ,'package_dirs': "{dir}"
 ,'libs': '${{{libname}_LIBRARIES}}'
 ,'libdirs': '${{{libname}_INCLUDE_DIRS}}'
+,'lib_to_install': '{name}'
 ,'static_libs': """
 add_library({name} STATIC
   {sources})
@@ -80,6 +91,8 @@ separators = {
 ,'libdirs': ' '
 ,'static_libs': '\n'
 ,'sources': '\n  '
+,'node_to_install': '\n  '
+,'lib_to_install': '\n  '
 }
 
 
@@ -108,7 +121,8 @@ def _from_cxx(visitor, cxx, d):
     return (), d
 
 
-nt = ['executables', 'targetincludes', 'dependencies', 'link_libraries']
+nt = ['executables', 'targetincludes', 'dependencies', 'link_libraries',
+      'node_to_install']
 
 def _from_node(visitor, node, d):
     d['name'] = node._qname.name()
@@ -141,7 +155,8 @@ def _from_catkinlib(visitor, lib, d):
     return (), d
 
 
-sl = ['static_libs', 'targetincludes', 'dependencies', 'link_libraries']
+sl = ['static_libs', 'targetincludes', 'dependencies', 'link_libraries',
+      'lib_to_install']
 
 def _from_staticlib(visitor, lib, d):
     d['name'] = lib._qname.name()
