@@ -23,7 +23,10 @@ thermometer : node {
     PERIOD
         basic_rate
 }
-temperature_sensor : device {}
+
+temperature_sensor : device_interface {
+  NAME "/dev/thermometer"
+}
 
 thermometer_data : topic { FIELDS temp : float32 75 }
 
@@ -33,7 +36,9 @@ base : node {
     DEVICES temperature_setting_button
     PERIOD basic_rate
 }
-temperature_setting_button : device {}
+temperature_setting_button : device_interface {
+  NAME "/dev/button"
+}
 
 thermostat_setting : topic { FIELDS temp : float32 75 }
 
@@ -58,4 +63,7 @@ heater : node {
     DEVICES heater_device
     PERIOD basic_rate
 }
-heater_device : device {}
+
+heater_device : device_interface {
+  NAME "/dev/heater"
+}
