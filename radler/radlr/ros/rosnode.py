@@ -33,6 +33,7 @@ int main(int argc, const char* argv[]) {{
   ros::init(n, NULL, "{name}"); //TODO : SIGINT management ?
   ros::NodeHandle _h;
   ros::Rate _node_rate({period});
+  {set_counter}
 
   // set up publishers
   {set_pub}
@@ -43,6 +44,8 @@ int main(int argc, const char* argv[]) {{
   //create outgoing structure filled with the default values
   {out_struct} _out;
   {out_fill}
+
+  {report_fill}
 
   {out_flags_struct} _out_flags;
 
@@ -68,6 +71,9 @@ int main(int argc, const char* argv[]) {{
 
     //call publishers
     {pub_call}
+    
+    //publish health report
+    {pub_report}
 
     _node_rate.sleep();
   }}
@@ -103,6 +109,7 @@ struct {out_flags_struct} {{
   {out_flags_struct_def}
 }};
 
+
 """
 , 'msg_include'       : '#include "{topic_file}"'
 , 'out_struct_def'    : "{topic_t}* {pubname};"
@@ -130,6 +137,21 @@ struct {out_flags_struct} {{
 , 'in_flags_struct_def'  : "radl::flags_t {subname};"
 , 'out_flags_struct_def'  : "radl::flags_t {pubname};"
 , 'gathered_flags'    : "_in_flags.{subname}"
+, 'set_counter'       : "int counter = 1;"
+, 'pub_report'        :
+"""if (counter < {times}) {{
+        _report.flag = _report.flag | _gathered_flags;
+        counter++;
+    }} else {{
+        counter = 1;
+        {actionname}(_report, radl::STALE);
+        _report.flag = 0; 
+    }}
+""" 
+, 'report_struct_def': "{topic_t}* {pubname};"
+, 'report_fill'      :
+"""{topic_t} _report;
+  {report_msg_fill}"""
 }
 
 separators = {'msg_include'       : '\n'    , 'out_struct_def'    : '\n  ',
@@ -138,14 +160,13 @@ separators = {'msg_include'       : '\n'    , 'out_struct_def'    : '\n  ',
               'in_fill'           : '\n    ', 'init_msg_fill'     : '\n  ',
               'set_sub'           : '\n  '  , 'sub_flags_fill'    : '\n    ',
               'pub_flags_fill'    : '\n    ', 'in_flags_struct_def'  : '\n  ',
-              'gathered_flags'    : '|'     , 'out_flags_struct_def'  : '\n  '}
+              'gathered_flags'    : '|'     , 'out_flags_struct_def'  : '\n  ',
+              'report_fill'       : '\n  '  , 'report_msg_fill'   : '\n  '}
 
 def app(d, s):
     v = templates[s].format(**d)
     if s not in d or not d[s]: d[s] = v
     else: d[s] = separators[s].join((d[s], v))
-
-
 
 
 def _include_cxx_class(visitor, node, acc):
@@ -159,6 +180,12 @@ _include_visitor = AstVisitor({'cxx_class' : _include_cxx_class})
 def getincludes(node):
     _, paths = _include_visitor.visit(node, [])
     return '\n'.join(paths)
+
+def to_times(node):
+    if node == None:
+        return "-1"
+    else:
+        return str(1000000000//int(node._val))
 
 def to_rate(node):
     if node == None:
@@ -194,15 +221,18 @@ def gennode(visitor, node, cpps):
          'in_flags_struct' : '_in_flags_t',
          'out_flags_struct': '_out_flags_t',
          'cxx_includes'    : getincludes(node),
-         'period'          : to_rate(node['PERIOD'])} #TODO: 5 correct when ros is fixed and allow a duration as rate constructor argument
+         'period'          : to_rate(node['PERIOD'])}    #TODO: 5 correct when ros is fixed and allow a duration as rate constructor argument 
 
     #Over publications and subscriptions
     pubsub_templates = ['msg_include']
     for pt in pubsub_templates: d[pt] = ''
     #Over the publications
+    pubmon_templates = ['pub_call', 'out_fill' , 'set_pub', 'out_flags_struct_def',
+                     'out_struct_def', 'pub_flags_fill', 'set_counter', 'pub_report', 'report_fill']
     pub_templates = ['pub_call', 'out_fill' , 'set_pub', 'out_flags_struct_def',
                      'out_struct_def', 'pub_flags_fill']
-    for pt in pub_templates: d[pt] = ''
+    mon_templates = ['pub_report', 'report_fill' , 'set_pub', 'set_counter']
+    for pt in pubmon_templates: d[pt] = ''
     for pub in node['PUBLISHES']:
         d.update({'pubname'     : pub._qname.name(),
                   'topic_name'  : qn_topic(pub['TOPIC']._qname),
@@ -213,7 +243,16 @@ def gennode(visitor, node, cpps):
                   'initmsg'     : '_init_' + pub._qname.name()})
         d['init_msg_fill'] = ros_val_def(d['initmsg'], pub['TOPIC'],
                                          separators['init_msg_fill'])
-        for f in pub_templates: app(d, f)
+        d['report_msg_fill'] = ros_val_def('_report', pub['TOPIC'],
+                                         separators['report_msg_fill'])
+        if pub['MONITOR'] is None:
+            for f in pub_templates: app(d, f)
+        else:
+            if(pub['MONITOR']._val == 'true'):
+                d.update({'times' : to_times(node['PERIOD'])})
+                for f in mon_templates: app(d, f)
+            else:
+                for f in pub_templates: app(d, f)
         for f in pubsub_templates: app(d, f)
 
     #Over the subscriptions

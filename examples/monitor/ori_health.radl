@@ -1,0 +1,34 @@
+
+default_sub = pervasives.default_sub
+default_pub = pervasives.default_pub
+
+basic_rate : duration 100msec
+
+a : node {
+    PUBLISHES
+        pub_a : publication { TOPIC t
+                              PUBLISHER default_pub}
+    PERIOD basic_rate
+    CXX { PATH "src"
+          HEADER   "a.h"
+          FILENAME "a.cpp"
+          CLASS "A" }
+
+}
+
+t : topic {
+    FIELDS
+        t_a : int32 0
+}
+
+b : node {
+    SUBSCRIBES
+        pub_a : { TOPIC t
+                  SUBSCRIBER default_sub MAXLATENCY 2msec}
+
+    PERIOD basic_rate
+    CXX { PATH "src"
+          HEADER   "b.h"
+          FILENAME "b.cpp"
+          CLASS "B" }
+}

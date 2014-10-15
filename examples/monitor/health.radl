@@ -1,0 +1,66 @@
+
+default_sub = pervasives.default_sub
+default_pub = pervasives.default_pub
+
+basic_rate : duration 100msec
+
+a : node {
+    PUBLISHES
+        pub_a : publication { TOPIC t
+                              PUBLISHER default_pub}
+        a_report : publication { TOPIC a_health
+                                 PUBLISHER default_pub
+                                 MONITOR true}
+    PERIOD basic_rate
+    CXX { PATH "src"
+          HEADER   "a.h"
+          FILENAME "a.cpp"
+          CLASS "A" }
+
+}
+
+t : topic {
+    FIELDS
+        t_a : int32 0
+}
+
+a_health : topic {
+    FIELDS
+        flag : uint8 0
+}
+
+b : node {
+    SUBSCRIBES
+        pub_a { TOPIC t
+                SUBSCRIBER default_sub MAXLATENCY 2msec}
+    PUBLISHES
+        b_report : publication { TOPIC b_health
+                                 PUBLISHER default_pub
+                                 MONITOR true}
+    PERIOD basic_rate
+    CXX { PATH "src"
+          HEADER   "b.h"
+          FILENAME "b.cpp"
+          CLASS "B" }
+}
+
+b_health : topic {
+    FIELDS
+        flag : uint8 0
+}
+
+monitor : node {
+    SUBSCRIBES
+        a_report { TOPIC a_health
+                   SUBSCRIBER default_sub MAXLATENCY 1sec}
+        b_report { TOPIC b_health
+                   SUBSCRIBER default_sub MAXLATENCY 1sec}
+
+    PERIOD              
+        1sec
+
+    CXX { PATH "src"
+          HEADER   "monitor.h"
+          FILENAME "monitor.cpp"
+          CLASS "Monitor" }
+}

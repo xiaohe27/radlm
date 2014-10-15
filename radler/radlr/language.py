@@ -124,6 +124,7 @@ class topic
 class publication
     TOPIC topic
     PUBLISHER publisher
+    MONITOR bool ?
 
 class subscriber
     CXX cxx_class
