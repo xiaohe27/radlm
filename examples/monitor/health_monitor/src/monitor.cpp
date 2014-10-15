@@ -10,7 +10,7 @@ void Monitor::step(const _in_t * in, const _in_flags_t* inflags,
        ROS_INFO("node b is dead");
    } else {
        if(radl::is_timeout(in->b_report->flag)) {
-           ROS_INFO("node b receives timeout messages");
+           ROS_INFO("node b received timeout messages");
        }
    }
 }
