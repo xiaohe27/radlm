@@ -1,0 +1,75 @@
+
+1. Requirements
+
+1.1 Ubuntu 14.04 (the supported linux distribution)
+
+1.2 ROS indigo
+As described in http://wiki.ros.org/indigo/Installation/Ubuntu
+
+sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu trusty main" > /etc/apt/sources.list.d/ros-latest.list'
+wget https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -O - | sudo apt-key add -
+sudo apt-get update
+sudo apt-get install ros-indigo-desktop
+
+1.3 Python3.4 (for radler)
+sudo apt-get install python3.4
+
+=================================================================================================================
+
+2. Setting up the git
+
+2.1 To make sure all git submodule are pulled and up-to-date
+git submodule update --init --recursive
+
+=================================================================================================================
+
+3. Running the example
+
+3.1 Generating the nodes
+We need a workspace folder for catkin with a source folder in it where radler will generate
+the ROS package corresponding to the RADL file examples/monitor/health_monitor/health_monitor.radl
+
+Instructions from the root of the git:
+mkdir -p catkin_ws/src
+./radler.sh examples/monitor/health_monitor/health_monitor.radl --roscpp_dest catkin_ws/src
+
+3.2 Compiling the generated code
+For now we still rely on ROS build system:
+cd catkin_ws
+catkin_make install
+
+3.3 Running the nodes
+In four different terminals, run the commands from the directory catkin_ws/:
+
+roscore
+
+source install/setup.bash
+rosrun health_monitor a
+
+source install/setup.bash
+rosrun health_monitor b
+
+source install/setup.bash
+rosrun health_monitor monitor
+
+3.4 Health monitoring
+In the health_monitor example, node a publishes messages on topic "/health_monitor/t" and node b subscribes
+to the same topic and print out whatever messages it recevies together with the flags.
+
+If node a is killed, the messages that node b receives don't change and the flags become 17(timeout). The monitor
+node gives warning that node a is killed and b receives timeout messages. If node a is restarted, all these messages 
+should go away.
+
+If node b is killed, The monitor node gives warning that node b is killed. If node b is restarted, all these messages 
+should go away.
+
+
+3.5 Existing problems
+
+Health monitor use flags to detect the failure of the nodes in the system. The flags are not correctly computed when a 
+node is started. Acutally, the first three or four iterations of the while loop in each node wouldn't receive any new messages.
+Thus, you'll see some false-postive warnings in the output of monitor node. When the system is stable, everything should 
+work correctly as described above.
+
+
+

@@ -1,0 +1,34 @@
+1. Idea of design
+
+1.1 Overal design for health monitoring
+Each node p in the system generates and publishes its own health report to a topic "p_health" at a constant rate m. 
+Now the rate is fixed at 1 (i.e publishing health report every 1 second, which is much slower than the execution 
+rate of the node itself. The health report of each node only includes flags info about the messages that the node receives 
+during the 1 second period.
+There is a node called "monitor"(newly added to the original system) which subscribes to all those "*_health" topic.
+In the step function of the "monitor", it checks the flags of the incoming health reports. If a health report times out,
+then that implies the corresponding node has died. It also checks the content of the health reports.   
+
+1.2 "Monitor" keyword extension
+A new keyword "Monitor" is added to the publication structure. It is used to indicate whether a publication is monitor-related
+(i.e publish health report). The publication of health report is different from the publication of other messages for 
+the following reasons:
+1) User should not alter the content of health report through the *out* param of the step function.
+2) Health report is published at a different rate from the rate of each node.
+
+If you want to specifiy a monitor-related publication, you should add "Monitor" field to the publication and set it to true.
+The publication where "Monitor" is omitted or is set to false will be regarded as a normal publication.
+
+1.3 Transformation of RADL spec
+In order to achieve health monitoring, you should modify the original RADL spec. Here are the steps:
+1) For each node p, in the "PUBLISHES", add a new publication which publishes messages to "p_health" topic.
+2) Define "p_health" topic in RADL.
+3) Define a new node "monitor" which subscribes to all the "*_health" topics.
+4) Definde step function for node "monitor".
+
+Please refer to examples/monitor/health_monitor/ori_health_monitor.radl and examples/monitor/health_monitor/health_monitor.radl
+
+
+2. Plan
+2.1 Automatic RADL to RADL transformation
+Automatically transform ori_health_monitor.radl to health_monitor.radl and generate monitor step function.
